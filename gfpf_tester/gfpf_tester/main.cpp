@@ -21,7 +21,7 @@ int main(int argc, const char * argv[])
         return 1;
     }
     const char *type = argv[1];
-    int process_type;
+    int process_type = 0;
     if(!strcmp(type,"batch") || !strcmp(type,"single"))
     {
         std::cerr << "Usage : string type {batch,single},int resamplThreshold, int testGestureIdx" << std::endl;
@@ -42,6 +42,7 @@ int main(int argc, const char * argv[])
     int gt = atoi(argv[3]);
 
     gfpfhandler gfpfhandl(rt,gt);
+
     gfpfhandl.teach();
     
     printf("Complete.\n");

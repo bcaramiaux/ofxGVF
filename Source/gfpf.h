@@ -110,8 +110,9 @@ public:
     std::vector<float> particle_before_0;
     std::vector<float> particle_after_1;
 
-    filewriter *g1,*g2,*ug,*tot,*w1,*w2,*p1,*p2;
-    filewriter *ph1,*ph2,*rs;
+    filewriter *g1,*g2,*g3,*ug,*tot,*w1,*w2,*w3,*p1,*p2,*p3;
+    filewriter *ph1,*ph2,*ph3,*rs;
+    filewriter *phase,*phase2,*phase3;
     
 	
 };

@@ -31,7 +31,7 @@ gfpfhandler::gfpfhandler(int s_rt,int s_gt)
     } else {
         selected_gesture = s_gt;
     }
-
+    
     Eigen::VectorXf sigs(pdim);
     sigs << sp, sv, ss, sr;
     // pos,vel,rot,scal,observation
@@ -249,7 +249,7 @@ void gfpfhandler::gfpf_data(int argc, float *argv)
         gf->infer(vect);
         // output recognition
         Eigen::MatrixXf statu = gf->getEstimatedStatus();
-        //getGestureProbabilities();
+        //ggetGestureProbabilities();
         float tot = gf->inferTotalGestureActivity();
 
 //        int *outAtoms = new int[statu.rows()];

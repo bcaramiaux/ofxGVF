@@ -66,15 +66,25 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     
     g1 = new filewriter("g1",folder_num);
     g2 = new filewriter("g2",folder_num);
+    g3 = new filewriter("g3",folder_num);
+
     tot = new filewriter("tot",folder_num);
     ug = new filewriter("ug",folder_num);
     w1 = new filewriter("w1",folder_num);
     w2 = new filewriter("w2",folder_num);
+    w3 = new filewriter("w3",folder_num);
     p1 = new filewriter("p1",folder_num);
     p2 = new filewriter("p2",folder_num);
+    p3 = new filewriter("p3",folder_num);
+
     ph1 = new filewriter("ph1",folder_num);
     ph2 = new filewriter("ph2",folder_num);
+    ph3 = new filewriter("ph3",folder_num);
+
     rs  = new filewriter("rs",folder_num);
+    phase= new filewriter("phase",folder_num);
+    phase2= new filewriter("phase2",folder_num);
+    phase3= new filewriter("phase3",folder_num);
 
 }
 
@@ -82,14 +92,22 @@ gfpf::~gfpf()
 {
     delete g1;
     delete g2;
+    delete g3;
     delete tot;
     delete ug;
     delete w1;
     delete w2;
+    delete w3;
     delete p1;
     delete p2;
+    delete p3;
     delete ph1;
     delete ph2;
+    delete ph3;
+    delete phase;
+    delete phase2;
+    delete phase3;
+    
 #if !BOOSTLIB
     if(normdist != NULL)
         delete (normdist);
@@ -129,14 +147,26 @@ void gfpf::writeGesturesToFile()
         g2->writeFile();
 
     }
+    if(g3->size() == 0)
+    {
+        for(int i=0; i<R_single[2].size(); i++)
+            g3->addValue(R_single[2][i][0]);
+        g3->writeFile();
+        
+    }
    
     ug->writeFile();
     tot->writeFile();
     w1->writeFile();
     w2->writeFile();
+    w3->writeFile();
     p1->writeFile();
     p2->writeFile();
+    p3->writeFile();
     rs->writeFile();
+    phase->writeFile();
+    phase2->writeFile();
+    phase3->writeFile();
     
     ug->resetValues();
     tot->resetValues();
@@ -144,7 +174,11 @@ void gfpf::writeGesturesToFile()
     w2->resetValues();
     p1->resetValues();
     p2->resetValues();
+    p3->resetValues();
     rs->resetValues();
+    phase->resetValues();
+    phase3->resetValues();
+    phase2->resetValues();
     
 }
 
@@ -395,6 +429,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     
     int activea = 0;
     int activeb = 0;
+    int activec = 0;
     //executiontimer ex("loop");
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
@@ -468,15 +503,19 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
                 activea++;
             if(g(n)==1)
                 activeb++;
+            if(g(n)==2)
+                activec++;
         }
     }
     p1->addValue(activea);
     p2->addValue(activeb);
+    p3->addValue(activec);
     //w1->addValue(gprob(0,0));
     //w2->addValue(gprob(1,0));
 
     w1->addValue(abs_weights[0]);
     w2->addValue(abs_weights[1]);
+    w3->addValue(abs_weights[2]);
     
     
     // TODO: here we should compute the "absolute likelihood" as log(w) before normalization
@@ -726,6 +765,22 @@ MatrixXf gfpf::getEstimatedStatus()
 	{
 		es.block(gi,0,1,pdim) /= es(gi,pdim);
 	}
+    
+    if(!isnan(es(0,0)))
+        phase->addValue(es(0,0));
+    else
+        phase->addValue(0);
+    
+    if(!isnan(es(1,0)))
+        phase2->addValue(es(1,0));
+    else
+        phase2->addValue(0);
+    
+    if(!isnan(es(2,0)))
+        phase3->addValue(es(2,0));
+    else
+        phase3->addValue(0);
+   
 	
 	return es;
 }
