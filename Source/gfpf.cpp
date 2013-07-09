@@ -67,9 +67,13 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     g1 = new filewriter("g1",folder_num);
     g2 = new filewriter("g2",folder_num);
     g3 = new filewriter("g3",folder_num);
-
+    g1y = new filewriter("g1y",folder_num);
+    g2y = new filewriter("g2y",folder_num);
+    g3y = new filewriter("g3y",folder_num);
+    
     tot = new filewriter("tot",folder_num);
     ug = new filewriter("ug",folder_num);
+    ugy = new filewriter("ugy",folder_num);
     w1 = new filewriter("w1",folder_num);
     w2 = new filewriter("w2",folder_num);
     w3 = new filewriter("w3",folder_num);
@@ -93,8 +97,12 @@ gfpf::~gfpf()
     delete g1;
     delete g2;
     delete g3;
+    delete g1y;
+    delete g2y;
+    delete g3y;
     delete tot;
     delete ug;
+    delete ugy;
     delete w1;
     delete w2;
     delete w3;
@@ -136,26 +144,37 @@ void gfpf::writeGesturesToFile()
 
     if(g1->size() == 0)
     {
-        for(int i=0; i<R_single[0].size(); i++)
+        for(int i=0; i<R_single[0].size(); i++){
             g1->addValue(R_single[0][i][0]);
+            g1y->addValue(R_single[0][i][1]);
+        }
         g1->writeFile();
+        g1y->writeFile();
     }
     if(g2->size() == 0)
     {
-        for(int i=0; i<R_single[1].size(); i++)
+        for(int i=0; i<R_single[1].size(); i++){
             g2->addValue(R_single[1][i][0]);
+            g2y->addValue(R_single[1][i][1]);
+
+        }
         g2->writeFile();
+        g2y->writeFile();
 
     }
     if(g3->size() == 0)
     {
-        for(int i=0; i<R_single[2].size(); i++)
+        for(int i=0; i<R_single[2].size(); i++){
             g3->addValue(R_single[2][i][0]);
+            g3y->addValue(R_single[2][i][1]);
+        }
         g3->writeFile();
+        g3y->writeFile();
         
     }
    
     ug->writeFile();
+    ugy->writeFile();
     tot->writeFile();
     w1->writeFile();
     w2->writeFile();
@@ -169,6 +188,7 @@ void gfpf::writeGesturesToFile()
     phase3->writeFile();
     
     ug->resetValues();
+    ugy->resetValues();
     tot->resetValues();
     w1->resetValues();
     w2->resetValues();
@@ -414,6 +434,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     // Number of particles
     int ns = X.rows();
     ug->addValue(obs[0]);
+    ugy->addValue(obs[1]);
 
     for(int k=obs_dim-1; k >= 0; --k)
         obs_eigen(k)=obs[k];
