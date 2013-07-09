@@ -15,18 +15,31 @@
 
 int main(int argc, const char * argv[])
 {
-    if(argc <= 2)
+    if(argc <= 3)
     {
-        std::cerr << "Usage : int resamplThreshold, int testGestureIdx " << std::endl;
+        std::cerr << "Usage : string type {batch,single},int resamplThreshold, int testGestureIdx" << std::endl;
         return 1;
     }
-    int rt = atoi(argv[1]);
+    const char *type = argv[1];
+    int process_type;
+    if(!strcmp(type,"batch") || !strcmp(type,"single"))
+    {
+        std::cerr << "Usage : string type {batch,single},int resamplThreshold, int testGestureIdx" << std::endl;
+    } else {
+        if(!strcmp(type, "batch"))
+            process_type = 0;
+        else
+            process_type = 1;
+    }
+    
+    
+    int rt = atoi(argv[2]);
     if(rt > 2000){
         std::cerr << "RT must be less than #particles (default:2000) " << std::endl;
         return 1;
     }
     // sim user-input gesture
-    int gt = atoi(argv[2]);
+    int gt = atoi(argv[3]);
 
     gfpfhandler gfpfhandl(rt,gt);
     gfpfhandl.teach();
