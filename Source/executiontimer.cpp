@@ -22,14 +22,14 @@ executiontimer::~executiontimer()
 {
     if(alive){
         stopTimer();
-        post("%s %" PRIu64"",output.c_str(),diff);
+       // post("%s %" PRIu64"",output.c_str(),diff);
     }
 }
 
 void executiontimer::kill()
 {
     stopTimer();
-    post("%s %" PRIu64"",output.c_str(),diff);
+  //  post("%s %" PRIu64"",output.c_str(),diff);
     alive = false;
 }
 

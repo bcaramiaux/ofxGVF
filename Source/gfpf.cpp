@@ -12,18 +12,9 @@
  *
  */
 
-
 #include "gfpf.h"
 #include <iostream>
 #include <tr1/memory>
-
-/*  optimisations
- 
-    remove all pass by copy - replace with pass by ref
- 
- 
- */
-
 
 using namespace Eigen;
 using namespace std;
@@ -70,17 +61,35 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     
     abs_weights = vector<float>();
     
-    g1 = new filewriter("g1");
-    g2 = new filewriter("g2");
-    tot = new filewriter("tot");
-    ug = new filewriter("ug");
-
+    filewriter *dirscan = new filewriter("test",1);
+    int folder_num = dirscan->scanDirectory();
     
+    g1 = new filewriter("g1",folder_num);
+    g2 = new filewriter("g2",folder_num);
+    tot = new filewriter("tot",folder_num);
+    ug = new filewriter("ug",folder_num);
+    w1 = new filewriter("w1",folder_num);
+    w2 = new filewriter("w2",folder_num);
+    p1 = new filewriter("p1",folder_num);
+    p2 = new filewriter("p2",folder_num);
+    ph1 = new filewriter("ph1",folder_num);
+    ph2 = new filewriter("ph2",folder_num);
+    rs  = new filewriter("rs",folder_num);
+
 }
 
 gfpf::~gfpf()
 {
-    
+    delete g1;
+    delete g2;
+    delete tot;
+    delete ug;
+    delete w1;
+    delete w2;
+    delete p1;
+    delete p2;
+    delete ph1;
+    delete ph2;
 #if !BOOSTLIB
     if(normdist != NULL)
         delete (normdist);
@@ -106,15 +115,36 @@ void gfpf::addTemplate()
 
 void gfpf::writeGesturesToFile()
 {
-    for(int i=0; i<R_single[0].size(); i++)
-        g1->addValue(R_single[0][i][0]);
-    for(int i=0; i<R_single[1].size(); i++)
-        g2->addValue(R_single[1][i][0]);
 
-    g1->writeFile();
-    g2->writeFile();
+    if(g1->size() == 0)
+    {
+        for(int i=0; i<R_single[0].size(); i++)
+            g1->addValue(R_single[0][i][0]);
+        g1->writeFile();
+    }
+    if(g2->size() == 0)
+    {
+        for(int i=0; i<R_single[1].size(); i++)
+            g2->addValue(R_single[1][i][0]);
+        g2->writeFile();
+
+    }
+   
     ug->writeFile();
     tot->writeFile();
+    w1->writeFile();
+    w2->writeFile();
+    p1->writeFile();
+    p2->writeFile();
+    rs->writeFile();
+    
+    ug->resetValues();
+    tot->resetValues();
+    w1->resetValues();
+    w2->resetValues();
+    p1->resetValues();
+    p2->resetValues();
+    rs->resetValues();
     
 }
 
@@ -330,6 +360,7 @@ void gfpf::particleFilter(vector<float> obs)
     {
         resampleAccordingToWeights();
         initweights();
+   
     }
 	
 }
@@ -362,6 +393,8 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         abs_weights[i] = 0.0;
     }
     
+    int activea = 0;
+    int activeb = 0;
     //executiontimer ex("loop");
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
@@ -399,8 +432,6 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
             //vref(obs.size());
             for (int os=0; os<obs.size(); os++)
                 vref(os) = R_single[pgi][frameindex][os];
-            
-            
             // If incoming data is 2-dimensional: we assume that it is drawn shape!
             if (obs.size()==2){
                 // scal1ing
@@ -409,9 +440,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
                 float alpha = x_n(3);
                 Matrix2f rotmat;
                 rotmat << cos(alpha), -sin(alpha), sin(alpha), cos(alpha);
-                // tvref = vref * rotmat;
-                
-                
+                vref = rotmat * vref;
             }
             // If incoming data is 3-dimensional
             else if (obs.size()==3){
@@ -420,7 +449,6 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
             }
             vrefmineigen = vref-obs_eigen;
             
-            
             // observation likelihood and update weights
             // vref-obs_eigen will be costly as special data type
             float dist = vrefmineigen.dot(vrefmineigen) * icov_single;
@@ -428,17 +456,27 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
             {
                 w(n)   *= exp(-dist);
                 logW(n) += -dist;
+                abs_weights[g(n)] += exp(-dist);
             }
             else            // Student's distribution
             {
                 w(n)   *= pow(dist/nu + 1,-nu/2-1);    // dimension is 2 .. pay attention if editing]
                 logW(n) += (-nu/2-1)*log(dist/nu + 1);
             }
+            //abs_weights[g(n)] += w(n);
+            if(g(n)==0)
+                activea++;
+            if(g(n)==1)
+                activeb++;
         }
-        abs_weights[g(n)] += w(n);
-
-
     }
+    p1->addValue(activea);
+    p2->addValue(activeb);
+    //w1->addValue(gprob(0,0));
+    //w2->addValue(gprob(1,0));
+
+    w1->addValue(abs_weights[0]);
+    w2->addValue(abs_weights[1]);
     
     
     // TODO: here we should compute the "absolute likelihood" as log(w) before normalization
@@ -447,8 +485,8 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
     
 #if BOOSTLIB
-        boost::uniform_real<float> ur(0,1);
-        boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
+    boost::uniform_real<float> ur(0,1);
+    boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
 #else
     std::tr1::uniform_real<float> ur(0,1);
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
@@ -475,6 +513,17 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 	// normalization - resampling
     // this is normalization. take absolute val here and output
     // set a threshold for 'this is gesture'
+   
+//    for(int i = 0 ; i<ns; i++){
+//        if(logW(i) != INFINITY && logW(i) != -INFINITY)
+//        {
+//            abs_weights[g(i)] += w(i);
+//        }
+//
+//    }
+//    w1->addValue(abs_weights[0]);
+//    w2->addValue(abs_weights[1]);
+
     
 	w /= w.sum();
 	float neff = 1./w.dot(w);
@@ -482,6 +531,9 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     {
         resampleAccordingToWeights();
         initweights();
+        rs->addValue(1);
+    } else {
+        rs->addValue(0);
     }
     
     particle_before_0.clear();
@@ -505,7 +557,14 @@ float gfpf::inferTotalGestureActivity()
 {
     float total = 0.0;
     for(int i = 0 ; i < abs_weights.size(); i++)
+    {
+//        if(logW(i) != INFINITY && logW(i) != -INFINITY)
+//        {
+//            total += abs(logW(i));
+//        }
         total += abs_weights[i];
+
+    }
     tot->addValue(total);
     return total;
 }

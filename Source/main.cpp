@@ -7,7 +7,11 @@
 #include "globalutilities.h"
 //#include "executiontimer.h"
 
+#include <iostream>
+#include <fstream>
+
 static t_class *gfpf_class;
+
 
 typedef struct _gfpf {
     t_object  x_obj;
@@ -37,6 +41,8 @@ static void gfpf_means      (t_gfpf *x,const t_symbol *sss,int argc, t_atom *arg
 static void gfpf_ranges     (t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv);
 static void gfpf_adaptspeed (t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv);
 
+static void gfpf_auto(t_gfpf *x);
+
 t_int restarted_l;
 t_int restarted_d;
 std::pair<t_float,t_float> xy0_l;
@@ -44,6 +50,85 @@ std::pair<t_float,t_float> xy0_d;
 std::vector<t_float> vect_0_l;
 std::vector<t_float> vect_0_d;
 enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
+
+static void gfpf_auto(t_gfpf *x)
+{
+
+    int num_templates = 3;
+    post("in auto func");
+    gfpf_clear(x, 0, 0, 0);
+    std::string dir = "/Users/thomasrushmore/EAVI/PD/gfpflibrary/test gestures/tem";
+    std::string dirg = "/Users/thomasrushmore/EAVI/PD/gfpflibrary/test gestures/g";
+    
+    for(int i = 0 ; i < num_templates; i++)
+    {
+        t_atom ab;
+        ab.a_type = A_FLOAT;
+        ab.a_w.w_float = i;
+        gfpf_learn(x, 0, 1, &ab);
+        std::string state_file(dir);
+        char buf[10];
+        sprintf(buf, "%d", i+1);
+        state_file.append(buf);
+        state_file.append(".txt");
+        post(state_file.c_str());
+        std::ifstream state_summary;
+        state_summary.open(state_file.c_str());
+        float a;
+        float b;
+        t_atom *ar = new t_atom[2];
+                
+        ar[0].a_type = A_FLOAT;
+        ar[1].a_type = A_FLOAT;
+        
+        while(true){
+            state_summary >> a;
+            state_summary >> b;
+            ar[0].a_w.w_float = a;
+            ar[1].a_w.w_float = b;
+            gfpf_data(x, 0, 2, ar);
+            if(state_summary.eof()) break;
+        }
+        gfpf_restart(x, 0, 0, 0);
+        state_summary.close();
+        delete ar;
+    }
+    
+    // gfpf follow
+    gfpf_follow(x,0, 0, 0);
+    // gfpf data
+    std::string state_file(dirg);
+    char buf[10];
+    int gesture = 4;
+    
+    sprintf(buf, "%d",gesture);
+    state_file.append(buf);
+    state_file.append(".txt");
+    post(state_file.c_str());
+    std::ifstream state_summary;
+    state_summary.open(state_file.c_str());
+    t_atom *ar = new t_atom[2];
+    
+    ar[0].a_type = A_FLOAT;
+    ar[1].a_type = A_FLOAT;
+    float a,b;
+    while(true){
+        state_summary >> a;
+        state_summary >> b;
+        ar[0].a_w.w_float = a;
+        ar[1].a_w.w_float = b;
+        gfpf_data(x, 0, 2, ar);
+        if(state_summary.eof()) break;
+    }
+
+    gfpf_restart(x,0, 0, 0);
+    
+    //gfpf_data(x, 0, 2, <#t_atom *argv#>)
+    // teach
+    
+    
+    
+}
 
 static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
 {
@@ -99,14 +184,6 @@ static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
     if (argc > 1)
         x->Rtpg = getint(argv + 1);
     
-    // Previous flext impltn only outlet lists.
-//    outlet_list(x->Position, &s_list, 1, argv);
-//    outlet_list(x->Vitesse, &s_list, 1, argv);
-//    outlet_list(x->Rotation, &s_list, 1, argv);
-//    outlet_list(x->Scaling, &s_list, 1, argv);
-//    outlet_list(x->Recognition, &s_list, 1, argv);
-//    outlet_list(x->Likelihoods, &s_list, 1, argv);
-
     x->Position     = outlet_new(&x->x_obj, &s_list);
     x->Vitesse      = outlet_new(&x->x_obj, &s_list);
     x->Rotation     = outlet_new(&x->x_obj, &s_list);
@@ -115,6 +192,7 @@ static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
     x->Likelihoods  = outlet_new(&x->x_obj, &s_list);
     x->ActiveGesture= outlet_new(&x->x_obj, &s_list);
     x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
+    
     return (void *)x;
 }
 
@@ -169,6 +247,7 @@ static void gfpf_follow(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
         return;
     }
 }
+
 
 static void gfpf_clear(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
@@ -350,6 +429,7 @@ static void gfpf_restart(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
         post("Writing gestures to file");
         x->bubi->writeGesturesToFile();
 
+
     }
 
 }
@@ -362,6 +442,9 @@ static void gfpf_std(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
     if (stdnew == 0.0)
         stdnew = 0.1;
     x->bubi->setIcovSingleValue(1/(stdnew*stdnew));
+    
+    gfpf_auto(x);
+
 }
 
 static void gfpf_rt(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
@@ -373,6 +456,8 @@ static void gfpf_rt(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
     if (rtnew >= cNS)
         rtnew = floor(cNS/2);
     x->bubi->setResamplingThreshold(rtnew);
+    //x->bubi->setResamplingThreshold(-1);
+
 }
 
 static void gfpf_means(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
