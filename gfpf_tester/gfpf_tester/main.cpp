@@ -17,16 +17,16 @@ int main(int argc, const char * argv[])
 {
     if(argc <= 3)
     {
-        std::cerr << "Usage : string type {batch,single},int resamplThreshold, int testGestureIdx" << std::endl;
+        std::cerr << "Usage : string type {tem,user},int resamplThreshold, int testGestureIdx" << std::endl;
         return 1;
     }
     const char *type = argv[1];
     int process_type = 0;
     if(!strcmp(type,"batch") || !strcmp(type,"single"))
     {
-        std::cerr << "Usage : string type {batch,single},int resamplThreshold, int testGestureIdx" << std::endl;
+        std::cerr << "Usage : string type {tem,user},int resamplThreshold, int testGestureIdx" << std::endl;
     } else {
-        if(!strcmp(type, "batch"))
+        if(!strcmp(type, "tem"))
             process_type = 0;
         else
             process_type = 1;
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[])
 
     gfpfhandler gfpfhandl(rt,gt);
 
-    gfpfhandl.teach();
+    gfpfhandl.teach(process_type);
     
     printf("Complete.\n");
     return 0;

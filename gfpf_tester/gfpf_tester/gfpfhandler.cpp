@@ -24,8 +24,8 @@ gfpfhandler::gfpfhandler(int s_rt,int s_gt)
     
     Rtpg = s_rt;
     rt = s_rt;
-    if(s_gt <= 0 || s_gt > 4){
-        printf("setGesture must be integer between 1-4 inclusive\n");
+    if(s_gt <= 0 || s_gt > 5){
+        printf("setGesture must be integer between 1-45inclusive\n");
         printf("setGesture defaulting to 1\n");
         selected_gesture = 1;
     } else {
@@ -56,7 +56,7 @@ gfpfhandler::~gfpfhandler()
 
 }
 
-void gfpfhandler::teach()
+void gfpfhandler::teach(int p_type)
 {
     printf("Running teach()\n");
    // gfpf_rt(<#int argc#>, <#int *argv#>)
@@ -102,7 +102,15 @@ void gfpfhandler::teach()
     // gfpf follow
     gfpf_follow(0, 0);
     // gfpf data
-    std::string state_file(dirg);
+    std::string tem_folder;
+    
+    if(p_type == 0)
+        tem_folder = dir;
+    else
+        tem_folder = dirg;
+    
+    std::string state_file(tem_folder);
+    
     char buf[10];
     int gesture = selected_gesture;
     

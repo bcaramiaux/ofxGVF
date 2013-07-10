@@ -19,7 +19,7 @@ public:
     gfpfhandler(int s_rt,int s_gt);
     ~gfpfhandler();
     
-    void teach();
+    void teach(int p_type);
     
     void gfpf_learn      (int argc, int argv);
     void gfpf_follow     (int argc, int *argv);
