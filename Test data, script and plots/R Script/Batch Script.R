@@ -1,3 +1,5 @@
+print("WANGWANG")
+
 plotter <- function(gid,rt){
 par(mfrow=c(3,1),mar=c(2,8,4,2)+0.1)
  g1 <- scan("g1.txt")
@@ -68,3 +70,5 @@ dev.off()
 }
 }
 }
+
+batchplotter(3)
