@@ -19,8 +19,6 @@ static void postint(int x)
     // is this right with pd t_int datatype?
     char buffer[std::numeric_limits<int>::digits];
     char buffer2[std::numeric_limits<float>::is_integer];
-    
-    
     snprintf(buffer, sizeof(buffer), "%d", x);
     post(buffer);
 }

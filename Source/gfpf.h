@@ -28,6 +28,7 @@ private:
 	Eigen::VectorXi g;          // gesture index for each particle [g is ns x 1]
 	Eigen::VectorXf w;          // weight of each particle [w is ns x 1]
     Eigen::VectorXf logW;       // non-normalized weights
+    Eigen::VectorXf offS;     // translation offset
 	Eigen::VectorXf sigt;       // vector of variances
 	Eigen::VectorXf means;      // vector of means for particles initial spreading
 	Eigen::VectorXf ranges;     // vector of ranges around the means for particles initial spreading

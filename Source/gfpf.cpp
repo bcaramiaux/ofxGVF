@@ -36,6 +36,8 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
 	g = VectorXi(ns);               // Vector of gesture class
 	w = VectorXf(ns);               // Weights
     logW = VectorXf(ns);
+    offS = VectorXf(ns);            // translation offsets
+    
 	
 	sigt = VectorXf(pdim);          // Fill variances
 	for (int k=0; k<pdim; k++)
@@ -134,7 +136,7 @@ void gfpf::addTemplate()
 {
 	lrndGstr++;                                         // increment the num. of learned gesture
 	R_single[lrndGstr] = vector<vector<float> >(); // allocate the memory for the gesture's data
-	gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
+    gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
     abs_weights.resize(lrndGstr+1);
 
 }
@@ -260,6 +262,9 @@ void gfpf::spreadParticles(Eigen::VectorXf meanPVRS, Eigen::VectorXf rangePVRS)
     // Spread uniformly the gesture class among the particles
 	for(int n = 0; n < ns; n++)
 		g(n) = n % ngestures;
+    
+    offS.setConstant(0.0);
+    
 }
 
 
@@ -533,11 +538,10 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     p3->addValue(activec);
     //w1->addValue(gprob(0,0));
     //w2->addValue(gprob(1,0));
-
+    
     w1->addValue(abs_weights[0]);
     w2->addValue(abs_weights[1]);
     w3->addValue(abs_weights[2]);
-    
     
     // TODO: here we should compute the "absolute likelihood" as log(w) before normalization
     
@@ -553,40 +557,36 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 #endif
     
     
-    for (int n=0; n<particle_before_0.size(); n++)
-    {
-        // Spread particles using a uniform distribution
-        for(int i = 0; i < pdim; i++)
-            X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-        w(particle_before_0[n]) = 1.0/(ns);
-        g(particle_before_0[n]) = n % (lrndGstr+1);
-    }
-    for (int n=0; n<particle_after_1.size(); n++)
-    {
-        // Spread particles using a uniform distribution
-        for(int i = 0; i < pdim; i++)
-            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-        w(particle_after_1[n]) = 1.0/(ns);
-        g(particle_after_1[n]) = n % (lrndGstr+1);
-    }
-    
-	// normalization - resampling
-    // this is normalization. take absolute val here and output
-    // set a threshold for 'this is gesture'
-   
-//    for(int i = 0 ; i<ns; i++){
-//        if(logW(i) != INFINITY && logW(i) != -INFINITY)
-//        {
-//            abs_weights[g(i)] += w(i);
-//        }
-//
+//    for (int n=0; n<particle_before_0.size(); n++)
+//    {
+//        // Spread particles using a uniform distribution
+//        for(int i = 0; i < pdim; i++)
+//            X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
+//        w(particle_before_0[n]) = 1.0/(ns);
+//        g(particle_before_0[n]) = n % (lrndGstr+1);
 //    }
-//    w1->addValue(abs_weights[0]);
-//    w2->addValue(abs_weights[1]);
-
+//    for (int n=0; n<particle_after_1.size(); n++)
+//    {
+//        // Spread particles using a uniform distribution
+//        for(int i = 0; i < pdim; i++)
+//            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
+//        w(particle_after_1[n]) = 1.0/(ns);
+//        g(particle_after_1[n]) = n % (lrndGstr+1);
+//    }
+    
+    
     
 	w /= w.sum();
 	float neff = 1./w.dot(w);
+    
+    double totProb = abs_weights[0]+abs_weights[1]+abs_weights[2];
+    double probThresh = 0.8;
+    if(totProb < probThresh)
+    {
+        // code to redistribute particles
+    }
+    
+    
 	if(neff<resampling_threshold)
     {
         resampleAccordingToWeights();
@@ -657,8 +657,10 @@ void gfpf::resampleAccordingToWeights()
     for (int j = 0; j < ns; j++)
     {
         float uj = u0 + (j + 0.) / ns;
-        while (uj > c(i) && i < ns - 1)
+        
+        while (uj > c(i) && i < ns - 1){
             i++;
+        }
         X.row(j) = oldX.row(i);
         g(j) = oldG(i);
         logW(j) = oldLogW(i);

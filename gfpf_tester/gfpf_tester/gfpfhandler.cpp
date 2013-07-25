@@ -212,6 +212,7 @@ void gfpfhandler::gfpf_data(int argc, float *argv)
             }
             for (int k=0; k<argc; k++){
                 vect[k] = *(argv + k);
+                // normalize 
                 vect[k]=vect[k]-vect_0_l[k];
             }
         }
@@ -244,7 +245,7 @@ void gfpfhandler::gfpf_data(int argc, float *argv)
             }
             for (int k=0; k<argc; k++){
                 vect[k] = vect[k] = *(argv + k);
-                vect[k]=vect[k]-vect_0_d[k];
+                vect[k]= vect[k]-vect_0_d[k];
             }
         }
         else{
