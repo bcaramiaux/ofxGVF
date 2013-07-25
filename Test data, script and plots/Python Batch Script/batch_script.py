@@ -7,12 +7,7 @@ from multiprocessing.pool import ThreadPool
 import math
 
 
-
-# get string form of command line options to be added to the gf recognizer invocation
-def getCmdLineOptions(s) :
-    return '--sigmas %f,%f,%f,%f --smoothing %f --student-nu %f --reference-pos-exp-param %f' % (s[0],s[1],s[2],s[3],s[4],s[5],s[6])
-
-def runbubi(cmd) :
+def rungfpftester(cmd) :
     print cmd
     po = Popen(cmd, shell=True, stdout=PIPE)
     po.wait()
@@ -24,12 +19,11 @@ def run_eval(tem,rt,id) :
     jobpool = ThreadPool(processes=16)
     scorepool = []
     cmds = []
-    print 'twant'
     for i in range(1) :
         #cmd = './gfpf_tester --ranges 0.2,0.2,0.1,0.2 --ns 4000 --rt 2000 %s %s %d | ./eval.py --single-eval' % (getCmdLineOptions(state),speed,subject)
         cmd = './gfpf_tester %s %s %d ' % (tem,rt,id)
         cmds.append(cmd)
-        runbubi(cmd)
+        rungfpftester(cmd)
 
 if __name__ == '__main__' :
 
