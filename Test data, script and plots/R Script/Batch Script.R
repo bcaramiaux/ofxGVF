@@ -23,7 +23,7 @@ par(mfrow=c(3,1),mar=c(2,8,4,2)+0.1)
  title1 <- sprintf("RT = %d Input Gesture = %s",rt,gid)
  plot(0,type="l",ylim=c(min(v),max(v)),xlim=c(0,length(tot)),main=title1)
     legend("bottomright", c("t1","t2","t3","user"), cex=0.8, col=c("red","pink","green","blue"), 
-    lty=1:3, lwd=2, bty="n");  lines(g1,lty=1,col="green")
+    lty=1:3, lwd=2, bty="n");  
    lines(g2,lty=1,col="red")
    lines(g3,lty=1,col="pink")
    lines(g1y,lty=1,col="green")
