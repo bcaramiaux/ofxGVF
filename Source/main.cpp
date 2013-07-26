@@ -134,7 +134,7 @@ static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
 {
     post("\ngfpf - realtime adaptive gesture recognition (11-04-2013)");
     post("(C) Baptiste Caramiaux, Ircam, Goldsmiths");
-    post("pd object port - v 1.0.8 Tom Rushmore, Goldsmiths");
+    post("pd object port - v 1.0.9 Tom Rushmore, Goldsmiths");
 
     t_gfpf *x = (t_gfpf *)pd_new(gfpf_class);
     
@@ -443,7 +443,7 @@ static void gfpf_std(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
         stdnew = 0.1;
     x->bubi->setIcovSingleValue(1/(stdnew*stdnew));
     
-    gfpf_auto(x);
+    //gfpf_auto(x);
 
 }
 

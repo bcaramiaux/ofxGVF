@@ -31,7 +31,7 @@ public:
     void gfpf_rt         (int argc, int *argv);
     void gfpf_means      (int argc, int *argv);
     void gfpf_ranges     (int argc, int *argv);
-    void gfpf_adaptspeed (int argc, int *argv);
+    void gfpf_adaptspeed (int argc, float *argv);
 
 private:
     int selected_gesture;

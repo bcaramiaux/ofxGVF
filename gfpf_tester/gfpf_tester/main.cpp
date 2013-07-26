@@ -22,15 +22,20 @@ int main(int argc, const char * argv[])
     }
     const char *type = argv[1];
     int process_type = 0;
-    if(!strcmp(type,"batch") || !strcmp(type,"single"))
-    {
-        std::cerr << "Usage : string type {tem,user},int resamplThreshold, int testGestureIdx" << std::endl;
-    } else {
-        if(!strcmp(type, "tem"))
+//    if(!strcmp(type,"tem") || !strcmp(type,"user"))
+//    {
+//        std::cerr << "Usage : string type {tem,user},int resamplThreshold, int testGestureIdx" << std::endl;
+//    } else {
+        if(!strcmp(type, "tem")){
             process_type = 0;
-        else
+            printf("\n\nFICL\n\n");
+        }
+        else{
             process_type = 1;
-    }
+            printf("\n\ngolly\n\n");
+        
+        }
+   // }
     
     
     int rt = atoi(argv[2]);

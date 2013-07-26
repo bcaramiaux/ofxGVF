@@ -14,6 +14,8 @@
 #define OPTIMISD 0 
 #define VDSPOPTM 0
 
+#define GESTLEARNT 8
+
 // note:
 // code is a bit dirty due to the multivar stuff (i.e. when multivar is true, use a different covariance
 // matrix for each point, otherwise use the value icov_single); could be rewritten better with a class
@@ -115,6 +117,10 @@ public:
     filewriter *w1,*w2,*w3,*p1,*p2,*p3;
     filewriter *ph1,*ph2,*ph3,*rs;
     filewriter *phase,*phase2,*phase3;
+    
+    filewriter **wAry;
+    filewriter **gAryx,**gAryy;
+    
     
 	
 };

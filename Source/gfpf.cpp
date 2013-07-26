@@ -82,6 +82,30 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     p1 = new filewriter("p1",folder_num);
     p2 = new filewriter("p2",folder_num);
     p3 = new filewriter("p3",folder_num);
+    
+    
+    char buf[10];
+    std::string wpref = "w";
+    std::string gpref = "g";
+    std::string gprefy = "gy";
+    wAry = new filewriter*[8];
+    gAryx = new filewriter*[8];
+    gAryy = new filewriter*[8];
+
+    for(int i = 0; i < GESTLEARNT;i++){
+        sprintf(buf, "%d",i+1);
+        std::string filen(wpref);
+        filen.append(buf);
+        wAry[i] = new filewriter(filen.c_str(),folder_num);
+        std::string fileng(gpref);
+        fileng.append(buf);
+        gAryx[i] = new filewriter(fileng.c_str(),folder_num);
+        std::string filengy(gprefy);
+        filengy.append(buf);
+        gAryy[i] = new filewriter(filengy.c_str(),folder_num);
+    }
+    
+    
 
     ph1 = new filewriter("ph1",folder_num);
     ph2 = new filewriter("ph2",folder_num);
@@ -118,6 +142,8 @@ gfpf::~gfpf()
     delete phase2;
     delete phase3;
     
+    // need to delete wAry and gAry
+    
 #if !BOOSTLIB
     if(normdist != NULL)
         delete (normdist);
@@ -144,36 +170,58 @@ void gfpf::addTemplate()
 void gfpf::writeGesturesToFile()
 {
 
-    if(g1->size() == 0)
+//    if(g1->size() == 0)
+//    {
+//        for(int i=0; i<R_single[0].size(); i++){
+//            g1->addValue(R_single[0][i][0]);
+//            g1y->addValue(R_single[0][i][1]);
+//        }
+//        g1->writeFile();
+//        g1y->writeFile();
+//    }
+//    if(g2->size() == 0)
+//    {
+//        for(int i=0; i<R_single[1].size(); i++){
+//            g2->addValue(R_single[1][i][0]);
+//            g2y->addValue(R_single[1][i][1]);
+//
+//        }
+//        g2->writeFile();
+//        g2y->writeFile();
+//
+//    }
+//    if(g3->size() == 0)
+//    {
+//        for(int i=0; i<R_single[2].size(); i++){
+//            g3->addValue(R_single[2][i][0]);
+//            g3y->addValue(R_single[2][i][1]);
+//        }
+//        g3->writeFile();
+//        g3y->writeFile();
+//        
+//    }
+//    
+    
+    
+    
+    for(int i = 0 ; i < GESTLEARNT; i++)
     {
-        for(int i=0; i<R_single[0].size(); i++){
-            g1->addValue(R_single[0][i][0]);
-            g1y->addValue(R_single[0][i][1]);
-        }
-        g1->writeFile();
-        g1y->writeFile();
-    }
-    if(g2->size() == 0)
-    {
-        for(int i=0; i<R_single[1].size(); i++){
-            g2->addValue(R_single[1][i][0]);
-            g2y->addValue(R_single[1][i][1]);
-
-        }
-        g2->writeFile();
-        g2y->writeFile();
-
-    }
-    if(g3->size() == 0)
-    {
-        for(int i=0; i<R_single[2].size(); i++){
-            g3->addValue(R_single[2][i][0]);
-            g3y->addValue(R_single[2][i][1]);
-        }
-        g3->writeFile();
-        g3y->writeFile();
+        wAry[i]->writeFile();
+        wAry[i]->resetValues();
         
+        if(gAryx[i]->size() == 0)
+        {
+            for(int j=0; j<R_single[i].size(); j++)
+            {
+                gAryx[i]->addValue(R_single[i][j][0]);
+                gAryy[i]->addValue(R_single[i][j][1]);
+            }
+            gAryx[i]->writeFile();
+            gAryy[i]->writeFile();
+        }
     }
+    
+    
    
     ug->writeFile();
     ugy->writeFile();
@@ -194,6 +242,7 @@ void gfpf::writeGesturesToFile()
     tot->resetValues();
     w1->resetValues();
     w2->resetValues();
+    w3->resetValues();
     p1->resetValues();
     p2->resetValues();
     p3->resetValues();
@@ -217,8 +266,6 @@ void gfpf::fillTemplate(int id, vector<float> data)
 		gestureLengths[id]=gestureLengths[id]+1;
 	}
 }
-
-
 
 // spreadParticles
 //
@@ -395,22 +442,22 @@ void gfpf::particleFilter(vector<float> obs)
 #endif
     
 
-    for (int n=0; n<particle_before_0.size(); n++)
-    {
-        // Spread particles using a uniform distribution
-        for(int i = 0; i < pdim; i++)
-                X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-        w(particle_before_0[n]) = 1.0/(ns);
-        g(particle_before_0[n]) = n % (lrndGstr+1);
-    }
-    for (int n=0; n<particle_after_1.size(); n++)
-    {
-        // Spread particles using a uniform distribution
-        for(int i = 0; i < pdim; i++)
-            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-        w(particle_after_1[n]) = 1.0/(ns);
-        g(particle_after_1[n]) = n % (lrndGstr+1);
-    }
+//    for (int n=0; n<particle_before_0.size(); n++)
+//    {
+//        // Spread particles using a uniform distribution
+//        for(int i = 0; i < pdim; i++)
+//                X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
+//        w(particle_before_0[n]) = 1.0/(ns);
+//        g(particle_before_0[n]) = n % (lrndGstr+1);
+//    }
+//    for (int n=0; n<particle_after_1.size(); n++)
+//    {
+//        // Spread particles using a uniform distribution
+//        for(int i = 0; i < pdim; i++)
+//            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
+//        w(particle_after_1[n]) = 1.0/(ns);
+//        g(particle_after_1[n]) = n % (lrndGstr+1);
+//    }
     
 	// normalization - resampling
 	w /= w.sum();
@@ -460,6 +507,16 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
     {
+        
+        if(g(n)==0)
+            activea++;
+        if(g(n)==1)
+            activeb++;
+        if(g(n)==2)
+            activec++;
+        
+        
+
         // Move the particle
         // Position respects a first order dynamic: p = p + v/L
 		//X(n,0) = X(n,0) + (*rndnorm)() * sigt(0) + X(n,1)/gestureLengths[g(n)];
@@ -517,7 +574,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
             {
                 w(n)   *= exp(-dist);
                 logW(n) += -dist;
-                abs_weights[g(n)] += exp(-dist);
+               // abs_weights[g(n)] += exp(-dist);
             }
             else            // Student's distribution
             {
@@ -525,23 +582,23 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
                 logW(n) += (-nu/2-1)*log(dist/nu + 1);
             }
             //abs_weights[g(n)] += w(n);
-            if(g(n)==0)
-                activea++;
-            if(g(n)==1)
-                activeb++;
-            if(g(n)==2)
-                activec++;
+           
         }
     }
+    
     p1->addValue(activea);
     p2->addValue(activeb);
     p3->addValue(activec);
-    //w1->addValue(gprob(0,0));
-    //w2->addValue(gprob(1,0));
     
-    w1->addValue(abs_weights[0]);
-    w2->addValue(abs_weights[1]);
-    w3->addValue(abs_weights[2]);
+//    p1->addValue(particle_before_0.size());
+//    p2->addValue(particle_after_1.size());
+//    p3->addValue(activec);
+
+   
+
+ //   w1->addValue(abs_weights[0]);
+  //  w2->addValue(abs_weights[1]);
+//w3->addValue(abs_weights[2]);
     
     // TODO: here we should compute the "absolute likelihood" as log(w) before normalization
     
@@ -574,18 +631,27 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 //        g(particle_after_1[n]) = n % (lrndGstr+1);
 //    }
     
+    for(int i=0;i<ns;i++)
+        abs_weights[g(i)]+=w(i);
     
+    for(int i=0;i<GESTLEARNT;i++)
+    {
+        wAry[i]->addValue(abs_weights[i]);
+    }
+    w1->addValue(abs_weights[0]);
+    w2->addValue(abs_weights[1]);
+    w3->addValue(abs_weights[2]);
     
 	w /= w.sum();
 	float neff = 1./w.dot(w);
     
-    double totProb = abs_weights[0]+abs_weights[1]+abs_weights[2];
+    //double totProb = inferTotalGestureActivity();
+    double totProb = 0.0;
     double probThresh = 0.8;
     if(totProb < probThresh)
     {
         // code to redistribute particles
     }
-    
     
 	if(neff<resampling_threshold)
     {
@@ -598,8 +664,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     
     particle_before_0.clear();
     particle_after_1.clear();
-    
-    //ex.kill();
+  
 }
 
 // inferGestureActivity
@@ -618,12 +683,7 @@ float gfpf::inferTotalGestureActivity()
     float total = 0.0;
     for(int i = 0 ; i < abs_weights.size(); i++)
     {
-//        if(logW(i) != INFINITY && logW(i) != -INFINITY)
-//        {
-//            total += abs(logW(i));
-//        }
         total += abs_weights[i];
-
     }
     tot->addValue(total);
     return total;
@@ -662,9 +722,12 @@ void gfpf::resampleAccordingToWeights()
             i++;
         }
         X.row(j) = oldX.row(i);
-        g(j) = oldG(i);
+        // need to change to oldG(j)
+        g(j) = oldG(j);
         logW(j) = oldLogW(i);
     }
+
+
 }
 
 
@@ -700,6 +763,10 @@ VectorXf gfpf::getGestureConditionnalProbabilities()
 	gp.setConstant(0);
 	for(int n = 0; n < ns; n++)
 		gp(g(n)) += w(n);
+//    w1->addValue(gp(0));
+//    w2->addValue(gp(1));
+//    w3->addValue(gp(2));
+
 	return gp;
 }
 
@@ -731,6 +798,8 @@ VectorXf gfpf::getGestureLikelihoods()
         else
             gp(n) = gp(n)/numg(n);
     }
+    
+
 	return gp;
 }
 
@@ -804,7 +873,8 @@ MatrixXf gfpf::getEstimatedStatus()
     else
         phase3->addValue(0);
    
-	
+    
+
 	return es;
 }
 

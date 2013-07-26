@@ -1,64 +1,43 @@
 plotter <- function(gid,rt){
 par(mfrow=c(3,1),mar=c(2,8,4,2)+0.1)
-ngest <- 8
-
-gxlab <- "g"
-gylab <- "gy"
-wlav <- "w"
-suf <- ".txt"
-gx <- vector("list",ngest)
-gy <- vector("list",ngest)
-w  <- vector("list",ngest)
-
-for(i in 1:ngest){
-    filen <- paste(gxlab,as.character(i),sep="")
-    filen <- paste(filen,suf,sep="")
-    gx[[i]] <- scan(filen);
-    filen <- paste(gylab,as.character(i),sep="")
-    filen <- paste(filen,suf,sep="")
-    gy[[i]] <- scan(filen);
-    filen <- paste(wlav,as.character(i),sep="")
-    filen <- paste(filen,suf,sep="")
-    w[[i]] <- scan(filen)
-}
-
+ g1 <- scan("g1.txt")
+ g2 <- scan("g2.txt")
+ g3 <- scan("g3.txt")
+ g1y <- scan("g1y.txt")
+ g2y <- scan("g2y.txt")
+ g3y <- scan("g3y.txt")
  p1 <- scan("p1.txt")
  p2 <- scan("p2.txt")
  p3 <- scan("p3.txt")
  tot <- scan("tot.txt")
  ug <- scan("ug.txt")
  ugy<- scan("ugy.txt")
- 
+ w1 <- scan("w1.txt")
+ w2 <- scan("w2.txt")
+ w3 <- scan("w3.txt")
  rs <- scan("rs.txt")
  phase<-scan("phase.txt")
  phase2<-scan("phase2.txt")
  phase3<-scan("phase3.txt")
- v <- max(sapply(c(gx,gy,ug,ugy),max))
- vm <- min(sapply(c(gx,gy,ug,ugy),min))
-
- 
- cols <- c("green","red","pink","orange","darkred","deepskyblue","red","yellow","violetred2")
-
+ v <- c(g1,g2,g3,g1y,g2y,g3y,ug,ugy)
  title1 <- sprintf("RT = %d Input Gesture = %s",rt,gid)
- 
- plot(0,type="l",ylim=c(vm,v),xlim=c(0,length(tot)),main=title1)
- legend("bottomright", c("t1","t2","t3","user"), cex=0.8, col=c("red","pink","green","blue"), 
+ plot(0,type="l",ylim=c(min(v),max(v)),xlim=c(0,length(tot)),main=title1)
+    legend("bottomright", c("t1","t2","t3","user"), cex=0.8, col=c("red","pink","green","blue"), 
     lty=1:3, lwd=2, bty="n");
-    
-    for(i in 1:ngest){
-        lines(gx[[i]],lty=1,col=cols[i])
-        lines(gy[[i]],lty=1,col=cols[i])
-    }
+    lines(g1,lty=1,col="green")
+   lines(g2,lty=1,col="red")
+   lines(g3,lty=1,col="pink")
+   lines(g1y,lty=1,col="green")
+   lines(g2y,lty=1,col="red")
+   lines(g3y,lty=1,col="pink")
    lines(ug,lty=3,col="blue")
    lines(ugy,lty=3,col="blue")
-
  plot(tot/2000,type="l",ylim=c(-0.2,1),xlim=c(0,length(tot)),main="indv Prob",col="black",ylab="")
- legend("topright", c("t1","t2","t3","total"), cex=0.8, col=c("red","pink","green","black"), lty=1:3, lwd=2, bty="n");  
-
- for(i in 1:ngest){
-        lines(w[[i]],lty=1,col=cols[i])
-    }
-
+   legend("topright", c("t1","t2","t3","total"), cex=0.8, col=c("red","pink","green","black"), 
+    lty=1:3, lwd=2, bty="n");  
+   lines(w1,lty=1,col="green")
+   lines(w2,lty=1,col="red")
+   lines(w3,lty=1,col="pink")
  plot(0,type="l",ylim=c(-0.2,1),xlim=c(0,length(tot)),main="phase")
    points((rs/9)*1-0.3,lty=5,col="orange",lwd=1,pch=20)>   lines(phase,lty=5,col="green")
    lines(phase2,lty=5,col="red")

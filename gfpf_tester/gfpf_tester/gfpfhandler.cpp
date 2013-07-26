@@ -24,8 +24,8 @@ gfpfhandler::gfpfhandler(int s_rt,int s_gt)
     
     Rtpg = s_rt;
     rt = s_rt;
-    if(s_gt <= 0 || s_gt > 5){
-        printf("setGesture must be integer between 1-45inclusive\n");
+    if(s_gt <= 0 || s_gt > 15){
+        printf("setGesture must be integer between 1-10inclusive\n");
         printf("setGesture defaulting to 1\n");
         selected_gesture = 1;
     } else {
@@ -59,14 +59,24 @@ gfpfhandler::~gfpfhandler()
 void gfpfhandler::teach(int p_type)
 {
     printf("Running teach()\n");
+    
+    
+    float* ada = new float[4];
+    ada[0] = 0.00005;
+    ada[1] = 0.0035;
+    ada[2] = 0.0005;
+    ada[3] = 0.0;
+    gfpf_clear(0,0);
+    gfpf_adaptspeed(4, ada);
+    
+    
    // gfpf_rt(<#int argc#>, <#int *argv#>)
     gfpf_restart(0, 0);
     gfpf_std(0,0);
-    int num_templates = 3;
+    int num_templates = 8;
     gfpf_clear(0,0);
     std::string dir = "/Users/thomasrushmore/EAVI/PD/gfpflibrary/test gestures/tem";
     std::string dirg = "/Users/thomasrushmore/EAVI/PD/gfpflibrary/test gestures/g";
-    
     
     for(int i = 0 ; i < num_templates; i++)
     {
@@ -85,7 +95,6 @@ void gfpfhandler::teach(int p_type)
         float b;
         float *ar = new float[2];
         
-            
         while(true){
             state_summary >> a;
             state_summary >> b;
@@ -117,6 +126,7 @@ void gfpfhandler::teach(int p_type)
     sprintf(buf, "%d",gesture);
     state_file.append(buf);
     state_file.append(".txt");
+    printf("file : %s\n",state_file.c_str());
     //post(state_file.c_str());
     std::ifstream state_summary;
     state_summary.open(state_file.c_str());
@@ -257,9 +267,18 @@ void gfpfhandler::gfpf_data(int argc, float *argv)
         // ------- Fill template
         gf->infer(vect);
         // output recognition
-        Eigen::MatrixXf statu = gf->getEstimatedStatus();
+        //Eigen::MatrixXf statu = gf->getEstimatedStatus();
         //ggetGestureProbabilities();
+        //Eigen::VectorXf gprob = gf->getGestureConditionnalProbabilities();
+
         float tot = gf->inferTotalGestureActivity();
+        
+        
+        
+        gf->getEstimatedStatus();
+        gf->getGestureConditionnalProbabilities();
+        gf->getGestureLikelihoods();
+
 
 //        int *outAtoms = new int[statu.rows()];
 //        // de-refed. may be wrong.
@@ -335,7 +354,7 @@ void gfpfhandler::gfpf_data(int argc, float *argv)
 
  void gfpfhandler::gfpf_std(int argc, float *argv)
 {
-    float stdnew = 0.0;
+    float stdnew = 0.2;
     if (stdnew == 0.0)
         stdnew = 0.1;
     gf->setIcovSingleValue(1/(stdnew*stdnew));
@@ -362,13 +381,18 @@ void gfpfhandler::gfpf_ranges(int argc, int *argv)
     rpvrs << *(argv), *(argv + 1), *(argv + 2), *(argv + 3);
 }
 
-void gfpfhandler::gfpf_adaptspeed(int argc, int *argv)
+void gfpfhandler::gfpf_adaptspeed(int argc, float *argv)
 {
     std::vector<float> as;
-    as.push_back(*(argv));
-    as.push_back(*(argv + 1));
-    as.push_back(*(argv + 2));
-    as.push_back(*(argv + 3));
+//    as.push_back(*(argv));
+//    as.push_back(*(argv + 1));
+//    as.push_back(*(argv + 2));
+//    as.push_back(*(argv + 3));
+    as.push_back(0.00005);
+    as.push_back(0.0035);
+    as.push_back(0.0005);
+    as.push_back(0.0);
+
     
     gf->setAdaptSpeed(as);
 }
