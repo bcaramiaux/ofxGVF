@@ -28,15 +28,13 @@ for(i in 1:ngest){
  tot <- scan("tot.txt")
  ug <- scan("ug.txt")
  ugy<- scan("ugy.txt")
- 
  rs <- scan("rs.txt")
  phase<-scan("phase.txt")
  phase2<-scan("phase2.txt")
  phase3<-scan("phase3.txt")
+ 
  v <- max(sapply(c(gx,gy,ug,ugy),max))
  vm <- min(sapply(c(gx,gy,ug,ugy),min))
-
- 
  cols <- c("green","red","pink","orange","darkred","deepskyblue","red","yellow","violetred2")
 
  title1 <- sprintf("RT = %d Input Gesture = %s",rt,gid)
@@ -65,14 +63,10 @@ for(i in 1:ngest){
    lines(phase3,lty=5,col="pink")
 }
 
-
-
-
-
 batchplotter <- function(num){
 dag <-  "/Users/thomasrushmore/Desktop/data/run"
 pics <- "~/Desktop/data/screenshots/"
-rta <- c(0,500,100)
+rta <- c(0,10,20)
 for(i in 1:num){
 for(j in 1:3){
 
