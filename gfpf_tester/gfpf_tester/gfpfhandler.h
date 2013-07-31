@@ -16,7 +16,7 @@ enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 class gfpfhandler{
 public:
-    gfpfhandler(int s_rt,int s_gt);
+    gfpfhandler(int s_rt,int s_gt,float s_std);
     ~gfpfhandler();
     
     void teach(int p_type);
@@ -27,13 +27,14 @@ public:
     void gfpf_data       (int argc, float *argv);
     void gfpf_printme    (int argc, int *argv);
     void gfpf_restart    (int argc, int *argv);
-    void gfpf_std        (int argc, float *argv);
+    void gfpf_std        (float val);
     void gfpf_rt         (int argc, int *argv);
     void gfpf_means      (int argc, int *argv);
     void gfpf_ranges     (int argc, int *argv);
     void gfpf_adaptspeed (int argc, float *argv);
 
 private:
+    float settingstd;
     int selected_gesture;
     gfpf *gf;
     float sp, sv, sr, ss, so;
@@ -51,6 +52,7 @@ private:
     std::vector<float> vect_0_l;
     std::vector<float> vect_0_d;
    
+    
 
 };
 #endif /* defined(__graphicsExample__gfpfhandler__) */

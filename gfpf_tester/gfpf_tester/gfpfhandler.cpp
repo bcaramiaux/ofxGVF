@@ -8,7 +8,7 @@
 
 #include "gfpfhandler.h"
 
-gfpfhandler::gfpfhandler(int s_rt,int s_gt)
+gfpfhandler::gfpfhandler(int s_rt,int s_gt,float s_std)
 {
     sp = 0.0001;
     sv = 0.01;
@@ -21,10 +21,11 @@ gfpfhandler::gfpfhandler(int s_rt,int s_gt)
     ns = Nspg;
     Rtpg = 1000;
     rt = Rtpg;
-    
-    Rtpg = s_rt;
-    rt = s_rt;
-    if(s_gt <= 0 || s_gt > 15){
+    int fixedrt = 500;
+    Rtpg = fixedrt;
+    rt = fixedrt;
+    settingstd = s_std;
+    if(s_gt <= 0 || s_gt > 16){
         printf("setGesture must be integer between 1-10inclusive\n");
         printf("setGesture defaulting to 1\n");
         selected_gesture = 1;
@@ -59,8 +60,7 @@ gfpfhandler::~gfpfhandler()
 void gfpfhandler::teach(int p_type)
 {
     printf("Running teach()\n");
-    
-    
+    gf->testSetup(selected_gesture);
     float* ada = new float[4];
     ada[0] = 0.00005;
     ada[1] = 0.0035;
@@ -72,7 +72,7 @@ void gfpfhandler::teach(int p_type)
     
    // gfpf_rt(<#int argc#>, <#int *argv#>)
     gfpf_restart(0, 0);
-    gfpf_std(0,0);
+    gfpf_std(settingstd);
     int num_templates = 8;
     gfpf_clear(0,0);
     std::string dir = "/Users/thomasrushmore/EAVI/PD/gfpflibrary/test gestures/tem";
@@ -122,7 +122,10 @@ void gfpfhandler::teach(int p_type)
     
     char buf[10];
     int gesture = selected_gesture;
-    
+    if(gesture < 10 && p_type == 1)
+    {
+        state_file.append("0");
+    }
     sprintf(buf, "%d",gesture);
     state_file.append(buf);
     state_file.append(".txt");
@@ -251,6 +254,8 @@ void gfpfhandler::gfpf_data(int argc, float *argv)
                 }
                 // keep track of the first point
                 vect_0_d = vect;
+                gf->setInitCoord(vect_0_d);
+
                 restarted_d=0;
             }
             for (int k=0; k<argc; k++){
@@ -352,9 +357,9 @@ void gfpfhandler::gfpf_data(int argc, float *argv)
     }
 }
 
- void gfpfhandler::gfpf_std(int argc, float *argv)
+ void gfpfhandler::gfpf_std(float val)
 {
-    float stdnew = 0.2;
+    float stdnew = val;
     if (stdnew == 0.0)
         stdnew = 0.1;
     gf->setIcovSingleValue(1/(stdnew*stdnew));

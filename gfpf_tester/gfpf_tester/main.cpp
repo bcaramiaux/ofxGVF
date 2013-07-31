@@ -15,9 +15,9 @@
 
 int main(int argc, const char * argv[])
 {
-    if(argc <= 3)
+    if(argc <= 4)
     {
-        std::cerr << "Usage : string type {tem,user},int resamplThreshold, int testGestureIdx" << std::endl;
+        std::cerr << "Usage : string type {tem,user},int resamplThreshold, int testGestureIdx, float std" << std::endl;
         return 1;
     }
     const char *type = argv[1];
@@ -43,10 +43,16 @@ int main(int argc, const char * argv[])
         std::cerr << "RT must be less than #particles (default:2000) " << std::endl;
         return 1;
     }
+    float std = atof(argv[4]);
+    if(std < 0.0 || std > 0.5)
+    {
+        std::cerr << "STD must be in range 0.0 < std <= 0.5 " << std::endl;
+        return 1;
+    }
     // sim user-input gesture
     int gt = atoi(argv[3]);
 
-    gfpfhandler gfpfhandl(rt,gt);
+    gfpfhandler gfpfhandl(rt,gt,std);
 
     gfpfhandl.teach(process_type);
     

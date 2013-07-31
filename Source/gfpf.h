@@ -59,6 +59,7 @@ private:
     // private functions
     void initweights();                         // initialize weights
     
+    
 	
 public:
 	// constructor of the gfpf instance
@@ -117,12 +118,42 @@ public:
     filewriter *w1,*w2,*w3,*p1,*p2,*p3;
     filewriter *ph1,*ph2,*ph3,*rs;
     filewriter *phase,*phase2,*phase3;
+    filewriter *switcher;
     
     filewriter **wAry;
     filewriter **gAryx,**gAryy;
     
+    filewriter **pAry;
+    int pValArray[GESTLEARNT];
     
+    filewriter **phaseAry;
+    filewriter *curGest;
+    int currentGest;
+    bool compa;
+    float old_max;
+    Eigen::VectorXf meanPVRScopy;
+    Eigen::VectorXf rangePVRScopy;
 	
+    std::vector<float> origin;
+    std::vector<float> *offset;
+    bool new_gest;
+    void setInitCoord(std::vector<float> s_origin);
+    
+    
+    void testSetup(int ge);
+    void testIt(int cur_dom_gest);
+    int testGestureIdx;
+    struct costTest{
+        int idx;
+        std::pair<int,int> transition;
+        int tranPoint;
+    };
+    int testIdx;
+    int realGest;
+    costTest gest;
+    std::vector<int> testScore;
+    filewriter *testWrite;
+
 };
 
 #endif
