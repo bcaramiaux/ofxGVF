@@ -129,20 +129,20 @@ public:
     std::vector<float> particle_before_0;
     std::vector<float> particle_after_1;
 
-    filewriter *g1,*g2,*g3,*g1y,*g2y,*g3y,*ug,*ugy,*tot;
-    filewriter *w1,*w2,*w3,*p1,*p2,*p3;
-    filewriter *ph1,*ph2,*ph3,*rs;
-    filewriter *phase,*phase2,*phase3;
-    filewriter *switcher;
+//    filewriter *g1,*g2,*g3,*g1y,*g2y,*g3y,*ug,*ugy,*tot;
+//    filewriter *w1,*w2,*w3,*p1,*p2,*p3;
+//    filewriter *ph1,*ph2,*ph3,*rs;
+//    filewriter *phase,*phase2,*phase3;
+//    filewriter *switcher;
+//    
+//    filewriter **wAry;
+//    filewriter **gAryx,**gAryy;
+//    
+//    filewriter **pAry;
+//    int pValArray[GESTLEARNT];
     
-    filewriter **wAry;
-    filewriter **gAryx,**gAryy;
-    
-    filewriter **pAry;
-    int pValArray[GESTLEARNT];
-    
-    filewriter **phaseAry;
-    filewriter *curGest;
+//    filewriter **phaseAry;
+//    filewriter *curGest;
     int currentGest;
     bool compa;
     float old_max;
@@ -167,7 +167,7 @@ public:
     int realGest;
     costTest gest;
     std::vector<int> testScore;
-    filewriter *testWrite;
+    //filewriter *testWrite;
 
 };
 

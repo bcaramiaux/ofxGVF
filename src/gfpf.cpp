@@ -64,112 +64,17 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     
     abs_weights = vector<float>();
     
-    filewriter *dirscan = new filewriter("test",1);
-    int folder_num = dirscan->scanDirectory();
-    
-    g1 = new filewriter("g1",folder_num);
-    g2 = new filewriter("g2",folder_num);
-    g3 = new filewriter("g3",folder_num);
-    g1y = new filewriter("g1y",folder_num);
-    g2y = new filewriter("g2y",folder_num);
-    g3y = new filewriter("g3y",folder_num);
-    
-    tot = new filewriter("tot",folder_num);
-    ug = new filewriter("ug",folder_num);
-    ugy = new filewriter("ugy",folder_num);
-//    w1 = new filewriter("w1",folder_num);
-//    w2 = new filewriter("w2",folder_num);
-//    w3 = new filewriter("w3",folder_num);
-    p1 = new filewriter("p1",folder_num);
-    p2 = new filewriter("p2",folder_num);
-    p3 = new filewriter("p3",folder_num);
-    curGest = new filewriter("gest",folder_num);
+
     currentGest = 0;
-    
-    
-    
-    char buf[10];
-    std::string wpref = "w";
-    std::string gpref = "g";
-    std::string gprefy = "gy";
-    std::string ppref = "pA";
-    std::string phpref ="pH";
-    std::string zeroe = "0";
-    wAry = new filewriter*[GESTLEARNT];
-    gAryx = new filewriter*[GESTLEARNT];
-    gAryy = new filewriter*[GESTLEARNT];
-    pAry  = new filewriter*[GESTLEARNT];
-    phaseAry = new filewriter*[GESTLEARNT];
+
     
     new_gest = false;
     offset = new std::vector<float>(2);
-    
-    
-
-    for(int i = 0; i < GESTLEARNT;i++){
-        sprintf(buf, "%d",i+1);
-        std::string filen(wpref);
-        filen.append(buf);
-        wAry[i] = new filewriter(filen.c_str(),folder_num);
-        std::string fileng(gpref);
-        fileng.append(buf);
-        gAryx[i] = new filewriter(fileng.c_str(),folder_num);
-        std::string filengy(gprefy);
-        filengy.append(buf);
-        gAryy[i] = new filewriter(filengy.c_str(),folder_num);
-        std::string filenp(ppref);
-        filenp.append(buf);
-        pAry[i] = new filewriter(filenp.c_str(),folder_num);
-        std::string filenph(phpref);
-        filenph.append(buf);
-        phaseAry[i] = new filewriter(filenph.c_str(),folder_num);
-    }
-    
-    
-
-    ph1 = new filewriter("ph1",folder_num);
-    ph2 = new filewriter("ph2",folder_num);
-    ph3 = new filewriter("ph3",folder_num);
-
-    rs  = new filewriter("rs",folder_num);
-    phase= new filewriter("phase",folder_num);
-    phase2= new filewriter("phase2",folder_num);
-    phase3= new filewriter("phase3",folder_num);
-    
-    switcher = new filewriter("switcher",folder_num);
-    testWrite = new filewriter("test",folder_num);
-
-    compa = false;
-    old_max = 0;
-    
-
-    
+        
 }
 
 gfpf::~gfpf()
 {
-    delete g1;
-    delete g2;
-    delete g3;
-    delete g1y;
-    delete g2y;
-    delete g3y;
-    delete tot;
-    delete ug;
-    delete ugy;
-    delete w1;
-    delete w2;
-    delete w3;
-    delete p1;
-    delete p2;
-    delete p3;
-    delete ph1;
-    delete ph2;
-    delete ph3;
-    delete phase;
-    delete phase2;
-    delete phase3;
-    delete switcher;
     
     // need to delete wAry and gAry
     
@@ -238,113 +143,6 @@ void gfpf::addTemplate()
     gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
     abs_weights.resize(lrndGstr+1);
 
-}
-
-void gfpf::writeGesturesToFile()
-{
-
-//    if(g1->size() == 0)
-//    {
-//        for(int i=0; i<R_single[0].size(); i++){
-//            g1->addValue(R_single[0][i][0]);
-//            g1y->addValue(R_single[0][i][1]);
-//        }
-//        g1->writeFile();
-//        g1y->writeFile();
-//    }
-//    if(g2->size() == 0)
-//    {
-//        for(int i=0; i<R_single[1].size(); i++){
-//            g2->addValue(R_single[1][i][0]);
-//            g2y->addValue(R_single[1][i][1]);
-//
-//        }
-//        g2->writeFile();
-//        g2y->writeFile();
-//
-//    }
-//    if(g3->size() == 0)
-//    {
-//        for(int i=0; i<R_single[2].size(); i++){
-//            g3->addValue(R_single[2][i][0]);
-//            g3y->addValue(R_single[2][i][1]);
-//        }
-//        g3->writeFile();
-//        g3y->writeFile();
-//        
-//    }
-//    
-    
-    
-    
-    for(int i = 0 ; i < GESTLEARNT; i++)
-    {
-        wAry[i]->writeFile();
-        wAry[i]->resetValues();
-        
-        pAry[i]->writeFile();
-        pAry[i]->resetValues();
-        
-        phaseAry[i]->writeFile();
-        phaseAry[i]->resetValues();
-        
-        if(gAryx[i]->size() == 0)
-        {
-            for(int j=0; j<R_single[i].size(); j++)
-            {
-                gAryx[i]->addValue(R_single[i][j][0]);
-                gAryy[i]->addValue(R_single[i][j][1]);
-            }
-            gAryx[i]->writeFile();
-            gAryy[i]->writeFile();
-        }
-    }
-    
-    curGest->writeFile();
-    curGest->resetValues();
-   
-    ug->writeFile();
-    ugy->writeFile();
-    tot->writeFile();
-//    w1->writeFile();
-//    w2->writeFile();
-//    w3->writeFile();
-    p1->writeFile();
-    p2->writeFile();
-    p3->writeFile();
-    rs->writeFile();
-    phase->writeFile();
-    phase2->writeFile();
-    phase3->writeFile();
-    switcher->writeFile();
-    
-    ug->resetValues();
-    ugy->resetValues();
-    tot->resetValues();
-//    w1->resetValues();
-//    w2->resetValues();
-//    w3->resetValues();
-    p1->resetValues();
-    p2->resetValues();
-    p3->resetValues();
-    rs->resetValues();
-    phase->resetValues();
-    phase3->resetValues();
-    phase2->resetValues();
-    switcher->resetValues();
-    
-    
-    float finalscore = 0.0;
-    for(int i = 0; i < testScore.size(); i++)
-    {
-        finalscore += testScore[i];
-    }
-    finalscore /= testScore.size();
-    
-    testWrite->addValue(finalscore);
-    testWrite->writeFile();
-    testWrite->resetValues();
-    
 }
 
 // fillTemplate
@@ -584,8 +382,8 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 {
     // Number of particles
     int ns = X.rows();
-    ug->addValue(obs[0]);
-    ugy->addValue(obs[1]);
+//    ug->addValue(obs[0]);
+//    ugy->addValue(obs[1]);
 
     
 //    (*offset)[0] = obs[0]-origin[0];
@@ -615,15 +413,15 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         abs_weights[i] = 0.0;
     }
     
-    for(int i=0; i < GESTLEARNT; i++)
-        pValArray[i] = 0;
+//    for(int i=0; i < GESTLEARNT; i++)
+//        pValArray[i] = 0;
     
 
     //executiontimer ex("loop");
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
     {
-        (pValArray[g(n)])++;
+//        (pValArray[g(n)])++;
         
         // Move the particle
         // Position respects a first order dynamic: p = p + v/L
@@ -694,8 +492,8 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         }
     }
     
-    for(int i=0; i < GESTLEARNT;i++)
-        pAry[i]->addValue(pValArray[i]);
+//    for(int i=0; i < GESTLEARNT;i++)
+//        pAry[i]->addValue(pValArray[i]);
     
      // TODO: here we should compute the "absolute likelihood" as log(w) before normalization
     
@@ -731,10 +529,10 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     //for(int i=0;i<ns;i++)
      //   abs_weights[g(i)]+=w(i);
     
-    for(int i=0;i<GESTLEARNT;i++)
-    {
-        wAry[i]->addValue(abs_weights[i]/2000);
-    }
+//    for(int i=0;i<GESTLEARNT;i++)
+//    {
+//        wAry[i]->addValue(abs_weights[i]/2000);
+//    }
 //    w1->addValue(abs_weights[0]);
 //    w2->addValue(abs_weights[1]);
 //    w3->addValue(abs_weights[2]);
@@ -760,7 +558,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         }
     }
     testIt(currentGest);
-    curGest->addValue(currentGest);
+//    curGest->addValue(currentGest);
     
     // increase omparator to maybe 0.6
     if(maxSoFar > probThreshMin && !compa)
@@ -774,7 +572,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         // code to redistribute particles
         // looking at the offset problem here.
         
-        switcher->addValue(1);
+//        switcher->addValue(1);
         spreadParticles(meanPVRScopy, rangePVRScopy);
         new_gest = true;
         
@@ -783,7 +581,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 
         compa = false;
     } else {
-        switcher->addValue(0);
+        //switcher->addValue(0);
     }
     
     
@@ -791,9 +589,9 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     {
         resampleAccordingToWeights();
         initweights();
-        rs->addValue(1);
+        //rs->addValue(1);
     } else {
-        rs->addValue(0);
+        //rs->addValue(0);
     }
 
 
@@ -829,7 +627,7 @@ float gfpf::inferTotalGestureActivity()
     {
         total += abs_weights[i];
     }
-    tot->addValue(total);
+    //tot->addValue(total);
     return total;
 }
 
@@ -1019,30 +817,30 @@ MatrixXf gfpf::getEstimatedStatus()
 		es.block(gi,0,1,pdim) /= es(gi,pdim);
 	}
     
-    for(int i =0; i < GESTLEARNT; i++)
-    {
-        if(!isnan(es(i,0))){
-            phaseAry[i]->addValue(es(i,0));
-        } else {
-            phaseAry[i]->addValue(0);
-        }
-    }
+//    for(int i =0; i < GESTLEARNT; i++)
+//    {
+//        if(!isnan(es(i,0))){
+//            phaseAry[i]->addValue(es(i,0));
+//        } else {
+//            phaseAry[i]->addValue(0);
+//        }
+//    }
     
     
-    if(!isnan(es(0,0)))
-        phase->addValue(es(0,0));
-    else
-        phase->addValue(0);
-    
-    if(!isnan(es(1,0)))
-        phase2->addValue(es(1,0));
-    else
-        phase2->addValue(0);
-    
-    if(!isnan(es(2,0)))
-        phase3->addValue(es(2,0));
-    else
-        phase3->addValue(0);
+//    if(!isnan(es(0,0)))
+//        phase->addValue(es(0,0));
+//    else
+//        phase->addValue(0);
+//    
+//    if(!isnan(es(1,0)))
+//        phase2->addValue(es(1,0));
+//    else
+//        phase2->addValue(0);
+//    
+//    if(!isnan(es(2,0)))
+//        phase3->addValue(es(2,0));
+//    else
+//        phase3->addValue(0);
    
     
 
