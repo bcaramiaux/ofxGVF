@@ -21,20 +21,11 @@
 #include <boost/random.hpp>
 #include <tr1/random>
 #include <map>
-//#include "executiontimer.h"
-#include "filewriter.h"
-
 
 #define BOOSTLIB 0
 #define OPTIMISD 0 
 #define VDSPOPTM 0
-
 #define GESTLEARNT 8
-
-// note:
-// code is a bit dirty due to the multivar stuff (i.e. when multivar is true, use a different covariance
-// matrix for each point, otherwise use the value icov_single); could be rewritten better with a class
-// for multiple covariance inheriting from the base one (single value).
 
 class gfpf
 {
@@ -70,7 +61,7 @@ private:
     std::tr1::normal_distribution<float> *normdist;
     std::tr1::uniform_real<float> *unifdist;
 #endif
-    
+
     // private functions
     void initweights();                         // initialize weights
     
@@ -129,31 +120,15 @@ public:
     std::vector<float> particle_before_0;
     std::vector<float> particle_after_1;
 
-//    filewriter *g1,*g2,*g3,*g1y,*g2y,*g3y,*ug,*ugy,*tot;
-//    filewriter *w1,*w2,*w3,*p1,*p2,*p3;
-//    filewriter *ph1,*ph2,*ph3,*rs;
-//    filewriter *phase,*phase2,*phase3;
-//    filewriter *switcher;
-//    
-//    filewriter **wAry;
-//    filewriter **gAryx,**gAryy;
-//    
-//    filewriter **pAry;
-//    int pValArray[GESTLEARNT];
-    
-//    filewriter **phaseAry;
-//    filewriter *curGest;
     int currentGest;
     bool compa;
     float old_max;
     Eigen::VectorXf meanPVRScopy;
     Eigen::VectorXf rangePVRScopy;
-	
     std::vector<float> origin;
     std::vector<float> *offset;
     bool new_gest;
     void setInitCoord(std::vector<float> s_origin);
-    
     
     void testSetup(int ge);
     void testIt(int cur_dom_gest);
@@ -167,15 +142,7 @@ public:
     int realGest;
     costTest gest;
     std::vector<int> testScore;
-    //filewriter *testWrite;
 
 };
 
 #endif
-
-/* Optim Notes
-    
-    rndnorm no longer created each time in particle filter
-    same with obs_eigen, vref and subtraction matrix. big speedup
-    removed temp vars
-*/

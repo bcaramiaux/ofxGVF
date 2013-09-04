@@ -1,15 +1,15 @@
 /****************************************************************
-
-The GFPF library (GFPF.cpp, GFPF.hpp) has been created in 2010-2011 at Ircam Centre Pompidou by
-- Baptiste Caramiaux
-previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
-- Nicola Montecchio
-previously with University of Padova, since 2012 with The Echo Nest
-The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
-
-© Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
-
-contact: b.caramiaux@gold.ac.uk
+ 
+ The GFPF library (GFPF.cpp, GFPF.hpp) has been created in 2010-2011 at Ircam Centre Pompidou by
+ - Baptiste Caramiaux
+ previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
+ - Nicola Montecchio
+ previously with University of Padova, since 2012 with The Echo Nest
+ The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
+ 
+ © Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
+ 
+ contact: b.caramiaux@gold.ac.uk
  ****************************************************************/
 
 
@@ -31,7 +31,8 @@ using namespace std;
 gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
 {
     // State dimension depends on the number of noise variances
-	pdim = sigs.size();
+    // tom added static cast
+	pdim = static_cast<int>(sigs.size());
 	pdim_m1 = pdim-1;
 	X = MatrixXf(ns,pdim);          // Matrix of NS particles
 	g = VectorXi(ns);               // Vector of gesture class
@@ -46,7 +47,7 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
 	
     resampling_threshold = resThresh; // Set resampling threshold (usually NS/2)
 	this->nu = nu;                  // Set Student's distribution parameter Nu
-                                    // ^ init'd to 0
+    // ^ init'd to 0
 	lrndGstr=-1;                    // Set num. of learned gesture to -1
 	icov_single = icov;             // inverse of the global tolerance (variance)
 	gestureLengths = vector<int>(); // Vector of gesture lengths
@@ -59,18 +60,20 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
 #endif
     
-    // default resize to 2 min
-    setObsDimension(2);
     
     abs_weights = vector<float>();
     
-
     currentGest = 0;
-
     
+    
+    
+    char buf[10];
     new_gest = false;
     offset = new std::vector<float>(2);
-        
+    compa = false;
+    old_max = 0;
+    
+    
 }
 
 gfpf::~gfpf()
@@ -86,50 +89,6 @@ gfpf::~gfpf()
 #endif
 }
 
-void gfpf::testSetup(int ge)
-{
-    testGestureIdx = ge;
-    
-    int ara[28] = {
-        3,2,
-        5,2,
-        5,7,
-        3,5,
-        5,4,
-        5,5,
-        1,6,
-        1,8,
-        2,8,
-        8,7,
-        8,6,
-        7,4,
-        1,2,
-        8,2};
-    int arat[14] = {102,102,97,115,100,105,96,100,56,90,53,50,63,60};
-    
-    gest.idx = testGestureIdx;
-    gest.transition = std::make_pair(ara[((testGestureIdx-1)*2)],ara[((testGestureIdx-1)*2)+1]);
-    gest.tranPoint = arat[testGestureIdx-1];
-    testIdx = 0;
-    realGest = gest.transition.first;
-}
-
-void gfpf::testIt(int cur_dom_gest)
-{
-    if(testIdx >= gest.tranPoint)
-    {
-        realGest = gest.transition.second;
-    }
-    
-    if(cur_dom_gest == realGest)
-    {
-        testScore.push_back(1);
-    } else {
-        testScore.push_back(0);
-    }
-    
-    testIdx++;
-}
 
 // addTemplate
 //
@@ -142,8 +101,9 @@ void gfpf::addTemplate()
 	R_single[lrndGstr] = vector<vector<float> >(); // allocate the memory for the gesture's data
     gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
     abs_weights.resize(lrndGstr+1);
-
+    
 }
+
 
 // fillTemplate
 //
@@ -181,11 +141,11 @@ void gfpf::spreadParticles(Eigen::VectorXf meanPVRS, Eigen::VectorXf rangePVRS)
 #if BOOSTLIB
 	boost::uniform_real<float> ur(0,1);
 	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
-#else 
+#else
     std::tr1::uniform_real<float> ur(0,1);
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
-	int ns = X.rows();
+	int ns = static_cast<int>(X.rows());
 	
 	unsigned int ngestures = lrndGstr+1;
 	
@@ -218,7 +178,7 @@ void gfpf::spreadParticles(Eigen::VectorXf meanPVRS, Eigen::VectorXf rangePVRS)
 // ============================================================
 void gfpf::initweights()
 {
-    int ns = w.size();
+    int ns = static_cast<int>(w.size());
     w.setConstant(1.0/ns);
     //post("%i %f %f %f", ns, w(0), w(1), w(2));
     //logW.setConstant(0.0);
@@ -238,16 +198,15 @@ void gfpf::particleFilter(vector<float> obs)
     
 #if BOOSTLIB
     boost::variate_generator<boost::mt19937&, boost::normal_distribution<float> > rndnorm(rng, normdist);
-#else 
+#else
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> > rndnorm(rng, *normdist);
 #endif
-   
+    
     
     // Number of particles
-    int ns = X.rows();
+    int ns = static_cast<int>(X.rows());
     
     // Change obs to VectorXf
-    VectorXf obs_eigen(obs.size());
     for (int k=0; k< obs.size(); k++)
         obs_eigen(k)=obs[k];
     
@@ -288,7 +247,7 @@ void gfpf::particleFilter(vector<float> obs)
         {
 			int pgi = g(n); // gesture index for the particle
 			int frameindex = min((int)(gestureLengths[pgi]-1),(int)(floor(x_n(0) * gestureLengths[pgi])));
-
+            
             //
             VectorXf vref(obs.size());
             for (int os=0; os<obs.size(); os++)
@@ -303,7 +262,7 @@ void gfpf::particleFilter(vector<float> obs)
                 float alpha = x_n(3);
                 Matrix2f rotmat;
                 rotmat << cos(alpha), -sin(alpha), sin(alpha), cos(alpha);
-                vref = rotmat * vref;                
+                vref = rotmat * vref;
             }
             // If incoming data is 3-dimensional
             else if (obs.size()==3){
@@ -323,7 +282,7 @@ void gfpf::particleFilter(vector<float> obs)
                 w(n)   *= pow(dist/nu + 1,-nu/2-1);    // dimension is 2 .. pay attention if editing
                 logW(n) += (-nu/2-1)*log(dist/nu + 1);
             }
-
+            
         }
     }
     // TODO: here we should compute the "absolute likelihood" as log(w) before normalization
@@ -338,23 +297,23 @@ void gfpf::particleFilter(vector<float> obs)
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
     
-
-//    for (int n=0; n<particle_before_0.size(); n++)
-//    {
-//        // Spread particles using a uniform distribution
-//        for(int i = 0; i < pdim; i++)
-//                X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-//        w(particle_before_0[n]) = 1.0/(ns);
-//        g(particle_before_0[n]) = n % (lrndGstr+1);
-//    }
-//    for (int n=0; n<particle_after_1.size(); n++)
-//    {
-//        // Spread particles using a uniform distribution
-//        for(int i = 0; i < pdim; i++)
-//            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-//        w(particle_after_1[n]) = 1.0/(ns);
-//        g(particle_after_1[n]) = n % (lrndGstr+1);
-//    }
+    
+    //    for (int n=0; n<particle_before_0.size(); n++)
+    //    {
+    //        // Spread particles using a uniform distribution
+    //        for(int i = 0; i < pdim; i++)
+    //                X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
+    //        w(particle_before_0[n]) = 1.0/(ns);
+    //        g(particle_before_0[n]) = n % (lrndGstr+1);
+    //    }
+    //    for (int n=0; n<particle_after_1.size(); n++)
+    //    {
+    //        // Spread particles using a uniform distribution
+    //        for(int i = 0; i < pdim; i++)
+    //            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
+    //        w(particle_after_1[n]) = 1.0/(ns);
+    //        g(particle_after_1[n]) = n % (lrndGstr+1);
+    //    }
     
 	// normalization - resampling
 	w /= w.sum();
@@ -363,7 +322,7 @@ void gfpf::particleFilter(vector<float> obs)
     {
         resampleAccordingToWeights();
         initweights();
-   
+        
     }
 	
 }
@@ -381,27 +340,22 @@ void gfpf::setObsDimension(int s_d)
 void gfpf::particleFilterOptim(std::vector<float> obs)
 {
     // Number of particles
-    int ns = X.rows();
-//    ug->addValue(obs[0]);
-//    ugy->addValue(obs[1]);
-
+    int ns = static_cast<int>(X.rows());
     
-//    (*offset)[0] = obs[0]-origin[0];
-//    (*offset)[1] = obs[1]-origin[1];
-    
-    
-    
-    for(int k=obs_dim-1; k >= 0; --k)
+    VectorXf obs_eigen(obs.size());
+    for(int i=0; i <obs.size(); i++)
     {
         if(!new_gest)
         {
-            obs_eigen(k)=obs[k];
+            obs_eigen(i)=obs[i];
         } else{
-            obs_eigen(k)=obs[k]-(*offset)[k];
-            //obs_eigen(k)=obs[k];
-
+            if(obs.size() == 2)
+            {
+                obs_eigen(i)=obs[i]-(*offset)[i];
+            } else {
+                obs_eigen(i)=obs[i];
+            }
         }
-
     }
     
     // particles outside
@@ -413,26 +367,19 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         abs_weights[i] = 0.0;
     }
     
-//    for(int i=0; i < GESTLEARNT; i++)
-//        pValArray[i] = 0;
-    
-
-    //executiontimer ex("loop");
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
     {
-//        (pValArray[g(n)])++;
         
         // Move the particle
         // Position respects a first order dynamic: p = p + v/L
 		//X(n,0) = X(n,0) + (*rndnorm)() * sigt(0) + X(n,1)/gestureLengths[g(n)];
         X(n,0) += (*rndnorm)() * sigt(0) + X(n,1)/gestureLengths[g(n)];
-
+        
 		// Move the other state elements according a gaussian noise
         // sigt vector of variances
         for(int l = pdim_m1; l>=1 ; --l)
 			X(n,l) += (*rndnorm)() * sigt(l);
-		// if not eigen, could use SSE/ vec operations
 		VectorXf x_n = X.row(n);
 		if(x_n(0) < 0)
         {
@@ -452,13 +399,12 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         {
 			int pgi = g(n); // gesture index for the particle
 			int frameindex = min((int)(gestureLengths[pgi]-1),(int)(floor(x_n(0) * gestureLengths[pgi])));
-            //make this local var common
-            //vref(obs.size());
+            VectorXf vref(obs.size());
             for (int os=0; os<obs.size(); os++)
                 vref(os) = R_single[pgi][frameindex][os];
             // If incoming data is 2-dimensional: we assume that it is drawn shape!
             if (obs.size()==2){
-                // scal1ing
+                // sca1ing
                 vref *= x_n(2);
                 // rotation
                 float alpha = x_n(3);
@@ -474,7 +420,6 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
             vrefmineigen = vref-obs_eigen;
             
             // observation likelihood and update weights
-            // vref-obs_eigen will be costly as special data type
             float dist = vrefmineigen.dot(vrefmineigen) * icov_single;
             if(nu == 0.)    // Gaussian distribution
             {
@@ -487,17 +432,9 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
                 w(n)   *= pow(dist/nu + 1,-nu/2-1);    // dimension is 2 .. pay attention if editing]
                 logW(n) += (-nu/2-1)*log(dist/nu + 1);
             }
-            //abs_weights[g(n)] += w(n);
-           
         }
     }
     
-//    for(int i=0; i < GESTLEARNT;i++)
-//        pAry[i]->addValue(pValArray[i]);
-    
-     // TODO: here we should compute the "absolute likelihood" as log(w) before normalization
-    
-    // this absolute likelihood could be used as a raw criterion for segmentation
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
     
 #if BOOSTLIB
@@ -508,47 +445,16 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
     
-    
-//    for (int n=0; n<particle_before_0.size(); n++)
-//    {
-//        // Spread particles using a uniform distribution
-//        for(int i = 0; i < pdim; i++)
-//            X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-//        w(particle_before_0[n]) = 1.0/(ns);
-//        g(particle_before_0[n]) = n % (lrndGstr+1);
-//    }
-//    for (int n=0; n<particle_after_1.size(); n++)
-//    {
-//        // Spread particles using a uniform distribution
-//        for(int i = 0; i < pdim; i++)
-//            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-//        w(particle_after_1[n]) = 1.0/(ns);
-//        g(particle_after_1[n]) = n % (lrndGstr+1);
-//    }1
-    
-    //for(int i=0;i<ns;i++)
-     //   abs_weights[g(i)]+=w(i);
-    
-//    for(int i=0;i<GESTLEARNT;i++)
-//    {
-//        wAry[i]->addValue(abs_weights[i]/2000);
-//    }
-//    w1->addValue(abs_weights[0]);
-//    w2->addValue(abs_weights[1]);
-//    w3->addValue(abs_weights[2]);
-    
 	w /= w.sum();
 	float neff = 1./w.dot(w);
     
-    //double totProb = inferTotalGestureActivity();
-    // choose dominant probability. the threshold . wrong. maybe it will be the total probability. but in that case cant differentiate. Has to be domiant w value
-    double totProb = 0;
+    //double totProb = 0;
     double probThresh = 0.25*ns;
     double probThreshMin = 0.5*ns;
     
     // do naive maximum value
     float maxSoFar = abs_weights[0];
-    currentGest = 0;
+    currentGest = 1;
     for(int i = 1; i< abs_weights.size();i++)
     {
         if(abs_weights[i] > maxSoFar)
@@ -557,8 +463,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
             currentGest = i+1;
         }
     }
-    testIt(currentGest);
-//    curGest->addValue(currentGest);
+    
     
     // increase omparator to maybe 0.6
     if(maxSoFar > probThreshMin && !compa)
@@ -569,44 +474,22 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     
     if(maxSoFar < probThresh && compa)
     {
-        // code to redistribute particles
-        // looking at the offset problem here.
-        
-//        switcher->addValue(1);
         spreadParticles(meanPVRScopy, rangePVRScopy);
         new_gest = true;
-        
         (*offset)[0] = obs[0];
         (*offset)[1] = obs[1];
-
         compa = false;
-    } else {
-        //switcher->addValue(0);
     }
-    
     
 	if(neff<resampling_threshold)
     {
         resampleAccordingToWeights();
         initweights();
-        //rs->addValue(1);
-    } else {
-        //rs->addValue(0);
     }
-
-
     
-//    if(maxo>1800)
-//    {
-//        resampleAccordingToWeights();
-//        initweights();
-//        rs->addValue(maxo);
-//    } else {
-//        rs->addValue(0);
-//    }
     particle_before_0.clear();
     particle_after_1.clear();
-  
+    
 }
 
 // inferGestureActivity
@@ -620,16 +503,7 @@ std::vector<float> gfpf::inferGestureActivity()
     return abs_weights;
 }
 
-float gfpf::inferTotalGestureActivity()
-{
-    float total = 0.0;
-    for(int i = 0 ; i < abs_weights.size(); i++)
-    {
-        total += abs_weights[i];
-    }
-    //tot->addValue(total);
-    return total;
-}
+
 
 // resampleAccordingToWeights
 //
@@ -643,8 +517,8 @@ void gfpf::resampleAccordingToWeights()
     std::tr1::uniform_real<float> ur(0,1);
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
-
-    int ns = w.rows();
+    
+    int ns = static_cast<int>(w.rows());
     
     MatrixXf oldX = X;
     VectorXi oldG = g;
@@ -656,7 +530,7 @@ void gfpf::resampleAccordingToWeights()
         c(i) = c(i-1) + w(i);
     int i = 0;
     float u0 = rnduni()/ns;
-    int num_redist = 0;
+    int free_pool = 200;
     for (int j = 0; j < ns; j++)
     {
         float uj = u0 + (j + 0.) / ns;
@@ -665,23 +539,23 @@ void gfpf::resampleAccordingToWeights()
             i++;
         }
         
-        if(j < ns-200){
+        if(j < ns - free_pool){
             X.row(j) = oldX.row(i);
             // need to change to oldG(j)
             g(j) = oldG(i);
             logW(j) = oldLogW(i);
         } else {
-            int reassign = j % 8;
-            g(j)=reassign;
-            X.row(j) = oldX.row(j);
-            logW(j)=oldLogW(j);
+            //            int reassign = j % GESTLEARNT;
+            //            g(j)=reassign;
+            //            X.row(j) = oldX.row(j);
+            //            logW(j)=oldLogW(j);
             
         }
         
-    
+        
         
     }
-
+    
 }
 
 void gfpf::setInitCoord(std::vector<float> s_origin)
@@ -701,11 +575,11 @@ void gfpf::setInitCoord(std::vector<float> s_origin)
 // ============================================================
 void gfpf::infer(vector<float> vect)
 {
-//	unsigned int nsteps = vect.size();
+    //	unsigned int nsteps = vect.size();
     //particleFilter(vect);
     particleFilterOptim(vect);
-//	for(int i = 0; i < nsteps; i++)
-//		particleFilter2D(xy.row(i));
+    //	for(int i = 0; i < nsteps; i++)
+    //		particleFilter2D(xy.row(i));
 }
 
 
@@ -717,15 +591,15 @@ void gfpf::infer(vector<float> vect)
 VectorXf gfpf::getGestureConditionnalProbabilities()
 {
 	unsigned int ngestures = lrndGstr+1;
-	int ns = X.rows();
+	int ns = static_cast<int>(X.rows());
 	VectorXf gp(ngestures);
 	gp.setConstant(0);
 	for(int n = 0; n < ns; n++)
 		gp(g(n)) += w(n);
-//    w1->addValue(gp(0));
-//    w2->addValue(gp(1));
-//    w3->addValue(gp(2));
-
+    //    w1->addValue(gp(0));
+    //    w2->addValue(gp(1));
+    //    w3->addValue(gp(2));
+    
 	return gp;
 }
 
@@ -741,7 +615,7 @@ VectorXf gfpf::getGestureLikelihoods()
     VectorXi numg(ngestures);
     for(int n = 0; n < ngestures; n++)
         numg(n)=0;
-	int ns = X.rows();
+	int ns = static_cast<int>(X.rows());
 	VectorXf gp(ngestures);
 	gp.setConstant(0);
 	for(int n = 0; n < ns; n++)
@@ -758,7 +632,7 @@ VectorXf gfpf::getGestureLikelihoods()
             gp(n) = gp(n)/numg(n);
     }
     
-
+    
 	return gp;
 }
 
@@ -772,7 +646,7 @@ VectorXf gfpf::getEndGestureProbabilities(float minpos)
 	
 	unsigned int ngestures = lrndGstr+1;
 	
-	int ns = X.rows();
+	int ns = static_cast<int>(X.rows());
 	
 	VectorXf gp(ngestures);
 	gp.setConstant(0);
@@ -799,7 +673,7 @@ MatrixXf gfpf::getEstimatedStatus()
 	
 	//	post("getEstimatedStatus ngestures: %i (lrndGstr+1=%i)",ngestures,lrndGstr+1);
 	
-	int ns = X.rows();
+	int ns = static_cast<int>(X.rows());
 	
 	MatrixXf es(ngestures,pdim+1);     // PVRSW
 	es.setConstant(0);
@@ -816,34 +690,7 @@ MatrixXf gfpf::getEstimatedStatus()
 	{
 		es.block(gi,0,1,pdim) /= es(gi,pdim);
 	}
-    
-//    for(int i =0; i < GESTLEARNT; i++)
-//    {
-//        if(!isnan(es(i,0))){
-//            phaseAry[i]->addValue(es(i,0));
-//        } else {
-//            phaseAry[i]->addValue(0);
-//        }
-//    }
-    
-    
-//    if(!isnan(es(0,0)))
-//        phase->addValue(es(0,0));
-//    else
-//        phase->addValue(0);
-//    
-//    if(!isnan(es(1,0)))
-//        phase2->addValue(es(1,0));
-//    else
-//        phase2->addValue(0);
-//    
-//    if(!isnan(es(2,0)))
-//        phase3->addValue(es(2,0));
-//    else
-//        phase3->addValue(0);
-   
-    
-
+       
 	return es;
 }
 
@@ -865,7 +712,7 @@ void gfpf::setIcovSingleValue(float f)
 // ============================================================
 int gfpf::getNbOfParticles()
 {
-	return w.size();
+	return static_cast<int>(w.size());
 }
 
 
@@ -875,7 +722,7 @@ int gfpf::getNbOfParticles()
 // ============================================================
 int gfpf::getNbOfTemplates()
 {
-	return gestureLengths.size();
+	return static_cast<int>(gestureLengths.size());
 }
 
 
