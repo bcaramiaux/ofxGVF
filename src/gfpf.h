@@ -99,7 +99,7 @@ public:
     std::vector<float> inferGestureActivity();
     float inferTotalGestureActivity();
     std::vector<float> abs_weights;
-    void writeGesturesToFile();
+    //void writeGesturesToFile();
 
     
 	// Gets

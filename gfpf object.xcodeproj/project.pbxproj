@@ -7,37 +7,38 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		D10222411784310C00BA6FD9 /* filewriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D102223F1784310C00BA6FD9 /* filewriter.cpp */; };
-		D10222421784310C00BA6FD9 /* filewriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D10222401784310C00BA6FD9 /* filewriter.h */; };
-		D141045517464B7000B3004A /* gfpf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D141045117464B7000B3004A /* gfpf.cpp */; };
-		D141045617464B7000B3004A /* gfpf.h in Headers */ = {isa = PBXBuildFile; fileRef = D141045217464B7000B3004A /* gfpf.h */; };
-		D141045717464B7000B3004A /* gfpfutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D141045317464B7000B3004A /* gfpfutils.cpp */; };
-		D141045817464B7000B3004A /* gfpfutils.h in Headers */ = {isa = PBXBuildFile; fileRef = D141045417464B7000B3004A /* gfpfutils.h */; };
-		D19DBBD4174B7FF300B2526D /* executiontimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D19DBBD2174B7FF300B2526D /* executiontimer.cpp */; };
-		D19DBBD5174B7FF300B2526D /* executiontimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D19DBBD3174B7FF300B2526D /* executiontimer.h */; };
+		D108433D17D75B53003B62BA /* executiontimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D108433317D75B53003B62BA /* executiontimer.cpp */; };
+		D108433E17D75B53003B62BA /* executiontimer.h in Headers */ = {isa = PBXBuildFile; fileRef = D108433417D75B53003B62BA /* executiontimer.h */; };
+		D108433F17D75B53003B62BA /* filewriter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D108433517D75B53003B62BA /* filewriter.cpp */; };
+		D108434017D75B53003B62BA /* filewriter.h in Headers */ = {isa = PBXBuildFile; fileRef = D108433617D75B53003B62BA /* filewriter.h */; };
+		D108434117D75B53003B62BA /* gfpf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D108433717D75B53003B62BA /* gfpf.cpp */; };
+		D108434217D75B53003B62BA /* gfpf.h in Headers */ = {isa = PBXBuildFile; fileRef = D108433817D75B53003B62BA /* gfpf.h */; };
+		D108434317D75B53003B62BA /* gfpfutils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D108433917D75B53003B62BA /* gfpfutils.cpp */; };
+		D108434417D75B53003B62BA /* gfpfutils.h in Headers */ = {isa = PBXBuildFile; fileRef = D108433A17D75B53003B62BA /* gfpfutils.h */; };
+		D108434517D75B53003B62BA /* globalutilities.h in Headers */ = {isa = PBXBuildFile; fileRef = D108433B17D75B53003B62BA /* globalutilities.h */; };
+		D108434617D75B53003B62BA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D108433C17D75B53003B62BA /* main.cpp */; };
 		D1A4ACC1174527090066D318 /* m_pd.h in Headers */ = {isa = PBXBuildFile; fileRef = D1A4ACC0174527090066D318 /* m_pd.h */; };
-		D1A4ACC8174529CA0066D318 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = D1A4ACC6174529CA0066D318 /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		D102223F1784310C00BA6FD9 /* filewriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = filewriter.cpp; path = Source/filewriter.cpp; sourceTree = "<group>"; };
-		D10222401784310C00BA6FD9 /* filewriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = filewriter.h; path = Source/filewriter.h; sourceTree = "<group>"; };
-		D141045117464B7000B3004A /* gfpf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gfpf.cpp; path = Source/gfpf.cpp; sourceTree = "<group>"; };
-		D141045217464B7000B3004A /* gfpf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfpf.h; path = Source/gfpf.h; sourceTree = "<group>"; };
-		D141045317464B7000B3004A /* gfpfutils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gfpfutils.cpp; path = Source/gfpfutils.cpp; sourceTree = "<group>"; };
-		D141045417464B7000B3004A /* gfpfutils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfpfutils.h; path = Source/gfpfutils.h; sourceTree = "<group>"; };
-		D141045A174656CE00B3004A /* globalutilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = globalutilities.h; path = Source/globalutilities.h; sourceTree = "<group>"; };
+		D108433317D75B53003B62BA /* executiontimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = executiontimer.cpp; path = src/executiontimer.cpp; sourceTree = "<group>"; };
+		D108433417D75B53003B62BA /* executiontimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = executiontimer.h; path = src/executiontimer.h; sourceTree = "<group>"; };
+		D108433517D75B53003B62BA /* filewriter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = filewriter.cpp; path = src/filewriter.cpp; sourceTree = "<group>"; };
+		D108433617D75B53003B62BA /* filewriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = filewriter.h; path = src/filewriter.h; sourceTree = "<group>"; };
+		D108433717D75B53003B62BA /* gfpf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gfpf.cpp; path = src/gfpf.cpp; sourceTree = "<group>"; };
+		D108433817D75B53003B62BA /* gfpf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfpf.h; path = src/gfpf.h; sourceTree = "<group>"; };
+		D108433917D75B53003B62BA /* gfpfutils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gfpfutils.cpp; path = src/gfpfutils.cpp; sourceTree = "<group>"; };
+		D108433A17D75B53003B62BA /* gfpfutils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfpfutils.h; path = src/gfpfutils.h; sourceTree = "<group>"; };
+		D108433B17D75B53003B62BA /* globalutilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = globalutilities.h; path = src/globalutilities.h; sourceTree = "<group>"; };
+		D108433C17D75B53003B62BA /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = src/main.cpp; sourceTree = "<group>"; };
 		D19DBBC8174B793000B2526D /* gfpf.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = gfpf.cpp; path = "Old f:speed/gfpf.cpp"; sourceTree = "<group>"; };
 		D19DBBC9174B793000B2526D /* gfpf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gfpf.h; path = "Old f:speed/gfpf.h"; sourceTree = "<group>"; };
 		D19DBBCA174B793000B2526D /* gfpfutils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = gfpfutils.cpp; path = "Old f:speed/gfpfutils.cpp"; sourceTree = "<group>"; };
 		D19DBBCB174B793000B2526D /* gfpfutils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = gfpfutils.h; path = "Old f:speed/gfpfutils.h"; sourceTree = "<group>"; };
 		D19DBBCC174B793000B2526D /* globalutilities.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = globalutilities.h; path = "Old f:speed/globalutilities.h"; sourceTree = "<group>"; };
 		D19DBBCD174B793000B2526D /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = "Old f:speed/main.cpp"; sourceTree = "<group>"; };
-		D19DBBD2174B7FF300B2526D /* executiontimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = executiontimer.cpp; path = Source/executiontimer.cpp; sourceTree = "<group>"; };
-		D19DBBD3174B7FF300B2526D /* executiontimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = executiontimer.h; path = Source/executiontimer.h; sourceTree = "<group>"; };
 		D1A4ACB6174526120066D318 /* gfpf.pd_darwin */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = gfpf.pd_darwin; sourceTree = BUILT_PRODUCTS_DIR; };
 		D1A4ACC0174527090066D318 /* m_pd.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = m_pd.h; path = "/Applications/Pd-0.43-2.app/Contents/Resources/src/m_pd.h"; sourceTree = "<absolute>"; };
-		D1A4ACC6174529CA0066D318 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = Source/main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -85,16 +86,16 @@
 		D1A4ACBF174526DE0066D318 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				D1A4ACC6174529CA0066D318 /* main.cpp */,
-				D141045A174656CE00B3004A /* globalutilities.h */,
-				D141045117464B7000B3004A /* gfpf.cpp */,
-				D141045217464B7000B3004A /* gfpf.h */,
-				D102223F1784310C00BA6FD9 /* filewriter.cpp */,
-				D10222401784310C00BA6FD9 /* filewriter.h */,
-				D141045317464B7000B3004A /* gfpfutils.cpp */,
-				D141045417464B7000B3004A /* gfpfutils.h */,
-				D19DBBD2174B7FF300B2526D /* executiontimer.cpp */,
-				D19DBBD3174B7FF300B2526D /* executiontimer.h */,
+				D108433317D75B53003B62BA /* executiontimer.cpp */,
+				D108433417D75B53003B62BA /* executiontimer.h */,
+				D108433517D75B53003B62BA /* filewriter.cpp */,
+				D108433617D75B53003B62BA /* filewriter.h */,
+				D108433717D75B53003B62BA /* gfpf.cpp */,
+				D108433817D75B53003B62BA /* gfpf.h */,
+				D108433917D75B53003B62BA /* gfpfutils.cpp */,
+				D108433A17D75B53003B62BA /* gfpfutils.h */,
+				D108433B17D75B53003B62BA /* globalutilities.h */,
+				D108433C17D75B53003B62BA /* main.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -115,10 +116,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				D1A4ACC1174527090066D318 /* m_pd.h in Headers */,
-				D141045617464B7000B3004A /* gfpf.h in Headers */,
-				D141045817464B7000B3004A /* gfpfutils.h in Headers */,
-				D19DBBD5174B7FF300B2526D /* executiontimer.h in Headers */,
-				D10222421784310C00BA6FD9 /* filewriter.h in Headers */,
+				D108433E17D75B53003B62BA /* executiontimer.h in Headers */,
+				D108434017D75B53003B62BA /* filewriter.h in Headers */,
+				D108434217D75B53003B62BA /* gfpf.h in Headers */,
+				D108434417D75B53003B62BA /* gfpfutils.h in Headers */,
+				D108434517D75B53003B62BA /* globalutilities.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,11 +175,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D1A4ACC8174529CA0066D318 /* main.cpp in Sources */,
-				D141045517464B7000B3004A /* gfpf.cpp in Sources */,
-				D141045717464B7000B3004A /* gfpfutils.cpp in Sources */,
-				D19DBBD4174B7FF300B2526D /* executiontimer.cpp in Sources */,
-				D10222411784310C00BA6FD9 /* filewriter.cpp in Sources */,
+				D108433D17D75B53003B62BA /* executiontimer.cpp in Sources */,
+				D108433F17D75B53003B62BA /* filewriter.cpp in Sources */,
+				D108434117D75B53003B62BA /* gfpf.cpp in Sources */,
+				D108434317D75B53003B62BA /* gfpfutils.cpp in Sources */,
+				D108434617D75B53003B62BA /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

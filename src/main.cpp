@@ -5,7 +5,6 @@
 #include "m_pd.h"
 #include "gfpf.h"
 #include "globalutilities.h"
-//#include "executiontimer.h"
 
 #include <iostream>
 #include <fstream>
@@ -55,7 +54,6 @@ static void gfpf_auto(t_gfpf *x)
 {
 
     int num_templates = 3;
-    post("in auto func");
     gfpf_clear(x, 0, 0, 0);
     std::string dir = "/Users/thomasrushmore/EAVI/PD/gfpflibrary/test gestures/tem";
     std::string dirg = "/Users/thomasrushmore/EAVI/PD/gfpflibrary/test gestures/g";
@@ -120,14 +118,7 @@ static void gfpf_auto(t_gfpf *x)
         gfpf_data(x, 0, 2, ar);
         if(state_summary.eof()) break;
     }
-
     gfpf_restart(x,0, 0, 0);
-    
-    //gfpf_data(x, 0, 2, <#t_atom *argv#>)
-    // teach
-    
-    
-    
 }
 
 static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
@@ -135,6 +126,8 @@ static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
     post("\ngfpf - realtime adaptive gesture recognition (11-04-2013)");
     post("(C) Baptiste Caramiaux, Ircam, Goldsmiths");
     post("pd object port - v 1.0.9 Tom Rushmore, Goldsmiths");
+    
+    
 
     t_gfpf *x = (t_gfpf *)pd_new(gfpf_class);
     
@@ -427,7 +420,7 @@ static void gfpf_restart(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
         restarted_l=1;
         restarted_d=1;
         post("Writing gestures to file");
-        x->bubi->writeGesturesToFile();
+        //x->bubi->writeGesturesToFile();
 
 
     }
