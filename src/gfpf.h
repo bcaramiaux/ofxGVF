@@ -87,8 +87,6 @@ public:
     
 	void infer(std::vector<float> vect);    // -- DEPREC. -- 
     
-    std::vector<float> inferGestureActivity();
-    float inferTotalGestureActivity();
     std::vector<float> abs_weights;
     //void writeGesturesToFile();
 
@@ -111,7 +109,6 @@ public:
 	void setResamplingThreshold(int r);
     
     //optims
-    void setObsDimension(int s_d);
     int obs_dim;
     Eigen::VectorXf obs_eigen;
     Eigen::VectorXf vref;

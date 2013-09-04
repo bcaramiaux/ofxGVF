@@ -125,10 +125,8 @@ static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
 {
     post("\ngfpf - realtime adaptive gesture recognition (11-04-2013)");
     post("(C) Baptiste Caramiaux, Ircam, Goldsmiths");
-    post("pd object port - v 1.0.9 Tom Rushmore, Goldsmiths");
+    post("pd object port - v 1.1 Tom Rushmore, Goldsmiths");
     
-    
-
     t_gfpf *x = (t_gfpf *)pd_new(gfpf_class);
     
     x->Nspg = 2000;
@@ -149,16 +147,7 @@ static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
     //x->refmap.clear();
 
     int num_particles = 2000;
-    int num_dim;
-//    if(argc > 0){
-//        post("n_particles %d \n",getint(argv));
-//        num_particles = getint(argv);
-//    }
-//    if(argc > 1){
-//        post("n_dimensions %d \n",getint(argv+1));
-//    }
-    
-    
+
     x->bubi = new gfpf(num_particles, sigs, 1./(x->so * x->so), rt, 0.);
     x->mpvrs = Eigen::VectorXf(x->pdim);
     x->rpvrs = Eigen::VectorXf(x->pdim);
@@ -196,19 +185,17 @@ static void gfpf_destructor(t_gfpf *x)
         delete x->bubi;
     if(x->refmap != NULL)
         delete x->refmap;
+    post("destructor complete");
 }
 
 static void gfpf_learn(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_learn");
     if(argc != 1)
     {
         post("need another argument");
         return;
     }
     int refI = getint(argv);
-    // delete this on release
-    post("Get int = %d",refI);
     if(refI != x->lastreferencelearned+1)
     {
         post("you need to learn reference %d first",x->lastreferencelearned+1);
@@ -225,8 +212,6 @@ static void gfpf_learn(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 
 static void gfpf_follow(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_follow");
-
     if(x->lastreferencelearned >= 0)
     {
         post("I'm about to follow!");
@@ -244,8 +229,6 @@ static void gfpf_follow(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 
 static void gfpf_clear(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_clear");
-
     x->lastreferencelearned = -1;
     x->bubi->clear();
     restarted_l=1;
@@ -256,8 +239,6 @@ static void gfpf_clear(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 
 static void gfpf_data(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_data");
-
     if(x->state == STATE_CLEAR)
     {
         post("what am I supposed to do ... I'm in standby!");
@@ -374,18 +355,6 @@ static void gfpf_data(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
         outlet_list(x->Likelihoods, &s_list, gprob.size(), outAtoms);
         delete[] outAtoms;
         
-        std::vector<float> active = x->bubi->inferGestureActivity();
-        outAtoms = new t_atom[active.size()];
-        for(int j = 0; j < gprob.size(); j++)
-            SETFLOAT(&outAtoms[j],active[j]);
-        outlet_list(x->ActiveGesture, &s_list, active.size(), outAtoms);
-        delete outAtoms;
-        
-        float tot = x->bubi->inferTotalGestureActivity();
-        outAtoms = new t_atom[1];
-            SETFLOAT(&outAtoms[0], tot);
-        outlet_list(x->TotalActiveGesture, &s_list, 1, outAtoms);
-        delete outAtoms;
         
         
     }
@@ -410,40 +379,26 @@ static void gfpf_printme(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 
 static void gfpf_restart(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_restart");
-
-    //executiontimer tmr("Restart");
     restarted_l=1;
     if(x->state == STATE_FOLLOWING)
     {
         x->bubi->spreadParticles(x->mpvrs,x->rpvrs);
         restarted_l=1;
         restarted_d=1;
-        post("Writing gestures to file");
-        //x->bubi->writeGesturesToFile();
-
-
     }
 
 }
 
 static void gfpf_std(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_std");
-
     float stdnew = getfloat(argv);
     if (stdnew == 0.0)
         stdnew = 0.1;
     x->bubi->setIcovSingleValue(1/(stdnew*stdnew));
-    
-    //gfpf_auto(x);
-
 }
 
 static void gfpf_rt(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_rt");
-
     int rtnew = getint(argv);
     int cNS = x->bubi->getNbOfParticles();
     if (rtnew >= cNS)
@@ -455,35 +410,23 @@ static void gfpf_rt(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 
 static void gfpf_means(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_means");
-
     x->mpvrs = Eigen::VectorXf(x->pdim);
     x->mpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
 }
 
 static void gfpf_ranges(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_ranges");
-
     x->rpvrs = Eigen::VectorXf(x->pdim);
     x->rpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
 }
 
 static void gfpf_adaptspeed(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("In gfpf_adaptspeed");
-    for(int i = 0; i < argc; i++)
-    {
-        //post(argv+i);
-        //post
-    }
-
     std::vector<float> as;
     as.push_back(getfloat(argv));
     as.push_back(getfloat(argv + 1));
     as.push_back(getfloat(argv + 2));
     as.push_back(getfloat(argv + 3));
-
     x->bubi->setAdaptSpeed(as);
 }
 

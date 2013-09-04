@@ -60,27 +60,17 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
 #endif
     
-    
     abs_weights = vector<float>();
-    
     currentGest = 0;
-    
-    
-    
-    char buf[10];
     new_gest = false;
     offset = new std::vector<float>(2);
     compa = false;
     old_max = 0;
-    
-    
+
 }
 
 gfpf::~gfpf()
 {
-    
-    // need to delete wAry and gAry
-    
 #if !BOOSTLIB
     if(normdist != NULL)
         delete (normdist);
@@ -201,7 +191,6 @@ void gfpf::particleFilter(vector<float> obs)
 #else
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> > rndnorm(rng, *normdist);
 #endif
-    
     
     // Number of particles
     int ns = static_cast<int>(X.rows());
@@ -327,15 +316,7 @@ void gfpf::particleFilter(vector<float> obs)
 	
 }
 
-void gfpf::setObsDimension(int s_d)
-{
-    obs_dim = s_d;
-    obs_eigen.resize(obs_dim);
-    vref.resize(obs_dim);
-    vrefmineigen.resize(obs_dim);
-    
-}
-// test
+
 
 void gfpf::particleFilterOptim(std::vector<float> obs)
 {
@@ -436,7 +417,6 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     }
     
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
-    
 #if BOOSTLIB
     boost::uniform_real<float> ur(0,1);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
@@ -448,7 +428,6 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 	w /= w.sum();
 	float neff = 1./w.dot(w);
     
-    //double totProb = 0;
     double probThresh = 0.25*ns;
     double probThreshMin = 0.5*ns;
     
@@ -464,8 +443,6 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         }
     }
     
-    
-    // increase omparator to maybe 0.6
     if(maxSoFar > probThreshMin && !compa)
     {
         old_max = maxSoFar;
@@ -490,17 +467,6 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
     particle_before_0.clear();
     particle_after_1.clear();
     
-}
-
-// inferGestureActivity
-//
-// use the unnormalized weights to determine if there
-// is an active gesture
-// ============================================================
-
-std::vector<float> gfpf::inferGestureActivity()
-{
-    return abs_weights;
 }
 
 
@@ -538,22 +504,12 @@ void gfpf::resampleAccordingToWeights()
         while (uj > c(i) && i < ns - 1){
             i++;
         }
-        
+    
         if(j < ns - free_pool){
             X.row(j) = oldX.row(i);
-            // need to change to oldG(j)
             g(j) = oldG(i);
             logW(j) = oldLogW(i);
-        } else {
-            //            int reassign = j % GESTLEARNT;
-            //            g(j)=reassign;
-            //            X.row(j) = oldX.row(j);
-            //            logW(j)=oldLogW(j);
-            
-        }
-        
-        
-        
+        } 
     }
     
 }
@@ -778,7 +734,6 @@ void gfpf::setAdaptSpeed(vector<float> as)
 }
 
 
-
 // setResamplingThreshold(...)
 //
 // argument
@@ -788,7 +743,6 @@ void gfpf::setResamplingThreshold(int r)
 {
     resampling_threshold = r;
 }
-
 
 
 // clear()
