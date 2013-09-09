@@ -215,6 +215,10 @@
 					../../maxcpp,
 					"\"$(SRCROOT)/../../../../Eigen\"",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"/Developer/SDKs/MaxSDK-5.1.7/c74support/max-includes/MaxAPI.framework\"",
+				);
 				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = gfpfmax;
 				SYMROOT = ./;
@@ -239,6 +243,10 @@
 					"\"$(C74SUPPORT)/msp-includes\"",
 					../../maxcpp,
 					"\"$(SRCROOT)/../../../../Eigen\"",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"/Developer/SDKs/MaxSDK-5.1.7/c74support/max-includes/MaxAPI.framework\"",
 				);
 				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = gfpfmax;
