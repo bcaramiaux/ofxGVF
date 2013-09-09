@@ -239,7 +239,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "libstdc++";
-				CONFIGURATION_BUILD_DIR = "/Applications/Pd-extended.app/Contents/Resources/extra";
+				CONFIGURATION_BUILD_DIR = /Users/thomasrushmore/Desktop/LatestGfpf/gfpflibrary/pdobject/Build/Products;
 				EXECUTABLE_EXTENSION = pd_darwin;
 				EXECUTABLE_PREFIX = "";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
@@ -262,6 +262,7 @@
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "compiler-default";
 				CLANG_CXX_LIBRARY = "libstdc++";
+				CONFIGURATION_BUILD_DIR = /Users/thomasrushmore/Desktop/LatestGfpf/gfpflibrary/pdobject/Build/Products;
 				EXECUTABLE_EXTENSION = pd_darwin;
 				EXECUTABLE_PREFIX = "";
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
