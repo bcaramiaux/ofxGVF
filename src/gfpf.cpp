@@ -428,7 +428,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 	w /= w.sum();
 	float neff = 1./w.dot(w);
     
-    double probThresh = 0.25*ns;
+    double probThresh = 0.05*ns;
     double probThreshMin = 0.5*ns;
     
     // do naive maximum value
@@ -496,7 +496,7 @@ void gfpf::resampleAccordingToWeights()
         c(i) = c(i-1) + w(i);
     int i = 0;
     float u0 = rnduni()/ns;
-    int free_pool = 200;
+    int free_pool = 0;
     for (int j = 0; j < ns; j++)
     {
         float uj = u0 + (j + 0.) / ns;
