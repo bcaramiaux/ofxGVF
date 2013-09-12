@@ -139,6 +139,10 @@ public:
     int realGest;
     costTest gest;
     std::vector<int> testScore;
+    
+    
+    void saveTemplates(std::string filename);
+    void loadTemplates(std::string filename);
 
 };
 

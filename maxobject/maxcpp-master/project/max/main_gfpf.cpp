@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 #include <Eigen/Core>
-
+#include <unistd.h>
 
 using namespace std;
 
@@ -17,6 +17,8 @@ pair<float,float> xy0_l;
 pair<float,float> xy0_d;
 vector<float> vect_0_l;
 vector<float> vect_0_d;
+
+
 
 
 class Gfpfmax : public MaxCpp6<Gfpfmax> {
@@ -39,7 +41,7 @@ public:
     //	}
     Gfpfmax(t_symbol * sym, long argc, t_atom *argv)
     {
-        setupIO(1, 2); // inlets / outlets
+        setupIO(1, 3); // inlets / outlets
         post("Gfpfmax - realtime adaptive gesture recognition (11-04-2013)");
         post("(C) Baptiste Caramiaux, Ircam, Goldsmiths");
         
@@ -124,9 +126,11 @@ public:
         
         if(lastreferencelearned >= 0)
         {
-            post("I'm about to follow!");
+            //post("I'm about to follow!");
             
             bubi->spreadParticles(mpvrs,rpvrs);
+            restarted_l=1;
+            restarted_d=1;
             //post("nb of gest after following %i", bubi->getNbOfGestures());
             
             state = STATE_FOLLOWING;
@@ -147,6 +151,48 @@ public:
         restarted_d=1;
         
         state = STATE_CLEAR;
+    }
+    
+    void save_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
+        
+//        char temp [ PATH_MAX ];
+//        
+//        string bouh = temp;
+//        
+//        int error = errno;
+//        
+//        switch ( error ) {
+//                // EINVAL can't happen - size argument > 0
+//                
+//                // PATH_MAX includes the terminating nul,
+//                // so ERANGE should not be returned
+//                
+//            case EACCES:
+//                post("Access denied");
+//                
+//            case ENOMEM:
+//                // I'm not sure whether this can happen or not
+//                post("Insufficient storage");
+//                
+//            default: {
+//                post("Unrecognised error");
+//            }
+//        }
+        string filename = "/Users/caramiaux/gotest";
+        bubi->saveTemplates(filename);
+        
+    }
+    
+    void load(long inlet, t_symbol * s, long ac, t_atom * av){
+        string filename = "/Users/caramiaux/gotest.txt";
+        bubi->loadTemplates(filename);
+        lastreferencelearned=bubi->getNbOfTemplates()-1;
+        
+        t_atom* outAtoms = new t_atom[1];
+        atom_setlong(&outAtoms[0],bubi->getNbOfTemplates());
+        outlet_anything(m_outlets[2], gensym("vocabulary_size"), 1, outAtoms);
+        delete[] outAtoms;
+        
     }
     
     void data(long inlet, t_symbol * s, long ac, t_atom * av) {
@@ -404,4 +450,6 @@ extern "C" int main(void) {
     REGISTER_METHOD_GIMME(Gfpfmax, means);
     REGISTER_METHOD_GIMME(Gfpfmax, ranges);
     REGISTER_METHOD_GIMME(Gfpfmax, adaptSpeed);
+    REGISTER_METHOD_GIMME(Gfpfmax, save_vocabulary);
+    REGISTER_METHOD_GIMME(Gfpfmax, load);
 }

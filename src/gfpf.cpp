@@ -14,11 +14,23 @@
 
 
 #include "gfpf.h"
+#include <string.h>
+#include <stdio.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <tr1/memory>
+#include <unistd.h>
+#include "maxcpp6.h"
+
 
 using namespace Eigen;
 using namespace std;
+
+
+
+
+
 
 // Constructor of gfpf
 //   arguments:
@@ -66,7 +78,7 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     offset = new std::vector<float>(2);
     compa = false;
     old_max = 0;
-
+    
 }
 
 gfpf::~gfpf()
@@ -262,7 +274,7 @@ void gfpf::particleFilter(vector<float> obs)
             // observation likelihood and update weights
             float dist;
             dist = (vref-obs_eigen).dot(vref-obs_eigen) * icov_single;
-
+            
             if(nu == 0.)    // Gaussian distribution
             {
                 w(n)   *= exp(-dist);
@@ -506,12 +518,12 @@ void gfpf::resampleAccordingToWeights()
         while (uj > c(i) && i < ns - 1){
             i++;
         }
-    
+        
         if(j < ns - free_pool){
             X.row(j) = oldX.row(i);
             g(j) = oldG(i);
             logW(j) = oldLogW(i);
-        } 
+        }
     }
     
 }
@@ -648,7 +660,7 @@ MatrixXf gfpf::getEstimatedStatus()
 	{
 		es.block(gi,0,1,pdim) /= es(gi,pdim);
 	}
-       
+    
 	return es;
 }
 
@@ -703,6 +715,7 @@ int gfpf::getLengthOfTemplateByInd(int Ind)
 // ============================================================
 vector<vector<float> > gfpf::getTemplateByInd(int Ind)
 {
+    post("template szie %i",R_single[Ind].size());
 	if (Ind < gestureLengths.size())
 		return R_single[Ind];
 	else
@@ -759,3 +772,106 @@ void gfpf::clear()
 }
 
 
+void gfpf::saveTemplates(std::string filename)
+{
+    
+    std::string directory = filename;
+    std::string parent_directory = directory;
+    //    directory.append("run");
+    //    char buf[10];
+    //    sprintf(buf, "%d", folder);
+    //    directory.append(buf);
+    //    directory.append("/");
+    //    directory.append(filename);
+    directory.append(".txt");
+    
+    
+    std::ofstream file_write(directory.c_str());
+    for(int i=0; i<R_single.size(); i++){
+        file_write << "template " << i << " " << R_single[0][0].size() << endl;
+        for(int j=0; j<R_single[i].size(); j++)
+        {
+            for(int k=0; k<R_single[i][j].size(); k++)
+                file_write << R_single[i][j][k] << " ";
+            file_write << endl;
+        }
+    }
+    file_write.close();
+    //values.clear();
+    
+}
+
+void gfpf::loadTemplates(std::string filename)
+{
+    
+    clear();
+
+    ifstream infile;
+    stringstream doung;
+    
+    //        post("%s",filename.c_str());
+    infile.open (filename.c_str(), ifstream::in);
+    
+    //        post("%i",infile.good());
+    string line;
+    vector<string> list;
+    int cl=-1;
+    while(!infile.eof())
+    {
+        cl++;
+        infile >> line;
+        //post("%i %s",cl,line.c_str());
+        list.push_back(line);
+    }
+    
+    int k=0;
+    int template_starting_point = 1;
+    int template_id=-1;
+    int template_dim = 0;
+    vector<float> vect_0_l;
+    //post("list size %i",list.size());
+    
+    while (k < (list.size()-1) ){ // TODO to be changed if dim>2
+        if (!strcmp(list[k].c_str(),"template"))
+        {
+            template_id = atoi(list[k+1].c_str());
+            template_dim = atoi(list[k+2].c_str());
+            k=k+3;
+            //post("add template %i with size %i (k=%i)", template_id, template_dim,k);
+            addTemplate();
+            template_starting_point = 1;
+        }
+        
+        if (template_dim<=0){
+            //post("bug dim = -1");
+        }
+        else{          
+            
+            vector<float> vect(template_dim);
+            if (template_starting_point==1)
+            {
+                // keep track of the first point
+                for (int kk=0; kk<template_dim; kk++)
+                {
+                    vect[kk] = (float)atof(list[k+kk].c_str());
+                }
+                vect_0_l = vect;
+                template_starting_point=0;
+            }
+            // store the incoming list as a vector of float
+            for (int kk=0; kk<template_dim; kk++)
+            {
+                vect[kk] = (float)atof(list[k+kk].c_str());
+                vect[kk] = vect[kk]-vect_0_l[kk];
+            }
+            //post("fill %i with %f %f",lrndGstr,vect[0],vect[1]);
+            fillTemplate(lrndGstr,vect);
+        }
+
+        k+=template_dim;
+        
+    }
+    
+    infile.close();
+    
+}
