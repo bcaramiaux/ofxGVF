@@ -196,6 +196,7 @@ void gfpf::particleFilter(vector<float> obs)
     int ns = static_cast<int>(X.rows());
     
     // Change obs to VectorXf
+    obs_eigen=VectorXf(obs.size());
     for (int k=0; k< obs.size(); k++)
         obs_eigen(k)=obs[k];
     
@@ -261,6 +262,7 @@ void gfpf::particleFilter(vector<float> obs)
             // observation likelihood and update weights
             float dist;
             dist = (vref-obs_eigen).dot(vref-obs_eigen) * icov_single;
+
             if(nu == 0.)    // Gaussian distribution
             {
                 w(n)   *= exp(-dist);
@@ -532,7 +534,7 @@ void gfpf::setInitCoord(std::vector<float> s_origin)
 void gfpf::infer(vector<float> vect)
 {
     //	unsigned int nsteps = vect.size();
-    //particleFilter(vect);
+    // particleFilter(vect);
     particleFilterOptim(vect);
     //	for(int i = 0; i < nsteps; i++)
     //		particleFilter2D(xy.row(i));
