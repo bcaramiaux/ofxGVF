@@ -44,8 +44,8 @@ public:
     {
         setupIO(1, 3); // inlets / outlets
         post("Gfpfmax - realtime adaptive gesture recognition (version: 13-09-2013)");
-        post("(c) Goldsmiths, University of London and Ircam Centre Pompidou");
-        post("    contact: Baptiste Caramiaux b.caramiaux@golds.ac.uk");
+        post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
+        post("    contact: Baptiste Caramiaux b.caramiaux@gold.ac.uk");
         
 		// default values
 		Nspg = 2000; int ns = Nspg; //!!
