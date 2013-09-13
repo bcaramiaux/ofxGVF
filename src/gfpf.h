@@ -96,6 +96,7 @@ public:
     Eigen::VectorXf getGestureLikelihoods();
 	Eigen::VectorXf getEndGestureProbabilities(float minpos=0.);
 	Eigen::MatrixXf getEstimatedStatus();
+    float getObservationNoiseStd();
     int getResamplingThreshold();
 	int getNbOfParticles();
 	int getNbOfTemplates();

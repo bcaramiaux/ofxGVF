@@ -32,6 +32,7 @@ private:
 	int pdim;
 	Eigen::VectorXf mpvrs;
 	Eigen::VectorXf rpvrs;
+    float value_mmax;
     
     
 public:
@@ -47,7 +48,7 @@ public:
         
 		// default values
 		Nspg = 2000; int ns = Nspg; //!!
-		Rtpg = 1000; int rt = Rtpg; //!!
+		Rtpg = 500; int rt = Rtpg; //!!
 		
 		sp = 0.0001;
 		sv = 0.001;
@@ -75,6 +76,7 @@ public:
 		state = STATE_CLEAR;
 		
 		lastreferencelearned = -1;
+        value_mmax = -INFINITY;
 		
     }
     
@@ -150,40 +152,18 @@ public:
         restarted_l=1;
         restarted_d=1;
         
+        value_mmax = -INFINITY;
+        
         state = STATE_CLEAR;
     }
     
     void save_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
-        
-//        char temp [ PATH_MAX ];
-//        
-//        string bouh = temp;
-//        
-//        int error = errno;
-//        
-//        switch ( error ) {
-//                // EINVAL can't happen - size argument > 0
-//                
-//                // PATH_MAX includes the terminating nul,
-//                // so ERANGE should not be returned
-//                
-//            case EACCES:
-//                post("Access denied");
-//                
-//            case ENOMEM:
-//                // I'm not sure whether this can happen or not
-//                post("Insufficient storage");
-//                
-//            default: {
-//                post("Unrecognised error");
-//            }
-//        }
         string filename = "/Users/caramiaux/gotest";
         bubi->saveTemplates(filename);
         
     }
     
-    void load(long inlet, t_symbol * s, long ac, t_atom * av){
+    void load_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
         string filename = "/Users/caramiaux/gotest.txt";
         bubi->loadTemplates(filename);
         lastreferencelearned=bubi->getNbOfTemplates()-1;
@@ -239,10 +219,14 @@ public:
             }
             // otherwise just store the incoming obs
             else {
-                for (int k=0; k<ac; k++)
+                for (int k=0; k<ac; k++){
                     vect[k] = atom_getfloat(&av[k]);
+                    if (vect[k]>=value_mmax)
+                        value_mmax=abs(vect[k]);
+                }
             }
-            
+//            float newcov = so *value_mmax;
+//            bubi->setIcovSingleValue(1/(newcov*newcov));
             // Fill template with the observation
             bubi->fillTemplate(lastreferencelearned,vect);
             
@@ -363,6 +347,7 @@ public:
     void printme(long inlet, t_symbol * s, long ac, t_atom * av) {
         post("N. particles %d: ", bubi->getNbOfParticles());
         post("Resampling Th. %d: ", bubi->getResamplingThreshold());
+        post("Tolerance %.2f: ", bubi->getObservationNoiseStd());
         post("Means %.3f %.3f %.3f %.3f: ", mpvrs[0], mpvrs[1], mpvrs[2], mpvrs[3]);
         post("Ranges %.3f %.3f %.3f %.3f: ", rpvrs[0], rpvrs[1], rpvrs[2], rpvrs[3]);
         for(int i = 0; i < bubi->getNbOfTemplates(); i++)
@@ -451,5 +436,5 @@ extern "C" int main(void) {
     REGISTER_METHOD_GIMME(Gfpfmax, ranges);
     REGISTER_METHOD_GIMME(Gfpfmax, adaptSpeed);
     REGISTER_METHOD_GIMME(Gfpfmax, save_vocabulary);
-    REGISTER_METHOD_GIMME(Gfpfmax, load);
+    REGISTER_METHOD_GIMME(Gfpfmax, load_vocabulary);
 }

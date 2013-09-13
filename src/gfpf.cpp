@@ -732,6 +732,13 @@ int gfpf::getResamplingThreshold()
     return resampling_threshold;
 }
 
+// getObservationNoiseStd()
+//
+// ============================================================
+float gfpf::getObservationNoiseStd(){
+    return sqrt(1/icov_single);
+}
+
 
 
 // setAdaptSpeed(...)
