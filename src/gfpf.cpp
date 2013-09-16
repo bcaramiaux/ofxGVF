@@ -21,7 +21,7 @@
 #include <sstream>
 #include <tr1/memory>
 #include <unistd.h>
-#include "maxcpp6.h"
+
 
 
 using namespace Eigen;
@@ -715,7 +715,7 @@ int gfpf::getLengthOfTemplateByInd(int Ind)
 // ============================================================
 vector<vector<float> > gfpf::getTemplateByInd(int Ind)
 {
-    post("template szie %i",R_single[Ind].size());
+    //post("template szie %i",R_single[Ind].size());
 	if (Ind < gestureLengths.size())
 		return R_single[Ind];
 	else
@@ -783,14 +783,14 @@ void gfpf::saveTemplates(std::string filename)
 {
     
     std::string directory = filename;
-    std::string parent_directory = directory;
+    //std::string parent_directory = directory;
     //    directory.append("run");
     //    char buf[10];
     //    sprintf(buf, "%d", folder);
     //    directory.append(buf);
     //    directory.append("/");
     //    directory.append(filename);
-    directory.append(".txt");
+    //directory.append(".txt");
     
     
     std::ofstream file_write(directory.c_str());

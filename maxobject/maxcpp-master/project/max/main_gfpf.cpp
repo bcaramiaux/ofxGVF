@@ -101,6 +101,26 @@ public:
         post("shit long");
 		outlet_int(m_outlets[0], v);
 	}
+    
+    // Methods order:
+    // - learn
+    // - follow
+    // - data
+    // - save_vocabulary
+    // - load_vocabulary
+    // - clear
+    // - printme
+    // - restart
+    // - tolerance
+    // - resampling_threshold
+    // - spreading_means
+    // - spreading_ranges
+    // - adaptation_speed
+    
+
+    ///////////////////////////////////////////////////////////
+    //====================== LEARN
+    ///////////////////////////////////////////////////////////
 	void learn(long inlet, t_symbol * s, long ac, t_atom * av) {
         
         if(ac != 1)
@@ -125,6 +145,12 @@ public:
         restarted_l=1;
         
     }
+    
+    
+    
+    ///////////////////////////////////////////////////////////
+    //====================== FOLLOW
+    ///////////////////////////////////////////////////////////
     void follow(long inlet, t_symbol * s, long ac, t_atom * av) {
         
         if(lastreferencelearned >= 0)
@@ -145,37 +171,12 @@ public:
             return;
         }
     }
-    void clear(long inlet, t_symbol * s, long ac, t_atom * av) {
-        lastreferencelearned = -1;
-        
-        bubi->clear();
-        
-        restarted_l=1;
-        restarted_d=1;
-        
-        value_mmax = -INFINITY;
-        
-        state = STATE_CLEAR;
-    }
     
-    void save_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
-        string filename = "/Users/caramiaux/gotest";
-        bubi->saveTemplates(filename);
-        
-    }
     
-    void load_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
-        string filename = "/Users/caramiaux/gotest.txt";
-        bubi->loadTemplates(filename);
-        lastreferencelearned=bubi->getNbOfTemplates()-1;
-        
-        t_atom* outAtoms = new t_atom[1];
-        atom_setlong(&outAtoms[0],bubi->getNbOfTemplates());
-        outlet_anything(m_outlets[2], gensym("vocabulary_size"), 1, outAtoms);
-        delete[] outAtoms;
-        
-    }
     
+    ///////////////////////////////////////////////////////////
+    //====================== DATA
+    ///////////////////////////////////////////////////////////
     void data(long inlet, t_symbol * s, long ac, t_atom * av) {
         
         if(ac == 0)
@@ -226,8 +227,8 @@ public:
                         value_mmax=abs(vect[k]);
                 }
             }
-//            float newcov = so *value_mmax;
-//            bubi->setIcovSingleValue(1/(newcov*newcov));
+            //            float newcov = so *value_mmax;
+            //            bubi->setIcovSingleValue(1/(newcov*newcov));
             // Fill template with the observation
             bubi->fillTemplate(lastreferencelearned,vect);
             
@@ -265,9 +266,9 @@ public:
                 for (int k=0; k<ac; k++)
                     vect[k] = atom_getfloat(&av[k]);
             }
-
-//            for (int k=0; k<ac; k++)
-//                post("obs[%i] %f", k,vect[k]);
+            
+            //            for (int k=0; k<ac; k++)
+            //                post("obs[%i] %f", k,vect[k]);
             // perform the inference with the current observation
             bubi->infer(vect);
             
@@ -307,45 +308,74 @@ public:
             outlet_anything(m_outlets[1], gensym("weights"), statu.rows(), outAtoms);
             delete[] outAtoms;
             
-            
-            /*
-             outAtoms = new t_atom[statu.rows()];
-             for(int j = 0; j < statu.rows(); j++)
-             atom_setfloat(&outAtoms[j],statu(j,1));
-             outlet_anything(m_outlets[1], gensym("test2"), statu.rows(), outAtoms);
-             delete[] outAtoms;
-             
-             outAtoms = new t_atom[statu.rows()];
-             for(int j = 0; j < statu.rows(); j++)
-             atom_setfloat(&outAtoms[j],statu(j,2));
-             outlet_anything(m_outlets[2], gensym("test3"), statu.rows(), outAtoms);
-             delete[] outAtoms;
-             
-             outAtoms = new t_atom[statu.rows()];
-             for(int j = 0; j < statu.rows(); j++)
-             atom_setfloat(&outAtoms[j],statu(j,3));
-             outlet_anything(m_outlets[3], gensym("test4"), statu.rows(), outAtoms);
-             delete[] outAtoms;
-             
-             Eigen::VectorXf gprob = bubi->getGestureConditionnalProbabilities();
-             outAtoms = new t_atom[gprob.size()];
-             for(int j = 0; j < gprob.size(); j++)
-             atom_setfloat(&outAtoms[j],statu(j,4));
-             outlet_anything(m_outlets[4], gensym("test5"), statu.rows(), outAtoms);
-             delete[] outAtoms;
-             
-             gprob = bubi->getGestureLikelihoods();
-             outAtoms = new t_atom[gprob.size()];
-             for(int j = 0; j < gprob.size(); j++)
-             atom_setfloat(&outAtoms[j],statu(j,5));
-             outlet_anything(m_outlets[5], gensym("test6"), statu.rows(), outAtoms);
-             delete[] outAtoms;
-             
-             */
-            
         }
     }
-    void printme(long inlet, t_symbol * s, long ac, t_atom * av) {
+
+    
+    
+    
+    ///////////////////////////////////////////////////////////
+    //====================== SAVE_VOCABULARY
+    ///////////////////////////////////////////////////////////
+    void save_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
+        char* mpath = atom_string(av);
+//        string filename = "/Users/caramiaux/gotest";
+        int i=0;
+        while ( *(mpath+i)!='/' )
+            i++;
+        mpath = mpath+i;
+        string filename(mpath);
+        //post("%s", filename.c_str());
+        bubi->saveTemplates(filename);
+        
+    }
+    
+    
+    
+    ///////////////////////////////////////////////////////////
+    //====================== LOAD_VOCABULARY
+    ///////////////////////////////////////////////////////////
+    void load_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
+        char* mpath = atom_string(av);
+//        string filename = "/Users/caramiaux/gotest.txt";
+        int i=0;
+        while ( *(mpath+i)!='/' )
+            i++;
+        mpath = mpath+i;
+        string filename(mpath);
+        bubi->loadTemplates(filename);
+        lastreferencelearned=bubi->getNbOfTemplates()-1;
+        
+        t_atom* outAtoms = new t_atom[1];
+        atom_setlong(&outAtoms[0],bubi->getNbOfTemplates());
+        outlet_anything(m_outlets[2], gensym("vocabulary_size"), 1, outAtoms);
+        delete[] outAtoms;
+    }
+    
+
+    
+    ///////////////////////////////////////////////////////////
+    //====================== CLEAR
+    ///////////////////////////////////////////////////////////
+    void clear(long inlet, t_symbol * s, long ac, t_atom * av) {
+        lastreferencelearned = -1;
+        
+        bubi->clear();
+        
+        restarted_l=1;
+        restarted_d=1;
+        
+        value_mmax = -INFINITY;
+        
+        state = STATE_CLEAR;
+    }
+    
+    
+
+    ///////////////////////////////////////////////////////////
+    //====================== PRINTME
+    ///////////////////////////////////////////////////////////
+       void printme(long inlet, t_symbol * s, long ac, t_atom * av) {
         post("N. particles %d: ", bubi->getNbOfParticles());
         post("Resampling Th. %d: ", bubi->getResamplingThreshold());
         post("Tolerance %.2f: ", bubi->getObservationNoiseStd());
@@ -362,6 +392,12 @@ public:
         }
         
     }
+    
+    
+    
+    ///////////////////////////////////////////////////////////
+    //====================== RESTART
+    ///////////////////////////////////////////////////////////
     void restart(long inlet, t_symbol * s, long ac, t_atom * av) {
         restarted_l=1;
         if(state == STATE_FOLLOWING)
@@ -373,28 +409,51 @@ public:
             restarted_d=1;
         }
     }
-    void std(long inlet, t_symbol * s, long ac, t_atom * av) {
+    
+    
+    
+    
+    ///////////////////////////////////////////////////////////
+    //====================== tolerance
+    ///////////////////////////////////////////////////////////
+    void tolerance(long inlet, t_symbol * s, long ac, t_atom * av) {
         float stdnew = atom_getfloat(&av[0]);
         if (stdnew == 0.0)
             stdnew = 0.1;
         bubi->setIcovSingleValue(1/(stdnew*stdnew));
     }
-    void rt(long inlet, t_symbol * s, long ac, t_atom * av) {
+    
+    ///////////////////////////////////////////////////////////
+    //====================== resampling_threshold
+    ///////////////////////////////////////////////////////////
+    void resampling_threshold(long inlet, t_symbol * s, long ac, t_atom * av) {
         int rtnew = atom_getlong(&av[0]);
         int cNS = bubi->getNbOfParticles();
         if (rtnew >= cNS)
             rtnew = floor(cNS/2);
         bubi->setResamplingThreshold(rtnew);
     }
-    void means(long inlet, t_symbol * s, long ac, t_atom * av) {
+    
+    ///////////////////////////////////////////////////////////
+    //====================== spreading_means
+    ///////////////////////////////////////////////////////////
+    void spreading_means(long inlet, t_symbol * s, long ac, t_atom * av) {
         mpvrs = Eigen::VectorXf(pdim);
         mpvrs << atom_getfloat(&av[0]), atom_getfloat(&av[1]), atom_getfloat(&av[2]), atom_getfloat(&av[3]);
     }
-    void ranges(long inlet, t_symbol * s, long ac, t_atom * av) {
+    
+    ///////////////////////////////////////////////////////////
+    //====================== spreading_ranges
+    ///////////////////////////////////////////////////////////
+    void spreading_ranges(long inlet, t_symbol * s, long ac, t_atom * av) {
         rpvrs = Eigen::VectorXf(pdim);
         rpvrs << atom_getfloat(&av[0]), atom_getfloat(&av[1]), atom_getfloat(&av[2]), atom_getfloat(&av[3]);
     }
-    void adaptSpeed(long inlet, t_symbol * s, long ac, t_atom * av) {
+    
+    ///////////////////////////////////////////////////////////
+    //====================== adaptation_speed
+    ///////////////////////////////////////////////////////////
+    void adaptation_speed(long inlet, t_symbol * s, long ac, t_atom * av) {
         vector<float> as;
         as.push_back(atom_getfloat(&av[0]));
         as.push_back(atom_getfloat(&av[1]));
@@ -431,11 +490,11 @@ extern "C" int main(void) {
     REGISTER_METHOD_GIMME(Gfpfmax, data);
     REGISTER_METHOD_GIMME(Gfpfmax, printme);
     REGISTER_METHOD_GIMME(Gfpfmax, restart);
-    REGISTER_METHOD_GIMME(Gfpfmax, std);
-    REGISTER_METHOD_GIMME(Gfpfmax, rt);
-    REGISTER_METHOD_GIMME(Gfpfmax, means);
-    REGISTER_METHOD_GIMME(Gfpfmax, ranges);
-    REGISTER_METHOD_GIMME(Gfpfmax, adaptSpeed);
+    REGISTER_METHOD_GIMME(Gfpfmax, tolerance);
+    REGISTER_METHOD_GIMME(Gfpfmax, resampling_threshold);
+    REGISTER_METHOD_GIMME(Gfpfmax, spreading_means);
+    REGISTER_METHOD_GIMME(Gfpfmax, spreading_ranges);
+    REGISTER_METHOD_GIMME(Gfpfmax, adaptation_speed);
     REGISTER_METHOD_GIMME(Gfpfmax, save_vocabulary);
     REGISTER_METHOD_GIMME(Gfpfmax, load_vocabulary);
 }

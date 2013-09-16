@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
 
 static t_class *gfpf_class;
 
@@ -123,15 +124,16 @@ static void gfpf_auto(t_gfpf *x)
 
 static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
 {
-    post("\ngfpf - realtime adaptive gesture recognition (11-04-2013)");
-    post("(C) Baptiste Caramiaux, Ircam, Goldsmiths");
+    post("\ngfpfpd - realtime adaptive gesture recognition (version: 13-09-2013)");
+    post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
+    post("    contact: Baptiste Caramiaux b.caramiaux@gold.ac.uk");
     post("pd object port - v 1.1 Tom Rushmore, Goldsmiths");
     
     t_gfpf *x = (t_gfpf *)pd_new(gfpf_class);
     
     x->Nspg = 2000;
     t_int ns = x->Nspg; //!!
-    x->Rtpg = 1000;
+    x->Rtpg = 500;
     t_int rt = x->Rtpg; //!!
     
     x->sp = 0.0001;
@@ -140,6 +142,8 @@ static void *gfpf_new(t_symbol *s, int argc, t_atom *argv)
     x->sr = 0.000001;
     x->so = 0.2;
     x->pdim = 4;
+    
+    
     Eigen::VectorXf sigs(x->pdim);
     sigs << x->sp, x->sv, x->ss, x->sr;
     
@@ -188,6 +192,27 @@ static void gfpf_destructor(t_gfpf *x)
     post("destructor complete");
 }
 
+
+
+// Methods order:
+// - learn
+// - follow
+// - data
+// - save_vocabulary
+// - load_vocabulary
+// - clear
+// - printme
+// - restart
+// - tolerance
+// - resampling_threshold
+// - spreading_means
+// - spreading_ranges
+// - adaptation_speed
+
+
+///////////////////////////////////////////////////////////
+//====================== LEARN
+///////////////////////////////////////////////////////////
 static void gfpf_learn(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     if(argc != 1)
@@ -210,13 +235,15 @@ static void gfpf_learn(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
     restarted_l=1;
 }
 
+
+///////////////////////////////////////////////////////////
+//====================== FOLLOW
+///////////////////////////////////////////////////////////
 static void gfpf_follow(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     if(x->lastreferencelearned >= 0)
     {
-        post("I'm about to follow!");
         x->bubi->spreadParticles(x->mpvrs,x->rpvrs);
-        //post("nb of gest after following %i", bubi->getNbOfGestures());
         x->state = STATE_FOLLOWING;
     }
     else
@@ -227,16 +254,9 @@ static void gfpf_follow(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 }
 
 
-static void gfpf_clear(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
-{
-    x->lastreferencelearned = -1;
-    x->bubi->clear();
-    restarted_l=1;
-    restarted_d=1;
-    x->state = STATE_CLEAR;
-}
-
-
+///////////////////////////////////////////////////////////
+//====================== DATA
+///////////////////////////////////////////////////////////
 static void gfpf_data(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     if(x->state == STATE_CLEAR)
@@ -360,6 +380,68 @@ static void gfpf_data(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
     }
 }
 
+
+///////////////////////////////////////////////////////////
+//====================== SAVE_VOCABULARY
+///////////////////////////////////////////////////////////
+static void gfpf_save_vocabulary(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+{
+    unsigned int bufsize = 200;
+    char * mpath;
+    mpath = (char*)malloc(bufsize*sizeof(bufsize));
+    atom_string(argv, mpath, bufsize);
+    int i=0;
+    while ( *(mpath+i)!='/' )
+        i++;
+    mpath = mpath+i;
+    std::string filename(mpath);
+    x->bubi->saveTemplates(filename);
+}
+
+
+///////////////////////////////////////////////////////////
+//====================== LOAD_VOCABULARY
+///////////////////////////////////////////////////////////
+void load_vocabulary(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+{
+    unsigned int bufsize = 200;
+    char * mpath;
+    mpath = (char*)malloc(bufsize*sizeof(bufsize));
+    atom_string(argv, mpath, bufsize);
+    int i=0;
+    while ( *(mpath+i)!='/' )
+        i++;
+    mpath = mpath+i;
+    std::string filename(mpath);
+    //std::string filename = "/Users/caramiaux/gotest.txt";
+    x->bubi->loadTemplates(filename);
+    x->lastreferencelearned=x->bubi->getNbOfTemplates()-1;
+/*
+    t_atom* outAtoms = new t_atom[1];
+    SETFLOAT(&outAtoms[0], x->bubi->getNbOfTemplates());
+    outlet_list(x->Likelihoods, &s_list, 1, outAtoms);
+    delete[] outAtoms;
+ */
+    
+}
+
+
+///////////////////////////////////////////////////////////
+//====================== CLEAR
+///////////////////////////////////////////////////////////
+static void gfpf_clear(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+{
+    x->lastreferencelearned = -1;
+    x->bubi->clear();
+    restarted_l=1;
+    restarted_d=1;
+    x->state = STATE_CLEAR;
+}
+
+
+///////////////////////////////////////////////////////////
+//====================== PRINTME
+///////////////////////////////////////////////////////////
 static void gfpf_printme(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     post("\nN. particles %d: ", x->bubi->getNbOfParticles());
@@ -377,6 +459,10 @@ static void gfpf_printme(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
     }
 }
 
+
+///////////////////////////////////////////////////////////
+//====================== RESTART
+///////////////////////////////////////////////////////////
 static void gfpf_restart(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     restarted_l=1;
@@ -389,7 +475,11 @@ static void gfpf_restart(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 
 }
 
-static void gfpf_std(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+
+///////////////////////////////////////////////////////////
+//====================== tolerance
+///////////////////////////////////////////////////////////
+static void gfpf_tolerance(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     float stdnew = getfloat(argv);
     if (stdnew == 0.0)
@@ -397,30 +487,44 @@ static void gfpf_std(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
     x->bubi->setIcovSingleValue(1/(stdnew*stdnew));
 }
 
-static void gfpf_rt(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+
+///////////////////////////////////////////////////////////
+//====================== resampling_threshold
+///////////////////////////////////////////////////////////
+static void gfpf_resampling_threshold(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     int rtnew = getint(argv);
     int cNS = x->bubi->getNbOfParticles();
     if (rtnew >= cNS)
         rtnew = floor(cNS/2);
     x->bubi->setResamplingThreshold(rtnew);
-    //x->bubi->setResamplingThreshold(-1);
-
 }
 
-static void gfpf_means(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+
+///////////////////////////////////////////////////////////
+//====================== spreading_means
+///////////////////////////////////////////////////////////
+static void gfpf_spreading_means(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     x->mpvrs = Eigen::VectorXf(x->pdim);
     x->mpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
 }
 
-static void gfpf_ranges(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+
+///////////////////////////////////////////////////////////
+//====================== spreading_ranges
+///////////////////////////////////////////////////////////
+static void gfpf_spreading_ranges(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     x->rpvrs = Eigen::VectorXf(x->pdim);
     x->rpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
 }
 
-static void gfpf_adaptspeed(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
+
+///////////////////////////////////////////////////////////
+//====================== adaptation_speed
+///////////////////////////////////////////////////////////
+static void gfpf_adaptation_speed(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     std::vector<float> as;
     as.push_back(getfloat(argv));
@@ -429,6 +533,7 @@ static void gfpf_adaptspeed(t_gfpf *x,const t_symbol *sss,int argc, t_atom *argv
     as.push_back(getfloat(argv + 3));
     x->bubi->setAdaptSpeed(as);
 }
+
 
 extern "C"
 {
@@ -442,10 +547,10 @@ extern "C"
         class_addmethod(gfpf_class,(t_method)gfpf_data,gensym("data"),A_GIMME,0);
         class_addmethod(gfpf_class,(t_method)gfpf_printme,gensym("printme"),A_GIMME,0);
         class_addmethod(gfpf_class,(t_method)gfpf_restart,gensym("restart"),A_GIMME,0);
-        class_addmethod(gfpf_class,(t_method)gfpf_std,gensym("std"),A_GIMME,0);
-        class_addmethod(gfpf_class,(t_method)gfpf_rt,gensym("rt"),A_GIMME,0);
-        class_addmethod(gfpf_class,(t_method)gfpf_means,gensym("means"),A_GIMME,0);
-        class_addmethod(gfpf_class,(t_method)gfpf_ranges,gensym("ranges"),A_GIMME,0);
-        class_addmethod(gfpf_class,(t_method)gfpf_adaptspeed,gensym("adaptspeed"),A_GIMME,0);        
+        class_addmethod(gfpf_class,(t_method)gfpf_tolerance,gensym("std"),A_GIMME,0);
+        class_addmethod(gfpf_class,(t_method)gfpf_resampling_threshold,gensym("rt"),A_GIMME,0);
+        class_addmethod(gfpf_class,(t_method)gfpf_spreading_means,gensym("means"),A_GIMME,0);
+        class_addmethod(gfpf_class,(t_method)gfpf_spreading_ranges,gensym("ranges"),A_GIMME,0);
+        class_addmethod(gfpf_class,(t_method)gfpf_adaptation_speed,gensym("adaptspeed"),A_GIMME,0);        
     }
 }

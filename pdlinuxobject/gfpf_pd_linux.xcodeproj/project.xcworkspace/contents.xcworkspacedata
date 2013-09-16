@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:gfpf linux object.xcodeproj">
+      location = "self:gfpf_pd_linux.xcodeproj">
    </FileRef>
 </Workspace>
