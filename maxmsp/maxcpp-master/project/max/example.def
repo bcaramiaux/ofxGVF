@@ -1,0 +1,4 @@
+LIBRARY example.mxe
+
+EXPORTS
+	main
