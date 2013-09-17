@@ -1,4 +1,0 @@
-g++ -I"../Eigen" -I"/usr/include/pd" -DPD -DVERSION='"0.0"' -fPIC -Wall -W -g -O6 -funroll-loops -fomit-frame-pointer -o "main.o" -c "main.cpp"
-g++ -I"../Eigen" -I"/usr/include/pd" -DPD -DVERSION='"0.0"' -fPIC -Wall -W -g -O6 -funroll-loops -fomit-frame-pointer -o "../src/gfpf.o" -c "../src/gfpf.cpp"
-g++   -rdynamic -shared -fPIC -Wl,-rpath,"\$ORIGIN",--enable-new-dtags -o "gfpf.pd_linux" "main.o" "../src/gfpf.o"    -lc
-rm ../src/*.o
