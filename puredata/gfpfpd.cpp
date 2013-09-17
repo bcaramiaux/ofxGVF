@@ -26,7 +26,7 @@ typedef struct _gfpfpd {
 	Eigen::VectorXf rpvrs;
     
     // outlets
-    t_outlet *Position,*Vitesse,*Rotation,*Scaling,*Recognition,*Likelihoods,* ActiveGesture,* TotalActiveGesture;
+    t_outlet *Position,*Vitesse,*Rotation,*Scaling,*Recognition,*Likelihoods,*Number_templates;
 } t_gfpfpd;
 
 static void gfpfpd_learn      (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
@@ -176,8 +176,8 @@ static void *gfpfpd_new(t_symbol *s, int argc, t_atom *argv)
     x->Scaling      = outlet_new(&x->x_obj, &s_list);
     x->Recognition  = outlet_new(&x->x_obj, &s_list);
     x->Likelihoods  = outlet_new(&x->x_obj, &s_list);
-    x->ActiveGesture= outlet_new(&x->x_obj, &s_list);
-    x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
+    x->Number_templates= outlet_new(&x->x_obj, &s_list);
+//    x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
     
     return (void *)x;
 }
@@ -233,6 +233,12 @@ static void gfpfpd_learn(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
     x->bubi->addTemplate();
     x->state = STATE_LEARNING;
     restarted_l=1;
+    
+    // output number of templates
+    t_atom *outAtoms = new t_atom[1];
+    SETFLOAT(&outAtoms[0],x->lastreferencelearned+1);
+    outlet_list(x->Number_templates, &s_list, 1, outAtoms);
+    delete[] outAtoms;
 }
 
 
