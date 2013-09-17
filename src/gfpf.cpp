@@ -81,6 +81,7 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     offset = new std::vector<float>(2);
     compa = false;
     old_max = 0;
+    input_type = "shape";
     
 }
 
@@ -403,6 +404,35 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
             VectorXf vref(obs.size());
             for (int os=0; os<obs.size(); os++)
                 vref(os) = R_single[pgi][frameindex][os];
+            
+            
+            // temp vector for the positions
+            std::vector<float> temp;
+            
+//            if (input_type=="shape")    // shape is a 2-dimensional input data representing the (x,y) positions
+//            {                           // in this case the algorithm adapts: phase, speed, scale, angle
+//                
+//                    // scaling
+//                    vref *= x_n(2);
+//                
+//                    // rotation
+//                    float alpha = x_n(3);
+//                    Matrix2f rotmat;
+//                    rotmat << cos(alpha), -sin(alpha), sin(alpha), cos(alpha);
+//                    vref = rotmat * vref;
+//                
+//                // save resynthesized positions for optionnal visualization
+//                temp.push_back(vref[0]);
+//                temp.push_back(vref[1]);
+//                particlesPositions.push_back(temp);
+//            }
+//            else if (input_type=="generic")
+//            {
+//                for (int ndi=0; ndi<obs.size(); ndi++)
+//                    temp.push_back(vref[ndi]);
+//                particlesPositions.push_back(temp);
+//            }
+            
             // If incoming data is 2-dimensional: we assume that it is drawn shape!
             if (obs.size()==2){
                 // sca1ing
@@ -422,17 +452,19 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
                 
             }
             // If incoming data is 3-dimensional
-            else if (obs.size()==3){
+            else if (obs.size()!=2){
                 // scaling
                 vref *= x_n(2);
                 
                 // put the positions into vector
                 std::vector<float> temp;
-                temp.push_back(vref[0]);
-                temp.push_back(vref[1]);
-                temp.push_back(vref[2]);
+                for (int ndi=0; ndi<obs.size(); ndi++)
+                    temp.push_back(vref[ndi]);
                 particlesPositions.push_back(temp);
+                
             }
+            
+            
             vrefmineigen = vref-obs_eigen;
             
             // observation likelihood and update weights
@@ -694,6 +726,13 @@ void gfpf::setNumberOfParticles(int newNs)
 	g = VectorXi(newNs);               // Vector of gesture class
 	w = VectorXf(newNs);               // Weights
     logW = VectorXf(newNs);
+}
+
+
+void gfpf::setInputType(std::string new_input_type){
+    
+    input_type = new_input_type;
+    
 }
 
 

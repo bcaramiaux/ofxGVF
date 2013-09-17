@@ -50,7 +50,8 @@ public:
 		// default values
 		Nspg = 2000; int ns = Nspg; //!!
 		Rtpg = 500; int rt = Rtpg; //!!
-		
+        
+        
 		sp = 0.0001;
 		sv = 0.001;
 		ss = 0.0001;

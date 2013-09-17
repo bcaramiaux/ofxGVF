@@ -21,14 +21,21 @@
 
 #include <vector>
 #include <Eigen/Core>
-//#include <boost/random.hpp>
 #include <tr1/random>
 #include <map>
+
 
 #define BOOSTLIB 0
 #define OPTIMISD 0 
 #define VDSPOPTM 0
 #define GESTLEARNT 8
+
+
+#if BOOSTLIB
+	#include <boost/random.hpp>
+#endif
+
+
 
 class gfpf
 {
@@ -55,6 +62,7 @@ private:
 	int lrndGstr;               // number of learned gestures (starts at 0)
 	bool multivar;              // -- DEPREC. --
 	std::vector<int> gestureLengths;   // length of each reference gesture
+    std::string input_type;
 	
     // random number generator
 #if BOOSTLIB
@@ -115,6 +123,8 @@ public:
 	void setAdaptSpeed(std::vector<float> as);
 	void setResamplingThreshold(int r);
     void setNumberOfParticles(int newNs);
+    void setInputType(std::string new_input_type);
+    
     
     //optims
     int obs_dim;
