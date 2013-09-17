@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		216F03F717E870CE00B382C3 /* main_gfpf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 216F03F617E870CE00B382C3 /* main_gfpf.cpp */; };
+		216F03F717E870CE00B382C3 /* gfpfmax.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 216F03F617E870CE00B382C3 /* gfpfmax.cpp */; };
 		216F03FA17E870F800B382C3 /* gfpf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 216F03F817E870F800B382C3 /* gfpf.cpp */; };
 		216F03FB17E870F800B382C3 /* gfpf.h in Headers */ = {isa = PBXBuildFile; fileRef = 216F03F917E870F800B382C3 /* gfpf.h */; };
 		22CF119E0EE9A82E0054F513 /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 22CF119D0EE9A82E0054F513 /* MaxAudioAPI.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		216F03F617E870CE00B382C3 /* main_gfpf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main_gfpf.cpp; sourceTree = "<group>"; };
+		216F03F617E870CE00B382C3 /* gfpfmax.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gfpfmax.cpp; sourceTree = "<group>"; };
 		216F03F817E870F800B382C3 /* gfpf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = gfpf.cpp; path = ../../../src/gfpf.cpp; sourceTree = "<group>"; };
 		216F03F917E870F800B382C3 /* gfpf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = gfpf.h; path = ../../../src/gfpf.h; sourceTree = "<group>"; };
 		22CF10220EE984600054F513 /* maxmspsdk.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = maxmspsdk.xcconfig; path = ../../maxmspsdk.xcconfig; sourceTree = SOURCE_ROOT; };
@@ -42,7 +42,7 @@
 			children = (
 				36C5491F16F557E00054C037 /* maxcpp */,
 				22CF10220EE984600054F513 /* maxmspsdk.xcconfig */,
-				216F03F617E870CE00B382C3 /* main_gfpf.cpp */,
+				216F03F617E870CE00B382C3 /* gfpfmax.cpp */,
 				216F03F817E870F800B382C3 /* gfpf.cpp */,
 				216F03F917E870F800B382C3 /* gfpf.h */,
 				22CF119D0EE9A82E0054F513 /* MaxAudioAPI.framework */,
@@ -152,7 +152,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				216F03F717E870CE00B382C3 /* main_gfpf.cpp in Sources */,
+				216F03F717E870CE00B382C3 /* gfpfmax.cpp in Sources */,
 				216F03FA17E870F800B382C3 /* gfpf.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
