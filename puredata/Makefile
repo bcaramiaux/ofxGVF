@@ -176,7 +176,7 @@ ifeq ($(UNAME),Linux)
   ALL_LIBS += -lc $(LIBS_linux)
   STRIP = strip --strip-unneeded -R .note -R .comment
   DISTBINDIR=$(DISTDIR)-$(OS)-$(shell uname -m)
-  PD_INCLUDE = $(PD_PATH)/include/pdextended
+  if test -d $(PD_PATH)/include/pdextended; then PD_INCLUDE = $(PD_PATH)/include/pdextended; else PD_INCLUDE = $(PD_PATH)/include/pd; fi
 endif
 ifeq ($(UNAME),GNU)
   # GNU/Hurd, should work like GNU/Linux for basically all externals
@@ -269,6 +269,7 @@ all: gfpfpd.$(EXTENSION) $(SHARED_LIB)
 %.$(EXTENSION): %.o ../src/gfpf.o $(SHARED_LIB)
 	$(CC) $(ALL_LDFLAGS) -o "$*.$(EXTENSION)" "$*.o" "../src/gfpf.o" $(ALL_LIBS) $(SHARED_LIB)
 	rm ../src/gfpf.o
+	rm -f -- $(SOURCES:.cpp=.o) $(SOURCES_LIB:.cpp=.o) $(SHARED_SOURCE:.c=.o)
 	mkdir -p Build/$(UNAME)/
 	mv gfpfpd.$(EXTENSION) Build/$(UNAME)/
 
