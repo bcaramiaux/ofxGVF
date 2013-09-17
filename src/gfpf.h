@@ -21,7 +21,7 @@
 
 #include <vector>
 #include <Eigen/Core>
-#include <boost/random.hpp>
+//#include <boost/random.hpp>
 #include <tr1/random>
 #include <map>
 
@@ -49,6 +49,7 @@ private:
 	float nu;                   // degree of freedom for the t-distribution; if 0, use a gaussian
 	float sp, sv, sr, ss;       // sigma values (actually, their square root)
 	int resampling_threshold;   // resampling threshol
+    int ns;
 	int pdim;                   // number of state dimension
     int pdim_m1;
 	int lrndGstr;               // number of learned gestures (starts at 0)
@@ -105,12 +106,15 @@ public:
 	int getNbOfTemplates();
 	int getLengthOfTemplateByInd(int Ind);
     std::vector<std::vector<float> > getTemplateByInd(int Ind);
-    
+    Eigen::MatrixXf getX();          // each row is a particle
+	Eigen::VectorXi getG();          // gesture index for each particle [g is ns x 1]
+	Eigen::VectorXf getW();
     
     // Sets
 	void setIcovSingleValue(float f);
 	void setAdaptSpeed(std::vector<float> as);
 	void setResamplingThreshold(int r);
+    void setNumberOfParticles(int newNs);
     
     //optims
     int obs_dim;
@@ -144,6 +148,8 @@ public:
     costTest gest;
     std::vector<int> testScore;
     
+    //in order to output particles
+    std::vector<std::vector<float> > particlesPositions;
     
     void saveTemplates(std::string filename);
     void loadTemplates(std::string filename);

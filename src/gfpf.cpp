@@ -365,6 +365,9 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
         abs_weights[i] = 0.0;
     }
     
+    // clear any previous information about the particles' positions
+    particlesPositions.clear();
+    
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
     {
@@ -409,11 +412,26 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
                 Matrix2f rotmat;
                 rotmat << cos(alpha), -sin(alpha), sin(alpha), cos(alpha);
                 vref = rotmat * vref;
+                
+                
+                // put the positions into vector
+                std::vector<float> temp;
+                temp.push_back(vref[0]);
+                temp.push_back(vref[1]);
+                particlesPositions.push_back(temp);
+                
             }
             // If incoming data is 3-dimensional
             else if (obs.size()==3){
                 // scaling
                 vref *= x_n(2);
+                
+                // put the positions into vector
+                std::vector<float> temp;
+                temp.push_back(vref[0]);
+                temp.push_back(vref[1]);
+                temp.push_back(vref[2]);
+                particlesPositions.push_back(temp);
             }
             vrefmineigen = vref-obs_eigen;
             
@@ -669,6 +687,16 @@ MatrixXf gfpf::getEstimatedStatus()
 
 
 
+void gfpf::setNumberOfParticles(int newNs)
+{
+    particlesPositions.clear();
+	X = MatrixXf(newNs,pdim);          // Matrix of NS particles
+	g = VectorXi(newNs);               // Vector of gesture class
+	w = VectorXf(newNs);               // Weights
+    logW = VectorXf(newNs);
+}
+
+
 // setIcovSingleValue(...)
 //
 // return values of estimated features
@@ -780,6 +808,23 @@ void gfpf::clear()
 	gestureLengths.clear();
 	lrndGstr=-1;
 }
+
+Eigen::MatrixXf gfpf::getX()          // each row is a particle
+{
+    return X;
+}
+
+Eigen::VectorXi gfpf::getG()          // gesture index for each particle [g is ns x 1]
+{
+    return g;
+}
+
+Eigen::VectorXf gfpf::getW()
+{
+    return w;
+}
+
+
 
 
 void gfpf::saveTemplates(std::string filename)
