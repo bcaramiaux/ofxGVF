@@ -24,7 +24,7 @@ typedef struct _gfpfpd {
 	t_int pdim;
 	Eigen::VectorXf mpvrs;
 	Eigen::VectorXf rpvrs;
-    
+    int translate;
     // outlets
     t_outlet *Position,*Vitesse,*Rotation,*Scaling,*Recognition,*Likelihoods,*Number_templates;
 } t_gfpfpd;
@@ -179,6 +179,8 @@ static void *gfpfpd_new(t_symbol *s, int argc, t_atom *argv)
     x->Number_templates= outlet_new(&x->x_obj, &s_list);
 //    x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
     
+    x->translate = 0;
+    
     return (void *)x;
 }
 
@@ -278,7 +280,8 @@ static void gfpfpd_data(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
     if(x->state == STATE_LEARNING)
     {
         std::vector<float> vect(argc);
-        if (argc ==2){
+                if (x->translate){
+//        if (argc ==2){
             if (restarted_l==1)
             {
                 // store the incoming list as a vector of float
@@ -313,7 +316,8 @@ static void gfpfpd_data(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
     else if(x->state == STATE_FOLLOWING)
     {
         std::vector<float> vect(argc);
-        if (argc==2){
+
+        if (x->translate){
             if (restarted_d==1)
             {
                 // store the incoming list as a vector of float
@@ -331,10 +335,11 @@ static void gfpfpd_data(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
             }
         }
         else{
-            post("%i",argc);
             for (int k=0; k<argc; k++)
                 vect[k] = vect[k] = getfloat(argv + k);
         }
+        
+        
         //post("%f %f",xy(0,0),xy(0,1));
         // ------- Fill template
         x->bubi->infer(vect);
@@ -367,19 +372,36 @@ static void gfpfpd_data(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
         outlet_list(x->Scaling, &s_list, statu.rows(), outAtoms);
         delete[] outAtoms;
         
+        
+        
         Eigen::VectorXf gprob = x->bubi->getGestureConditionnalProbabilities();
-        outAtoms = new t_atom[gprob.size()];
-        for(int j = 0; j < gprob.size(); j++)
-            SETFLOAT(&outAtoms[j],gprob(j,0));
-        outlet_list(x->Recognition, &s_list, gprob.size(), outAtoms);
+        float probmaxsofar=-1;
+        int probmaxsofarindex=-1;
+        for (int k=0; k<gprob.size(); k++){
+            if (gprob(k)>probmaxsofar){
+                probmaxsofar=gprob(k);
+                probmaxsofarindex=k+1;
+            }
+        }
+        
+        outAtoms = new t_atom[1];
+        SETFLOAT(&outAtoms[0],probmaxsofarindex);
+        outlet_list(x->Recognition, &s_list, probmaxsofarindex, outAtoms);
         delete[] outAtoms;
         
-        gprob = x->bubi->getGestureLikelihoods();
+        
         outAtoms = new t_atom[gprob.size()];
         for(int j = 0; j < gprob.size(); j++)
             SETFLOAT(&outAtoms[j],gprob(j,0));
         outlet_list(x->Likelihoods, &s_list, gprob.size(), outAtoms);
         delete[] outAtoms;
+        
+//        gprob = x->bubi->getGestureLikelihoods();
+//        outAtoms = new t_atom[gprob.size()];
+//        for(int j = 0; j < gprob.size(); j++)
+//            SETFLOAT(&outAtoms[j],gprob(j,0));
+//        outlet_list(x->Likelihoods, &s_list, gprob.size(), outAtoms);
+//        delete[] outAtoms;
         
         
         
@@ -408,7 +430,7 @@ static void gfpfpd_save_vocabulary(t_gfpfpd *x,const t_symbol *sss,int argc, t_a
 ///////////////////////////////////////////////////////////
 //====================== LOAD_VOCABULARY
 ///////////////////////////////////////////////////////////
-void load_vocabulary(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+void gfpfpd_load_vocabulary(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     unsigned int bufsize = 200;
     char * mpath;
@@ -540,6 +562,14 @@ static void gfpfpd_adaptation_speed(t_gfpfpd *x,const t_symbol *sss,int argc, t_
     x->bubi->setAdaptSpeed(as);
 }
 
+///////////////////////////////////////////////////////////
+//====================== translate
+///////////////////////////////////////////////////////////
+static void gfpfpd_translate(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+{
+    post("transalte %i", getint(argv));
+    x->translate = getint(argv);
+}
 
 extern "C"
 {
@@ -553,10 +583,13 @@ extern "C"
         class_addmethod(gfpfpd_class,(t_method)gfpfpd_data,gensym("data"),A_GIMME,0);
         class_addmethod(gfpfpd_class,(t_method)gfpfpd_printme,gensym("printme"),A_GIMME,0);
         class_addmethod(gfpfpd_class,(t_method)gfpfpd_restart,gensym("restart"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_tolerance,gensym("std"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_resampling_threshold,gensym("rt"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_spreading_means,gensym("means"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_spreading_ranges,gensym("ranges"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_adaptation_speed,gensym("adaptspeed"),A_GIMME,0);        
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_tolerance,gensym("tolerance"),A_GIMME,0);
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_resampling_threshold,gensym("resampling_threshold"),A_GIMME,0);
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_spreading_means,gensym("spreading_means"),A_GIMME,0);
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_spreading_ranges,gensym("spreading_ranges"),A_GIMME,0);
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_adaptation_speed,gensym("adaptation_speed"),A_GIMME,0);
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_save_vocabulary,gensym("save_vocabulary"),A_GIMME,0);
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_load_vocabulary,gensym("load_vocabulary"),A_GIMME,0);
+        class_addmethod(gfpfpd_class,(t_method)gfpfpd_translate,gensym("translate"),A_GIMME,0);
     }
 }

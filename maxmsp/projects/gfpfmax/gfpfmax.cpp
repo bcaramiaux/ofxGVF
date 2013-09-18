@@ -1,3 +1,17 @@
+/****************************************************************
+ 
+ GVF - Gesture Variation Follower Max/MSP Obejct
+ 
+ Depends on the GVF library under ... License
+ 
+ The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
+ 
+ © Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
+ 
+ contact: b.caramiaux@gold.ac.uk
+ ****************************************************************/
+
+
 #include "maxcpp6.h"
 #include "gfpf.h"
 #include <string>
@@ -33,7 +47,8 @@ private:
 	Eigen::VectorXf mpvrs;
 	Eigen::VectorXf rpvrs;
     float value_mmax;
-    
+    bool offline_recognition;
+    int toBeTranslated;
     
 public:
     
@@ -76,9 +91,12 @@ public:
 		restarted_d=1;
         
 		state = STATE_CLEAR;
-		
-		lastreferencelearned = -1;
+        
+        lastreferencelearned = -1;
         value_mmax = -INFINITY;
+        
+        toBeTranslated = 1;
+        offline_recognition = false;
 		
     }
     
@@ -118,7 +136,7 @@ public:
     // - spreading_ranges
     // - adaptation_speed
     
-
+    
     ///////////////////////////////////////////////////////////
     //====================== LEARN
     ///////////////////////////////////////////////////////////
@@ -201,8 +219,9 @@ public:
             
             vector<float> vect(ac);
             
+            if (toBeTranslated){
             // incoming observation is 2-dimensional: keeping track of the first point (offset)
-            if (ac ==2){
+//            if (ac ==2){
                 if (restarted_l==1)
                 {
                     // keep track of the first point
@@ -240,39 +259,39 @@ public:
         // ------------------------------
         else if(state == STATE_FOLLOWING)
         {
-            vector<float> vect(ac);
-            
-            
-            // incoming observation is 2-dimensional: translate the data by the offset
-            if (ac==2){
-                if (restarted_d==1)
-                {
-                    // store the incoming list as a vector of float
+                
+                vector<float> vect(ac);
+
+            if (toBeTranslated){
+                
+                // incoming observation is 2-dimensional: translate the data by the offset
+//                if (ac==2){
+                    if (restarted_d==1)
+                    {
+                        // store the incoming list as a vector of float
+                        for (int k=0; k<ac; k++)
+                        {
+                            vect[k] = atom_getfloat(&av[k]);
+                        }
+                        vect_0_d = vect;
+                        restarted_d=0;
+                    }
+                    // store the data in vect and translate
                     for (int k=0; k<ac; k++)
                     {
                         vect[k] = atom_getfloat(&av[k]);
+                        vect[k]=vect[k]-vect_0_d[k];
                     }
-                    vect_0_d = vect;
-                    restarted_d=0;
                 }
-                // store the data in vect and translate
-                for (int k=0; k<ac; k++)
+                else
                 {
-                    vect[k] = atom_getfloat(&av[k]);
-                    vect[k]=vect[k]-vect_0_d[k];
+                    for (int k=0; k<ac; k++)
+                        vect[k] = atom_getfloat(&av[k]);
                 }
-            }
-            else
-            {
-                for (int k=0; k<ac; k++)
-                    vect[k] = atom_getfloat(&av[k]);
-            }
-            
-            //            for (int k=0; k<ac; k++)
-            //                post("obs[%i] %f", k,vect[k]);
-            // perform the inference with the current observation
-            bubi->infer(vect);
-            
+
+                // perform the inference with the current observation
+                bubi->infer(vect);
+
             
             
             // output recognition
@@ -309,9 +328,23 @@ public:
             outlet_anything(m_outlets[1], gensym("weights"), statu.rows(), outAtoms);
             delete[] outAtoms;
             
+            std::vector<float> aw = bubi->abs_weights;
+            outAtoms = new t_atom[aw.size()];
+            for(int j = 0; j < aw.size(); j++)
+                atom_setfloat(&outAtoms[j],aw[j]);
+            outlet_anything(m_outlets[2], gensym("absweights"), aw.size(), outAtoms);
+            delete[] outAtoms;
+            
+            std::vector<float>* offs = bubi->offset;
+            outAtoms = new t_atom[(*offs).size()];
+            for(int j = 0; j < (*offs).size(); j++)
+                atom_setfloat(&outAtoms[j],(*offs)[j]);
+            outlet_anything(m_outlets[2], gensym("offset"), (*offs).size(), outAtoms);
+            delete[] outAtoms;
+            
         }
     }
-
+    
     
     
     
@@ -320,7 +353,7 @@ public:
     ///////////////////////////////////////////////////////////
     void save_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
         char* mpath = atom_string(av);
-//        string filename = "/Users/caramiaux/gotest";
+        //        string filename = "/Users/caramiaux/gotest";
         int i=0;
         while ( *(mpath+i)!='/' )
             i++;
@@ -338,7 +371,7 @@ public:
     ///////////////////////////////////////////////////////////
     void load_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
         char* mpath = atom_string(av);
-//        string filename = "/Users/caramiaux/gotest.txt";
+        //        string filename = "/Users/caramiaux/gotest.txt";
         int i=0;
         while ( *(mpath+i)!='/' )
             i++;
@@ -353,7 +386,7 @@ public:
         delete[] outAtoms;
     }
     
-
+    
     
     ///////////////////////////////////////////////////////////
     //====================== CLEAR
@@ -372,11 +405,11 @@ public:
     }
     
     
-
+    
     ///////////////////////////////////////////////////////////
     //====================== PRINTME
     ///////////////////////////////////////////////////////////
-       void printme(long inlet, t_symbol * s, long ac, t_atom * av) {
+    void printme(long inlet, t_symbol * s, long ac, t_atom * av) {
         post("N. particles %d: ", bubi->getNbOfParticles());
         post("Resampling Th. %d: ", bubi->getResamplingThreshold());
         post("Tolerance %.2f: ", bubi->getObservationNoiseStd());
@@ -463,7 +496,22 @@ public:
         
         bubi->setAdaptSpeed(as);
     }
-	
+    
+    void probThresh(long inlet, t_symbol * s, long ac, t_atom * av) {
+        bubi->probThresh = atom_getlong(&av[0])*bubi->getNbOfParticles();
+    }
+    
+    void probThreshMin(long inlet, t_symbol * s, long ac, t_atom * av) {
+        bubi->probThreshMin = atom_getlong(&av[0])*bubi->getNbOfParticles();
+    }
+    
+    ///////////////////////////////////////////////////////////
+    //====================== translate
+    ///////////////////////////////////////////////////////////
+    void translate(long inlet, t_symbol * s, long ac, t_atom * av){
+        toBeTranslated = atom_getlong(&av[0]);
+    }
+    
 };
 
 
@@ -498,4 +546,5 @@ extern "C" int main(void) {
     REGISTER_METHOD_GIMME(Gfpfmax, adaptation_speed);
     REGISTER_METHOD_GIMME(Gfpfmax, save_vocabulary);
     REGISTER_METHOD_GIMME(Gfpfmax, load_vocabulary);
+    REGISTER_METHOD_GIMME(Gfpfmax, translate);
 }

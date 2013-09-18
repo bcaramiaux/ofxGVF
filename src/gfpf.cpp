@@ -1,19 +1,20 @@
-/****************************************************************
- 
- GFPF - Gesture Following with Particle Filtering
- 
- The GFPF library (gfpf.cpp, gfpf.h) has been created in 2010-2011 at Ircam Centre Pompidou by
- - Baptiste Caramiaux
- previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
- - Nicola Montecchio
- previously with University of Padova, since 2012 with The Echo Nest
- 
- The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
- 
- © Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
- 
- contact: b.caramiaux@gold.ac.uk
- ****************************************************************/
+///////////////////////////////////////////////////////////////////////
+//
+//  GFPF - Gesture Following with Particle Filtering
+//
+//  The GFPF library (gfpf.cpp, gfpf.h) has been created in 2010-2011 at Ircam Centre Pompidou by
+//  - Baptiste Caramiaux
+//  previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
+//  - Nicola Montecchio
+//  previously with University of Padova, since 2012 with The Echo Nest
+//
+//  The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
+//
+//  Copyright (c) Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
+//
+//  contact: b.caramiaux@gold.ac.uk
+//
+///////////////////////////////////////////////////////////////////////
 
 
 #include "gfpf.h"
@@ -82,6 +83,9 @@ gfpf::gfpf(int ns, VectorXf sigs, float icov, int resThresh, float nu)
     compa = false;
     old_max = 0;
     input_type = "shape";
+    
+    probThresh = 0.02*ns;
+    probThreshMin = 0.1*ns;
     
 }
 
@@ -451,7 +455,7 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
                 particlesPositions.push_back(temp);
                 
             }
-            // If incoming data is 3-dimensional
+            // If incoming data is N-dimensional
             else if (obs.size()!=2){
                 // scaling
                 vref *= x_n(2);
@@ -495,10 +499,21 @@ void gfpf::particleFilterOptim(std::vector<float> obs)
 	w /= w.sum();
 	float neff = 1./w.dot(w);
     
-    double probThresh = 0.05*ns;
-    double probThreshMin = 0.5*ns;
+
     
-    // do naive maximum value
+//    // do naive maximum value
+//    MatrixXf current_status = getEstimatedStatus();
+//    float maxprobasofar = -1.; int recognised_gesture = -1;
+//    for (int ll=0; ll<current_status.rows();ll++){
+//        if (maxprobasofar<current_status(ll,current_status.cols()-1)){
+//            maxprobasofar=current_status(ll,current_status.cols()-1);
+//            recognised_gesture=ll;
+//        }
+//    }
+//    if (recognised_gesture<0){
+//        recognised_gesture=0; // TODO this is a bug!!!!
+//    }
+    //float maxSoFar = abs_weights[recognised_gesture];
     float maxSoFar = abs_weights[0];
     currentGest = 1;
     for(int i = 1; i< abs_weights.size();i++)

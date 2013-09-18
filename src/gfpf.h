@@ -1,19 +1,20 @@
-/****************************************************************
- 
- GFPF - Gesture Following with Particle Filtering
- 
- The GFPF library (gfpf.cpp, gfpf.h) has been created in 2010-2011 at Ircam Centre Pompidou by
- - Baptiste Caramiaux
- previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
- - Nicola Montecchio
- previously with University of Padova, since 2012 with The Echo Nest
- 
- The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
- 
- © Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
- 
- contact: b.caramiaux@gold.ac.uk 
- ****************************************************************/
+///////////////////////////////////////////////////////////////////////
+//
+//  GFPF - Gesture Following with Particle Filtering
+//
+//  The GFPF library (gfpf.cpp, gfpf.h) has been created in 2010-2011 at Ircam Centre Pompidou by
+//  - Baptiste Caramiaux
+//  previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
+//  - Nicola Montecchio
+//  previously with University of Padova, since 2012 with The Echo Nest
+//
+//  The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
+//
+//  Copyright (c) Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
+//
+//  contact: b.caramiaux@gold.ac.uk
+//
+///////////////////////////////////////////////////////////////////////
 
 
 #ifndef GFPF_H
@@ -101,6 +102,9 @@ public:
     
     std::vector<float> abs_weights;
     //void writeGesturesToFile();
+    
+    double probThresh;
+    double probThreshMin;
 
     
 	// Gets
