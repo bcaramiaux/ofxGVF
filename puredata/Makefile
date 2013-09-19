@@ -1,12 +1,12 @@
 ## Pd library template version 1.0.14
 # For instructions on how to use this template, see:
 #  http://puredata.info/docs/developer/MakefileTemplate
-LIBRARY_NAME = gfpfpd
+LIBRARY_NAME = gvf
 
 # add your .c source files, one object per file, to the SOURCES
 # variable, help files will be included automatically, and for GUI
 # objects, the matching .tcl file too
-SOURCES = gfpfpd.cpp
+SOURCES = gvf.cpp
 
 # list all pd objects (i.e. myobject.pd) files here, and their helpfiles will
 # be included automatically
@@ -258,20 +258,20 @@ SHARED_TCL_LIB = $(wildcard lib$(LIBRARY_NAME).tcl)
 
 .PHONY = install libdir_install single_install install-doc install-examples install-manual install-unittests clean distclean dist etags $(LIBRARY_NAME)
 
-all: gfpfpd.$(EXTENSION) $(SHARED_LIB)
+all: gvf.$(EXTENSION) $(SHARED_LIB)
 
 %.o: %.cpp
 	$(CC) $(ALL_CFLAGS) -o "$*.o" -c "$*.cpp"
 
-../src/gfpf.o: ../src/gfpf.cpp
-	$(CC) $(ALL_CFLAGS) -o "../src/gfpf.o" -c "../src/gfpf.cpp"
+../src/GestureVariationFollower.o: ../src/GestureVariationFollower.cpp
+	$(CC) $(ALL_CFLAGS) -o "../src/GestureVariationFollower.o" -c "../src/GestureVariationFollower.cpp"
 
-%.$(EXTENSION): %.o ../src/gfpf.o $(SHARED_LIB)
-	$(CC) $(ALL_LDFLAGS) -o "$*.$(EXTENSION)" "$*.o" "../src/gfpf.o" $(ALL_LIBS) $(SHARED_LIB)
-	rm ../src/gfpf.o
+%.$(EXTENSION): %.o ../src/GestureVariationFollower.o $(SHARED_LIB)
+	$(CC) $(ALL_LDFLAGS) -o "$*.$(EXTENSION)" "$*.o" "../src/GestureVariationFollower.o" $(ALL_LIBS) $(SHARED_LIB)
+	rm ../src/GestureVariationFollower.o
 	rm -f -- $(SOURCES:.cpp=.o) $(SOURCES_LIB:.cpp=.o) $(SHARED_SOURCE:.c=.o)
 	mkdir -p Build/$(UNAME)/
-	mv gfpfpd.$(EXTENSION) Build/$(UNAME)/
+	mv gvf.$(EXTENSION) Build/$(UNAME)/
 
 # this links everything into a single binary file
 $(LIBRARY_NAME): $(SOURCES:.c=.o) $(LIBRARY_NAME).o lib$(LIBRARY_NAME).o
@@ -342,7 +342,7 @@ install-unittests:
 		done
 
 clean:
-	-rm -f ../src/gfpf.o
+	-rm -f ../src/GestureVariationFollower.o
 	-rm -f -- $(SOURCES:.cpp=.o) $(SOURCES_LIB:.cpp=.o) $(SHARED_SOURCE:.c=.o)
 	-rm -f -- $(SOURCES:.cpp=.$(EXTENSION))
 	-rm -f -- $(LIBRARY_NAME).o

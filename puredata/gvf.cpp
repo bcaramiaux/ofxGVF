@@ -1,21 +1,39 @@
+
+///////////////////////////////////////////////////////////////////////
+//
+//  GVF - Gesture Variation Follower PureData Object
+//
+//
+//  Copyright (C) 2013 Baptiste Caramiaux, Goldsmiths College, University of London
+//
+//  The GVF library is under the GNU Lesser General Public License (LGPL v3)
+//  version: 19-09-2013
+//
+//  The interfacing in Pure Data has been realized by Thomas Rushmore
+//
+//  contact: b.caramiaux@gold.ac.uk
+//
+///////////////////////////////////////////////////////////////////////
+
+
 //#include <boost/random.hpp>
 #include <Eigen/Core>
 #include <vector>
 
 #include "m_pd.h"
-#include "gfpf.h"
+#include "GestureVariationFollower.h"
 #include "globalutilities.h"
 
 #include <iostream>
 #include <fstream>
 #include <string>
 
-static t_class *gfpfpd_class;
+static t_class *gvf_class;
 
 
-typedef struct _gfpfpd {
+typedef struct _gvf {
     t_object  x_obj;
-    gfpf *bubi;
+    GestureVariationFollower *bubi;
 	t_int state;
 	t_int lastreferencelearned;
     std::map<int,std::vector<std::pair<float,float> > > *refmap;
@@ -26,22 +44,22 @@ typedef struct _gfpfpd {
 	Eigen::VectorXf rpvrs;
     int translate;
     // outlets
-    t_outlet *Position,*Vitesse,*Rotation,*Scaling,*Recognition,*Likelihoods,*Number_templates;
-} t_gfpfpd;
+    t_outlet *Position,*Vitesse,*Scaling,*Rotation,*Recognition,*Likelihoods,*Number_templates;
+} t_gvf;
 
-static void gfpfpd_learn      (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_follow     (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_clear      (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_data       (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_printme    (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_restart    (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_std        (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_rt         (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_means      (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_ranges     (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gfpfpd_adaptspeed (t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_learn      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_follow     (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_clear      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_data       (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_printme    (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_restart    (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_std        (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_rt         (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_means      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_ranges     (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_adaptspeed (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
 
-static void gfpfpd_auto(t_gfpfpd *x);
+static void gvf_auto(t_gvf *x);
 
 t_int restarted_l;
 t_int restarted_d;
@@ -51,20 +69,20 @@ std::vector<t_float> vect_0_l;
 std::vector<t_float> vect_0_d;
 enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
-static void gfpfpd_auto(t_gfpfpd *x)
+static void gvf_auto(t_gvf *x)
 {
 
     int num_templates = 3;
-    gfpfpd_clear(x, 0, 0, 0);
-    std::string dir = "/Users/thomasrushmore/EAVI/PD/gfpfpdlibrary/test gestures/tem";
-    std::string dirg = "/Users/thomasrushmore/EAVI/PD/gfpfpdlibrary/test gestures/g";
+    gvf_clear(x, 0, 0, 0);
+    std::string dir = "/Users/thomasrushmore/EAVI/PD/gvflibrary/test gestures/tem";
+    std::string dirg = "/Users/thomasrushmore/EAVI/PD/gvflibrary/test gestures/g";
     
     for(int i = 0 ; i < num_templates; i++)
     {
         t_atom ab;
         ab.a_type = A_FLOAT;
         ab.a_w.w_float = i;
-        gfpfpd_learn(x, 0, 1, &ab);
+        gvf_learn(x, 0, 1, &ab);
         std::string state_file(dir);
         char buf[10];
         sprintf(buf, "%d", i+1);
@@ -85,17 +103,17 @@ static void gfpfpd_auto(t_gfpfpd *x)
             state_summary >> b;
             ar[0].a_w.w_float = a;
             ar[1].a_w.w_float = b;
-            gfpfpd_data(x, 0, 2, ar);
+            gvf_data(x, 0, 2, ar);
             if(state_summary.eof()) break;
         }
-        gfpfpd_restart(x, 0, 0, 0);
+        gvf_restart(x, 0, 0, 0);
         state_summary.close();
         delete ar;
     }
     
-    // gfpfpd follow
-    gfpfpd_follow(x,0, 0, 0);
-    // gfpfpd data
+    // gvf follow
+    gvf_follow(x,0, 0, 0);
+    // gvf data
     std::string state_file(dirg);
     char buf[10];
     int gesture = 4;
@@ -116,31 +134,31 @@ static void gfpfpd_auto(t_gfpfpd *x)
         state_summary >> b;
         ar[0].a_w.w_float = a;
         ar[1].a_w.w_float = b;
-        gfpfpd_data(x, 0, 2, ar);
+        gvf_data(x, 0, 2, ar);
         if(state_summary.eof()) break;
     }
-    gfpfpd_restart(x,0, 0, 0);
+    gvf_restart(x,0, 0, 0);
 }
 
-static void *gfpfpd_new(t_symbol *s, int argc, t_atom *argv)
+
+static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
 {
-    post("\ngfpfpd - realtime adaptive gesture recognition (version: 13-09-2013)");
+    post("\ngvf - realtime adaptive gesture recognition (version: 13-09-2013)");
     post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
     post("    contact: Baptiste Caramiaux b.caramiaux@gold.ac.uk");
-    post("pd object port - v 1.1 Tom Rushmore, Goldsmiths");
     
-    t_gfpfpd *x = (t_gfpfpd *)pd_new(gfpfpd_class);
+    t_gvf *x = (t_gvf *)pd_new(gvf_class);
     
     x->Nspg = 2000;
     t_int ns = x->Nspg; //!!
     x->Rtpg = 500;
     t_int rt = x->Rtpg; //!!
     
-    x->sp = 0.0001;
-    x->sv = 0.01;
+    x->sp = 0.00001;
+    x->sv = 0.0001;
     x->ss = 0.0001;
-    x->sr = 0.000001;
-    x->so = 0.2;
+    x->sr = 0.0000001;
+    x->so = 0.15;
     x->pdim = 4;
     
     
@@ -152,7 +170,7 @@ static void *gfpfpd_new(t_symbol *s, int argc, t_atom *argv)
 
     int num_particles = 2000;
 
-    x->bubi = new gfpf(num_particles, sigs, 1./(x->so * x->so), rt, 0.);
+    x->bubi = new GestureVariationFollower(num_particles, sigs, 1./(x->so * x->so), rt, 0.);
     x->mpvrs = Eigen::VectorXf(x->pdim);
     x->rpvrs = Eigen::VectorXf(x->pdim);
     x->mpvrs << 0.05, 1.0, 1.0, 0.0;
@@ -184,14 +202,14 @@ static void *gfpfpd_new(t_symbol *s, int argc, t_atom *argv)
     return (void *)x;
 }
 
-static void gfpfpd_destructor(t_gfpfpd *x)
+static void gvf_destructor(t_gvf *x)
 {
-    post("gfpfpd destructor...");
+    //post("gvf destructor...");
     if(x->bubi != NULL)
         delete x->bubi;
     if(x->refmap != NULL)
         delete x->refmap;
-    post("destructor complete");
+    //post("destructor complete");
 }
 
 
@@ -215,7 +233,7 @@ static void gfpfpd_destructor(t_gfpfpd *x)
 ///////////////////////////////////////////////////////////
 //====================== LEARN
 ///////////////////////////////////////////////////////////
-static void gfpfpd_learn(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_learn(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     if(argc != 1)
     {
@@ -223,6 +241,7 @@ static void gfpfpd_learn(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
         return;
     }
     int refI = getint(argv);
+    refI=refI-1; // starts at 1 in the patch but 0 in C++
     if(refI != x->lastreferencelearned+1)
     {
         post("you need to learn reference %d first",x->lastreferencelearned+1);
@@ -231,7 +250,7 @@ static void gfpfpd_learn(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
     x->lastreferencelearned++;
     //x->refmap[refI];// = std::vector<std::pair<float, float> >();
     (*x->refmap)[refI] = std::vector<std::pair<float, float> >();
-    post("learning reference %d", refI);
+    post("learning reference %d", refI+1);
     x->bubi->addTemplate();
     x->state = STATE_LEARNING;
     restarted_l=1;
@@ -247,7 +266,7 @@ static void gfpfpd_learn(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== FOLLOW
 ///////////////////////////////////////////////////////////
-static void gfpfpd_follow(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_follow(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     if(x->lastreferencelearned >= 0)
     {
@@ -265,7 +284,7 @@ static void gfpfpd_follow(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv
 ///////////////////////////////////////////////////////////
 //====================== DATA
 ///////////////////////////////////////////////////////////
-static void gfpfpd_data(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_data(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     if(x->state == STATE_CLEAR)
     {
@@ -412,7 +431,7 @@ static void gfpfpd_data(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== SAVE_VOCABULARY
 ///////////////////////////////////////////////////////////
-static void gfpfpd_save_vocabulary(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_save_vocabulary(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     unsigned int bufsize = 200;
     char * mpath;
@@ -430,7 +449,7 @@ static void gfpfpd_save_vocabulary(t_gfpfpd *x,const t_symbol *sss,int argc, t_a
 ///////////////////////////////////////////////////////////
 //====================== LOAD_VOCABULARY
 ///////////////////////////////////////////////////////////
-void gfpfpd_load_vocabulary(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+void gvf_load_vocabulary(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     unsigned int bufsize = 200;
     char * mpath;
@@ -457,7 +476,7 @@ void gfpfpd_load_vocabulary(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *ar
 ///////////////////////////////////////////////////////////
 //====================== CLEAR
 ///////////////////////////////////////////////////////////
-static void gfpfpd_clear(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_clear(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     x->lastreferencelearned = -1;
     x->bubi->clear();
@@ -470,7 +489,7 @@ static void gfpfpd_clear(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== PRINTME
 ///////////////////////////////////////////////////////////
-static void gfpfpd_printme(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_printme(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     post("\nN. particles %d: ", x->bubi->getNbOfParticles());
     post("Resampling Th. %d: ", x->bubi->getResamplingThreshold());
@@ -491,7 +510,7 @@ static void gfpfpd_printme(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *arg
 ///////////////////////////////////////////////////////////
 //====================== RESTART
 ///////////////////////////////////////////////////////////
-static void gfpfpd_restart(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_restart(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     restarted_l=1;
     if(x->state == STATE_FOLLOWING)
@@ -507,7 +526,7 @@ static void gfpfpd_restart(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *arg
 ///////////////////////////////////////////////////////////
 //====================== tolerance
 ///////////////////////////////////////////////////////////
-static void gfpfpd_tolerance(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_tolerance(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     float stdnew = getfloat(argv);
     if (stdnew == 0.0)
@@ -519,7 +538,7 @@ static void gfpfpd_tolerance(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *a
 ///////////////////////////////////////////////////////////
 //====================== resampling_threshold
 ///////////////////////////////////////////////////////////
-static void gfpfpd_resampling_threshold(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_resampling_threshold(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     int rtnew = getint(argv);
     int cNS = x->bubi->getNbOfParticles();
@@ -532,7 +551,7 @@ static void gfpfpd_resampling_threshold(t_gfpfpd *x,const t_symbol *sss,int argc
 ///////////////////////////////////////////////////////////
 //====================== spreading_means
 ///////////////////////////////////////////////////////////
-static void gfpfpd_spreading_means(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_spreading_means(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     x->mpvrs = Eigen::VectorXf(x->pdim);
     x->mpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
@@ -542,7 +561,7 @@ static void gfpfpd_spreading_means(t_gfpfpd *x,const t_symbol *sss,int argc, t_a
 ///////////////////////////////////////////////////////////
 //====================== spreading_ranges
 ///////////////////////////////////////////////////////////
-static void gfpfpd_spreading_ranges(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_spreading_ranges(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     x->rpvrs = Eigen::VectorXf(x->pdim);
     x->rpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
@@ -552,7 +571,7 @@ static void gfpfpd_spreading_ranges(t_gfpfpd *x,const t_symbol *sss,int argc, t_
 ///////////////////////////////////////////////////////////
 //====================== adaptation_speed
 ///////////////////////////////////////////////////////////
-static void gfpfpd_adaptation_speed(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_adaptation_speed(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     std::vector<float> as;
     as.push_back(getfloat(argv));
@@ -565,7 +584,7 @@ static void gfpfpd_adaptation_speed(t_gfpfpd *x,const t_symbol *sss,int argc, t_
 ///////////////////////////////////////////////////////////
 //====================== translate
 ///////////////////////////////////////////////////////////
-static void gfpfpd_translate(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_translate(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     post("transalte %i", getint(argv));
     x->translate = getint(argv);
@@ -573,23 +592,23 @@ static void gfpfpd_translate(t_gfpfpd *x,const t_symbol *sss,int argc, t_atom *a
 
 extern "C"
 {
-    void gfpfpd_setup(void) {
-        gfpfpd_class = class_new( gensym("gfpfpd"),(t_newmethod)gfpfpd_new,(t_method)gfpfpd_destructor,
-                                sizeof(t_gfpfpd),CLASS_DEFAULT,A_GIMME,0);
+    void gvf_setup(void) {
+        gvf_class = class_new( gensym("gvf"),(t_newmethod)gvf_new,(t_method)gvf_destructor,
+                                sizeof(t_gvf),CLASS_DEFAULT,A_GIMME,0);
         
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_learn,gensym("learn"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_follow,gensym("follow"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_clear,gensym("clear"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_data,gensym("data"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_printme,gensym("printme"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_restart,gensym("restart"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_tolerance,gensym("tolerance"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_resampling_threshold,gensym("resampling_threshold"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_spreading_means,gensym("spreading_means"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_spreading_ranges,gensym("spreading_ranges"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_adaptation_speed,gensym("adaptation_speed"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_save_vocabulary,gensym("save_vocabulary"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_load_vocabulary,gensym("load_vocabulary"),A_GIMME,0);
-        class_addmethod(gfpfpd_class,(t_method)gfpfpd_translate,gensym("translate"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_learn,gensym("learn"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_follow,gensym("follow"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_clear,gensym("clear"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_data,gensym("data"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_printme,gensym("printme"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_restart,gensym("restart"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_tolerance,gensym("tolerance"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_resampling_threshold,gensym("resampling_threshold"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_spreading_means,gensym("spreading_means"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_spreading_ranges,gensym("spreading_ranges"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_adaptation_speed,gensym("adaptation_speed"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_save_vocabulary,gensym("save_vocabulary"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_load_vocabulary,gensym("load_vocabulary"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_translate,gensym("translate"),A_GIMME,0);
     }
 }
