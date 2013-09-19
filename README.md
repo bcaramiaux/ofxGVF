@@ -8,10 +8,11 @@ Content
 ===
 
 The repository contains the following folders
-- src/ gathers the core library called GestureVariationFollower.*
-- maxmsp/ that contains the xCode project to build the gvf max object (help patch included)
-- puredata/ that contains the files to build teh gvf pure data object  (help patch included)
-- openframeworks/ that shows an example of interfacing the library in openframeworks. The example is the visualization of 2-dimensional gestures
+- *src/* gathers the core library called GestureVariationFollower.*
+- *maxmsp/* that contains the xCode project to build the gvf max object (help patch included)
+- *puredata/* that contains the files to build teh gvf pure data object  (help patch included)
+- *openframeworks/* that shows an example of interfacing the library in openframeworks. The example is the visualization of 2-dimensional gestures
+- *Eigen/* is a library used for matrices and vectors
 
 
 Credits
