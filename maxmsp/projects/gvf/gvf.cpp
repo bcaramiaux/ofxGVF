@@ -6,9 +6,8 @@
 //  Copyright (C) 2013 Baptiste Caramiaux, Goldsmiths College, University of London
 //
 //  The GVF library is under the GNU Lesser General Public License (LGPL v3)
-//  version: 19-09-2013
+//  version: 09-2013
 //
-//  contact: b.caramiaux@gold.ac.uk
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -53,15 +52,12 @@ private:
     
 public:
     
-    //	Example(t_symbol * sym, long ac, t_atom * av) {
-    //		setupIO(2, 2); // inlets / outlets
-    //	}
+
     gvf(t_symbol * sym, long argc, t_atom *argv)
     {
         setupIO(1, 3); // inlets / outlets
-        post("gvf - realtime adaptive gesture recognition (version: 19-09-2013)");
+        post("gvf - realtime adaptive gesture recognition (version: 09-2013)");
         post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
-        post("    contact: Baptiste Caramiaux b.caramiaux@gold.ac.uk");
         
 		// default values
 		Nspg = 2000; int ns = Nspg; //!!
@@ -114,28 +110,15 @@ public:
 		outlet_bang(m_outlets[0]);
 	}
 	void testfloat(long inlet, double v) {
-        post("shit float");
+        post(" float");
 		outlet_float(m_outlets[0], v);
 	}
 	void testint(long inlet, long v) {
-        post("shit long");
+        post(" long");
 		outlet_int(m_outlets[0], v);
 	}
     
-    // Methods order:
-    // - learn
-    // - follow
-    // - data
-    // - save_vocabulary
-    // - load_vocabulary
-    // - clear
-    // - printme
-    // - restart
-    // - tolerance
-    // - resampling_threshold
-    // - spreading_means
-    // - spreading_ranges
-    // - adaptation_speed
+
     
     
     ///////////////////////////////////////////////////////////
@@ -222,8 +205,7 @@ public:
             vector<float> vect(ac);
             
             if (toBeTranslated){
-            // incoming observation is 2-dimensional: keeping track of the first point (offset)
-//            if (ac ==2){
+            // keeping track of the first point (offset)
                 if (restarted_l==1)
                 {
                     // keep track of the first point

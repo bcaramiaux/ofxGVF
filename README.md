@@ -40,7 +40,7 @@ Everyone is permitted to copy and distribute verbatim copies of this license doc
 This version of the GNU Lesser General Public License incorporates the terms and conditions of version 3 of the GNU General Public License, supplemented by the additional permissions listed below.
 
 0. Additional Definitions.
---------
+---
 
 As used herein, “this License” refers to version 3 of the GNU Lesser General Public License, and the “GNU GPL” refers to version 3 of the GNU General Public License.
 
@@ -55,12 +55,12 @@ The “Minimal Corresponding Source” for a Combined Work means the Correspondi
 The “Corresponding Application Code” for a Combined Work means the object code and/or source code for the Application, including any data and utility programs needed for reproducing the Combined Work from the Application, but excluding the System Libraries of the Combined Work.
 
 1. Exception to Section 3 of the GNU GPL.
---------
+---
 
 You may convey a covered work under sections 3 and 4 of this License without being bound by section 3 of the GNU GPL.
 
 2. Conveying Modified Versions.
---------
+---
 
 If you modify a copy of the Library, and, in your modifications, a facility refers to a function or data to be supplied by an Application that uses the facility (other than as an argument passed when the facility is invoked), then you may convey a copy of the modified version:
 

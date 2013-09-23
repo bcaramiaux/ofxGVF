@@ -1,31 +1,25 @@
-GVF - Max/MSP object
+GVF - PureData object
 ===
 
-Sources to compile a MaxMSP object using the GVF library. 
-
-The object allows for realtime gesture recognition and variations estimation (such as scale, speed, ...)
-
+Sources to compile a PureData object using GVF. The object allows for realtime gesture recognition and variations estimation (such as scale, speed, ...)
 
 Compiling
 ===
 
-We provide a Xcode project for compiling the object. The Xcode project is located in 
+We provide a Makefile for compiling the object. Open a Terminal session, go to this folder and type:
 
-projects/gvf
+make
 
-It is called gvf.xcodeproj. The object will be generated in the build/ folder.
+(Note: warnings are displayed in the terminal). 
 
+The object will be generated in a folder corresponding to your platform in the Build/ directory. For instance, compiling the object on a Mac OSX will create a Darwin/ directory with the gvf.pd_darwin object inside (note that this folder might already exist).
 
 Installing
 ===
 
-Once built, run Max MSP, go to the Menu
+Once built, create a gvf folder in your home Library/pd or pdextended. Copy the gvf pd object inside plus the gvf-meta.pd patch. 
 
-Options -> File Preferences
-
-Add the path to the gvf.mxo object.
-
-Open the help patch gvf.maxhelp in the build/ folder
+Run Pure Data and open the help patch gvf-help.pd
 
 
 Credits
@@ -33,7 +27,7 @@ Credits
 
 The library itself has been designed and developped at Ircam Centre Pompidou Paris by Baptiste Caramiaux and Nicola Montecchio.It has been extended and realeased at Goldsmiths College, University of London. 
 
-The MaxMSP object uses Maxcpp library by Graham Wakefield. The library is under the permissive MIT License.
+The interface in Pure Data has been initialized by Thomas Rushmore at Goldsmiths.
 
 
 License

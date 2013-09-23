@@ -14,7 +14,6 @@
 //
 //  The library is under the GNU Lesser General Public License (LGPL v3)
 //
-//  contact: b.caramiaux@gold.ac.uk
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -38,19 +37,29 @@ using namespace std;
 
 
 
-// Constructor of GestureVariationFollower
-//   arguments:
-//      ns          number of particles
-//      sigs        table of sigmas for each adapted parameters
-//      icov        static std dev for observation likelihood
-//      resThresh   threshold for resampling
-//      nu          t-dist parameter
-// ============================================================
+
+
+
+// Constructor of the class GestureVariationFollower
+// This creates an object that is able to learn gesture template,
+// to recognize in realtime the live gesture and to estimate the
+// live gesture variations according to the template (e.g. scale, speed, ...)
+//
+// typical use
+//   GestureVariationFollower *myGVF;
+//   myGVF = new GestureVariationFollower(NS, Sigs, Icov, ResThresh, Nu)
+//
+// ns is the number of particles
+// Sigs is the variance for each varying feature that has to be estimated (speed, scale, twisting angle)
+//
+// Note about the current implementation: it involves geometric features: phase, speed, scale, angle of rotation
+//    that are meant to be used for 2-dimensional input shapes. For general N-dimensional input, the class will
+//    only consider phase, speed, scaling
 GestureVariationFollower::GestureVariationFollower(int ns, VectorXf sigs, float icov, int resThresh, float nu)
 {
+    
     // State dimension depends on the number of noise variances
-    // tom added static cast
-	pdim = static_cast<int>(sigs.size());
+	pdim = static_cast<int>(sigs.size());   // state space dimension is given by the number of std dev
 	pdim_m1 = pdim-1;
 	X = MatrixXf(ns,pdim);          // Matrix of NS particles
 	g = VectorXi(ns);               // Vector of gesture class
@@ -63,14 +72,13 @@ GestureVariationFollower::GestureVariationFollower(int ns, VectorXf sigs, float 
 	for (int k=0; k<pdim; k++)
 		sigt(k)=sqrt(sigs(k));
 	
-    resampling_threshold = resThresh; // Set resampling threshold (usually NS/2)
-	this->nu = nu;                  // Set Student's distribution parameter Nu
-    // ^ init'd to 0
-	lrndGstr=-1;                    // Set num. of learned gesture to -1
-	icov_single = icov;             // inverse of the global tolerance (variance)
-	gestureLengths = vector<int>(); // Vector of gesture lengths
-	multivar = false; // -- DEPRECATED --
-    logW.setConstant(0.0);
+    resampling_threshold = resThresh;   // Set resampling threshold (usually NS/2)
+	this->nu = nu;                      // Set Student's distribution parameter Nu
+	lrndGstr=-1;                        // Set num. of learned gesture to -1
+	icov_single = icov;                 // inverse of the global tolerance (variance)
+	gestureLengths = vector<int>();     // Vector of gesture lengths
+    
+    logW.setConstant(0.0);              // log of weights equal to 0
     
 #if !BOOSTLIB
     normdist = new std::tr1::normal_distribution<float>();
@@ -78,19 +86,25 @@ GestureVariationFollower::GestureVariationFollower(int ns, VectorXf sigs, float 
     rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
 #endif
     
-    abs_weights = vector<float>();
+    
+    // Variables used for segmentation -- experimental (research in progress)
+    // TODO(baptiste)
+    abs_weights = vector<float>();      // absolute weights used for segmentation
     currentGest = 0;
     new_gest = false;
-    offset = new std::vector<float>(2);
+    offset = new std::vector<float>(2); // offset that has to be updated
     compa = false;
     old_max = 0;
     input_type = "shape";
-    
-    probThresh = 0.02*ns;
+    probThresh = 0.02*ns;               // thresholds on the absolute weights for segmentation
     probThreshMin = 0.1*ns;
     
 }
 
+
+
+
+// Destructor of the class
 GestureVariationFollower::~GestureVariationFollower()
 {
 #if !BOOSTLIB
@@ -102,26 +116,24 @@ GestureVariationFollower::~GestureVariationFollower()
 }
 
 
-// addTemplate
-//
-// add a template to the database by allocating the memory
-// needs to be called before the fillTemplate() method
-// ============================================================
+
+// Add a template into the vocabulary. This method does not add the data but allocate
+// the memory and increases the number of learned gesture
 void GestureVariationFollower::addTemplate()
 {
 	lrndGstr++;                                         // increment the num. of learned gesture
-	R_single[lrndGstr] = vector<vector<float> >(); // allocate the memory for the gesture's data
+	R_single[lrndGstr] = vector<vector<float> >();      // allocate the memory for the gesture's data
     gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
     abs_weights.resize(lrndGstr+1);
     
 }
 
 
-// fillTemplate
-//
-// fill the template given by the integer 'id'
-// with the current data vector 'data'
-// ============================================================
+
+// Fill the template given by the integer 'id' by appending the current data vector 'data'
+// This example fills the template 1 with the live gesture data (stored in liveGesture)
+// for (int k=0; k<SizeLiveGesture; k++)
+//    myGVF->fillTemplate(1, liveGesture[k]);
 void GestureVariationFollower::fillTemplate(int id, vector<float> data)
 {
 	if (id<=lrndGstr)
@@ -131,23 +143,27 @@ void GestureVariationFollower::fillTemplate(int id, vector<float> data)
 	}
 }
 
-// spreadParticles
-//
-// spread particles by sampling values from given intervals
-// the current implemented distribution is uniform
-//
-//   arguments:
-//      meanPVRS    mean values around which the particles are sampled
-//      rangePVRS   range values defining how far from the means the particles can be spread
-// ============================================================
+
+
+// Clear the internal data (templates)
+void GestureVariationFollower::clear()
+{
+	R_single.clear();
+	gestureLengths.clear();
+	lrndGstr=-1;
+}
+
+
+
+// Spread the particles by sampling values from intervals given my their means and ranges.
+// Note that the current implemented distribution for sampling the particles is the uniform distribution
 void GestureVariationFollower::spreadParticles(Eigen::VectorXf meanPVRS, Eigen::VectorXf rangePVRS)
 {
-	
-    meanPVRScopy = meanPVRS;
+    
+	// we copy the initial means and ranges to be able to restart the algorithm
+    meanPVRScopy  = meanPVRS;
     rangePVRScopy = rangePVRS;
-    
-    
-    
+
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
     // deprecated class should use uniform_real_distribution
 #if BOOSTLIB
@@ -157,13 +173,10 @@ void GestureVariationFollower::spreadParticles(Eigen::VectorXf meanPVRS, Eigen::
     std::tr1::uniform_real<float> ur(0,1);
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
-	int ns = static_cast<int>(X.rows());
 	
+    
+    int ns = static_cast<int>(X.rows());
 	unsigned int ngestures = lrndGstr+1;
-	
-    // We keep track of the means/ranges by setting them as class attributes
-	means  = meanPVRS;
-	ranges = rangePVRS;
 	
     // Spread particles using a uniform distribution
 	for(int i = 0; i < pdim; i++)
@@ -173,38 +186,31 @@ void GestureVariationFollower::spreadParticles(Eigen::VectorXf meanPVRS, Eigen::
     // Weights are also uniformly spread
     initweights();
     logW.setConstant(0.0);
-    //post("test logW to 0");
 	
     // Spread uniformly the gesture class among the particles
 	for(int n = 0; n < ns; n++)
 		g(n) = n % ngestures;
     
+    // offsets are set to 0
     offS.setConstant(0.0);
     
 }
 
 
 
-// initWeights
-//
-// ============================================================
+// Initialialize the weights of the particles. The initial values of the weights is a
+// unifrom weight over the particles
 void GestureVariationFollower::initweights()
 {
     int ns = static_cast<int>(w.size());
     w.setConstant(1.0/ns);
-    //post("%i %f %f %f", ns, w(0), w(1), w(2));
-    //logW.setConstant(0.0);
 }
 
 
 
-// particleFilter
-//
-// Core algorithm: does one step of inference using particle filtering
-//
-//   arguments:
-//      xy      current data vector
-// ============================================================
+// Performs the inference based on a given new observation
+// This is the core algorithm: does one step of inference using particle filtering
+// DEPRECATED
 void GestureVariationFollower::particleFilter(vector<float> obs)
 {
     
@@ -309,25 +315,7 @@ void GestureVariationFollower::particleFilter(vector<float> obs)
     std::tr1::uniform_real<float> ur(0,1);
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
-    
-    
-    //    for (int n=0; n<particle_before_0.size(); n++)
-    //    {
-    //        // Spread particles using a uniform distribution
-    //        for(int i = 0; i < pdim; i++)
-    //                X(particle_before_0[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-    //        w(particle_before_0[n]) = 1.0/(ns);
-    //        g(particle_before_0[n]) = n % (lrndGstr+1);
-    //    }
-    //    for (int n=0; n<particle_after_1.size(); n++)
-    //    {
-    //        // Spread particles using a uniform distribution
-    //        for(int i = 0; i < pdim; i++)
-    //            X(particle_after_1[n],i) = (rnduni() - 0.5) * ranges(i) + means(i);
-    //        w(particle_after_1[n]) = 1.0/(ns);
-    //        g(particle_after_1[n]) = n % (lrndGstr+1);
-    //    }
-    
+
 	// normalization - resampling
 	w /= w.sum();
 	float neff = 1./w.dot(w);
@@ -342,11 +330,20 @@ void GestureVariationFollower::particleFilter(vector<float> obs)
 
 
 
+// Performs the inference based on a given new observation. This is the core algorithm: does
+// one step of inference using particle filtering. It is the optimized version of the
+// function ParticleFilter(). Note that the inference is possible only if some templates
+// have been learned beforehand
+//
+// The inferring values are the weights of each particle that represents a possible gesture,
+// plus a possible configuration of the features (value of speec, scale,...)
 void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
 {
+ 
     // Number of particles
     int ns = static_cast<int>(X.rows());
     
+    // TODO(baptiste) must be changed by not using Eigen anymore
     VectorXf obs_eigen(obs.size());
     for(int i=0; i <obs.size(); i++)
     {
@@ -363,7 +360,8 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
         }
     }
     
-    // particles outside
+    // particles outside the beginning (phase=0) or end (phase=1) of a gesture
+    // must have a weight equals to 0
     int numb_particle_before_0 = 0;
     int numb_particle_after_1 = 0;
     
@@ -373,7 +371,9 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
     }
     
     // clear any previous information about the particles' positions
+    // (this is used for possible visualization but not in the inference)
     particlesPositions.clear();
+    
     
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
@@ -389,9 +389,11 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
         for(int l = pdim_m1; l>=1 ; --l)
 			X(n,l) += (*rndnorm)() * sigt(l);
 		VectorXf x_n = X.row(n);
+        
+        // can't observe a particle outside (0,1) range [this behaviour could be changed]
 		if(x_n(0) < 0)
         {
-            w(n) = 0;        // can't observe a particle outside (0,1) range [this behaviour could be changed]
+            w(n) = 0;
             particle_before_0.push_back(n);
             numb_particle_before_0 += 1;
             logW(n) = -INFINITY;
@@ -403,43 +405,26 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
             numb_particle_after_1 += 1;
             logW(n) = -INFINITY;
         }
+        // Can observe a particle inside (0,1) range
 		else
         {
-			int pgi = g(n); // gesture index for the particle
-			int frameindex = min((int)(gestureLengths[pgi]-1),(int)(floor(x_n(0) * gestureLengths[pgi])));
+            // gesture index for the particle
+            int pgi = g(n);
+            
+            // given the phase between 0 and 1 (first value of the particle x),
+            // return the index of the corresponding gesture, given by g(n)
+            int frameindex = min((int)(gestureLengths[pgi]-1),(int)(floor(x_n(0) * gestureLengths[pgi])));
+            
+            // given the index, return the gesture template value at this index
             VectorXf vref(obs.size());
             for (int os=0; os<obs.size(); os++)
                 vref(os) = R_single[pgi][frameindex][os];
             
-            
             // temp vector for the positions
             std::vector<float> temp;
+        
             
-//            if (input_type=="shape")    // shape is a 2-dimensional input data representing the (x,y) positions
-//            {                           // in this case the algorithm adapts: phase, speed, scale, angle
-//                
-//                    // scaling
-//                    vref *= x_n(2);
-//                
-//                    // rotation
-//                    float alpha = x_n(3);
-//                    Matrix2f rotmat;
-//                    rotmat << cos(alpha), -sin(alpha), sin(alpha), cos(alpha);
-//                    vref = rotmat * vref;
-//                
-//                // save resynthesized positions for optionnal visualization
-//                temp.push_back(vref[0]);
-//                temp.push_back(vref[1]);
-//                particlesPositions.push_back(temp);
-//            }
-//            else if (input_type=="generic")
-//            {
-//                for (int ndi=0; ndi<obs.size(); ndi++)
-//                    temp.push_back(vref[ndi]);
-//                particlesPositions.push_back(temp);
-//            }
-            
-            // If incoming data is 2-dimensional: we assume that it is drawn shape!
+            // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
             if (obs.size()==2){
                 // sca1ing
                 vref *= x_n(2);
@@ -448,9 +433,9 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
                 Matrix2f rotmat;
                 rotmat << cos(alpha), -sin(alpha), sin(alpha), cos(alpha);
                 vref = rotmat * vref;
-                
-                
+
                 // put the positions into vector
+                // [used for visualization]
                 std::vector<float> temp;
                 temp.push_back(vref[0]);
                 temp.push_back(vref[1]);
@@ -463,6 +448,7 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
                 vref *= x_n(2);
                 
                 // put the positions into vector
+                // [used for visualization]
                 std::vector<float> temp;
                 for (int ndi=0; ndi<obs.size(); ndi++)
                     temp.push_back(vref[ndi]);
@@ -470,7 +456,8 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
                 
             }
             
-            
+            // compute distance between estimation given the current particle values
+            // and the incoming observation
             vrefmineigen = vref-obs_eigen;
             
             // observation likelihood and update weights
@@ -489,6 +476,7 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
         }
     }
     
+    
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
 #if BOOSTLIB
     boost::uniform_real<float> ur(0,1);
@@ -498,24 +486,15 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
     
+    // normalize weights and compute criterion for degeneracy
 	w /= w.sum();
 	float neff = 1./w.dot(w);
     
 
     
-//    // do naive maximum value
-//    MatrixXf current_status = getEstimatedStatus();
-//    float maxprobasofar = -1.; int recognised_gesture = -1;
-//    for (int ll=0; ll<current_status.rows();ll++){
-//        if (maxprobasofar<current_status(ll,current_status.cols()-1)){
-//            maxprobasofar=current_status(ll,current_status.cols()-1);
-//            recognised_gesture=ll;
-//        }
-//    }
-//    if (recognised_gesture<0){
-//        recognised_gesture=0; // TODO this is a bug!!!!
-//    }
-    //float maxSoFar = abs_weights[recognised_gesture];
+    // Try segmentation from here...
+    
+    // do naive maximum value
     float maxSoFar = abs_weights[0];
     currentGest = 1;
     for(int i = 1; i< abs_weights.size();i++)
@@ -542,6 +521,11 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
         compa = false;
     }
     
+    // ... to here.
+    
+    
+    // avoid degeneracy (no particles active, i.e. weights = 0) by resampling
+    // around the active particles
 	if(neff<resampling_threshold)
     {
         resampleAccordingToWeights();
@@ -555,9 +539,10 @@ void GestureVariationFollower::particleFilterOptim(std::vector<float> obs)
 
 
 
-// resampleAccordingToWeights
-//
-// ============================================================
+// Resampling function. The function resamples the particles based on the weights.
+// Particles with negligeable weights will be respread near the particles with non-
+// neglieable weigths (which means the most likely estimation).
+// This steps is important to avoid degeneracy problem
 void GestureVariationFollower::resampleAccordingToWeights()
 {
 #if BOOSTLIB
@@ -598,6 +583,8 @@ void GestureVariationFollower::resampleAccordingToWeights()
     
 }
 
+
+// Set the initial coordinates
 void GestureVariationFollower::setInitCoord(std::vector<float> s_origin)
 {
     origin = s_origin;
@@ -605,29 +592,94 @@ void GestureVariationFollower::setInitCoord(std::vector<float> s_origin)
 
 
 
-// step
-//
-// run inference on the input dataset. Each row is a temporal observation
-// for each row the incremental inference procedure is called
-//
-//   arguments:
-//      xy      whole data matrix
-// ============================================================
+// Step function is the function called outside for inference. It
+// has been originally created to be able to infer on a new observation or
+// a set of observation.
+// ---- DEPRECATED -----
 void GestureVariationFollower::infer(vector<float> vect)
 {
-    //	unsigned int nsteps = vect.size();
-    // particleFilter(vect);
     particleFilterOptim(vect);
-    //	for(int i = 0; i < nsteps; i++)
-    //		particleFilter2D(xy.row(i));
 }
 
 
 
-// getGestureConditionnalProbabilities
+
+
+
+
+
+////////////////////////////////////////////////////////////////
 //
-// return values of each gesture's likelihood
-// ============================================================
+// GET FUNCTIONS to ACCESS to INTERNAL VALUES
+//
+////////////////////////////////////////////////////////////////
+
+
+
+// Return the number of particles
+int GestureVariationFollower::getNbOfParticles()
+{
+	return static_cast<int>(w.size());
+}
+
+// Return the number of templates in the vocabulary
+int GestureVariationFollower::getNbOfTemplates()
+{
+	return static_cast<int>(gestureLengths.size());
+}
+
+// Return the template given by its index in the vocabulary
+vector<vector<float> > GestureVariationFollower::getTemplateByInd(int Ind)
+{
+	if (Ind < gestureLengths.size())
+		return R_single[Ind];
+	else
+		return vector<vector<float> > ();
+}
+
+// Return the length of a specific template given by its index
+// in the vocabulary
+int GestureVariationFollower::getLengthOfTemplateByInd(int Ind)
+{
+	if (Ind < gestureLengths.size())
+		return gestureLengths[Ind];
+	else
+		return -1;
+}
+
+// Return the resampling threshold used to avoid degeneracy problem
+int GestureVariationFollower::getResamplingThreshold()
+{
+    return resampling_threshold;
+}
+
+// Return the standard deviation of the observation likelihood
+float GestureVariationFollower::getObservationNoiseStd(){
+    return sqrt(1/icov_single);
+}
+
+// Return the particle data (each row is a particle)
+Eigen::MatrixXf GestureVariationFollower::getX()
+{
+    return X;
+}
+
+// Return the gesture index for each particle
+Eigen::VectorXi GestureVariationFollower::getG()
+{
+    return g;
+}
+
+// Return particles' weights
+Eigen::VectorXf GestureVariationFollower::getW()
+{
+    return w;
+}
+
+
+// Returns the probabilities of each gesture. This probability is conditionnal
+// because it depends on the other gestures in the vocabulary:
+// probability to be in gesture A knowing that we have gesture A, B, C, ... in the vocabulary
 VectorXf GestureVariationFollower::getGestureConditionnalProbabilities()
 {
 	unsigned int ngestures = lrndGstr+1;
@@ -636,19 +688,14 @@ VectorXf GestureVariationFollower::getGestureConditionnalProbabilities()
 	gp.setConstant(0);
 	for(int n = 0; n < ns; n++)
 		gp(g(n)) += w(n);
-    //    w1->addValue(gp(0));
-    //    w2->addValue(gp(1));
-    //    w3->addValue(gp(2));
     
 	return gp;
 }
 
 
 
-// getGestureLikelihoods
-//
-// return values of each gesture's likelihood
-// ============================================================
+// Returns likelihoods
+// ----- DEPRECATED -------
 VectorXf GestureVariationFollower::getGestureLikelihoods()
 {
 	unsigned int ngestures = lrndGstr+1;
@@ -678,9 +725,8 @@ VectorXf GestureVariationFollower::getGestureLikelihoods()
 
 
 
-// getEndGestureProbabilities
-//
-// ============================================================
+// Returns the gesture probaiblities at the end of the gestures
+// ----- DEPRECATED -------
 VectorXf GestureVariationFollower::getEndGestureProbabilities(float minpos)
 {
 	
@@ -702,23 +748,29 @@ VectorXf GestureVariationFollower::getEndGestureProbabilities(float minpos)
 
 
 
-// getEstimatedStatus()
-//
-// return values of estimated features
-// ============================================================
+// Returns the estimates features. It calls status to refer to the status of the state
+// space which comprises the features to be adapted. If features are phase, speed, scale and angle,
+// the function will return these estimateed features for each gesture, plus their probabilities.
+// The returned matrix is nxm
+//   rows correspond to the gestures in the vocabulary
+//   cols correspond to the features (the last column is the [conditionnal] probability of each gesture)
+// The output matrix is an Eigen matrix
 MatrixXf GestureVariationFollower::getEstimatedStatus()
 {
 	
+    // get the number of gestures in the vocabulary
 	unsigned int ngestures = lrndGstr+1;
 	
-	//	post("getEstimatedStatus ngestures: %i (lrndGstr+1=%i)",ngestures,lrndGstr+1);
-	
+    // get the number of particles
 	int ns = static_cast<int>(X.rows());
 	
-	MatrixXf es(ngestures,pdim+1);     // PVRSW
+    // create the matrix (num of gestures x num of features) to be returned
+    // and initialize
+	MatrixXf es(ngestures,pdim+1);
 	es.setConstant(0);
 	
-	
+	// compute the estimated features by computing the expected values
+    // sum ( feature values * weights)
 	for(int n = 0; n < ns; n++)
 	{
 		int gi = g(n);
@@ -736,6 +788,15 @@ MatrixXf GestureVariationFollower::getEstimatedStatus()
 
 
 
+
+
+////////////////////////////////////////////////////////////////
+//
+// SET FUNCTIONS to UPDATE INTERNAL VALUES
+//
+////////////////////////////////////////////////////////////////
+
+// Update the number of particles
 void GestureVariationFollower::setNumberOfParticles(int newNs)
 {
     particlesPositions.clear();
@@ -745,92 +806,17 @@ void GestureVariationFollower::setNumberOfParticles(int newNs)
     logW = VectorXf(newNs);
 }
 
-
-void GestureVariationFollower::setInputType(std::string new_input_type){
-    
-    input_type = new_input_type;
-    
-}
-
-
-// setIcovSingleValue(...)
-//
-// return values of estimated features
-// ============================================================
+// Update the standard deviation of the observation distribution
+// this value acts as a tolerance for the algorithm
+// low value: less tolerant so more precise but can diverge
+// high value: more tolerant so less precise but converge more easily
 void GestureVariationFollower::setIcovSingleValue(float f)
 {
 	icov_single = f > 0 ? f : icov_single;
 }
 
-
-
-// getNbOfParticles()
-//
-// ============================================================
-int GestureVariationFollower::getNbOfParticles()
-{
-	return static_cast<int>(w.size());
-}
-
-
-
-// getNbOfTemplates()
-//
-// ============================================================
-int GestureVariationFollower::getNbOfTemplates()
-{
-	return static_cast<int>(gestureLengths.size());
-}
-
-
-
-// getLengthOfTemplateByInd(...)
-//
-// ============================================================
-int GestureVariationFollower::getLengthOfTemplateByInd(int Ind)
-{
-	if (Ind < gestureLengths.size())
-		return gestureLengths[Ind];
-	else
-		return -1;
-}
-
-
-
-// getTemplateByInd(...)
-//
-// ============================================================
-vector<vector<float> > GestureVariationFollower::getTemplateByInd(int Ind)
-{
-    //post("template szie %i",R_single[Ind].size());
-	if (Ind < gestureLengths.size())
-		return R_single[Ind];
-	else
-		return vector<vector<float> > ();
-}
-
-
-
-// getResamplingThreshold()
-//
-// ============================================================
-int GestureVariationFollower::getResamplingThreshold()
-{
-    return resampling_threshold;
-}
-
-// getObservationNoiseStd()
-//
-// ============================================================
-float GestureVariationFollower::getObservationNoiseStd(){
-    return sqrt(1/icov_single);
-}
-
-
-
-// setAdaptSpeed(...)
-//
-// ============================================================
+// Update the variance for each features which control their precision
+// and speed of convergence
 void GestureVariationFollower::setAdaptSpeed(vector<float> as)
 {
 	
@@ -842,60 +828,36 @@ void GestureVariationFollower::setAdaptSpeed(vector<float> as)
 	
 }
 
-
-// setResamplingThreshold(...)
-//
-// argument
-//      r   resampling threshold (usually NS/2)
-// ============================================================
+// Update the resampling threshold used to avoid degeneracy problem
 void GestureVariationFollower::setResamplingThreshold(int r)
 {
     resampling_threshold = r;
 }
 
 
-// clear()
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////
 //
-// Clear the data structure of the object GestureVariationFollower
-// ============================================================
-void GestureVariationFollower::clear()
-{
-	R_single.clear();
-	gestureLengths.clear();
-	lrndGstr=-1;
-}
-
-Eigen::MatrixXf GestureVariationFollower::getX()          // each row is a particle
-{
-    return X;
-}
-
-Eigen::VectorXi GestureVariationFollower::getG()          // gesture index for each particle [g is ns x 1]
-{
-    return g;
-}
-
-Eigen::VectorXf GestureVariationFollower::getW()
-{
-    return w;
-}
+// MISC FUNCTIONS
+//
+////////////////////////////////////////////////////////////////
 
 
 
 
+// Save function. This function is used by applications to save the
+// vocabulary in a text file given by filename (filename is also the complete path + filename)
 void GestureVariationFollower::saveTemplates(std::string filename)
 {
     
     std::string directory = filename;
-    //std::string parent_directory = directory;
-    //    directory.append("run");
-    //    char buf[10];
-    //    sprintf(buf, "%d", folder);
-    //    directory.append(buf);
-    //    directory.append("/");
-    //    directory.append(filename);
-    //directory.append(".txt");
-    
     
     std::ofstream file_write(directory.c_str());
     for(int i=0; i<R_single.size(); i++){
@@ -912,6 +874,9 @@ void GestureVariationFollower::saveTemplates(std::string filename)
     
 }
 
+
+// Load function. This function is used by applications to load a vocabulary
+// given by filename (filename is also the complete path + filename)
 void GestureVariationFollower::loadTemplates(std::string filename)
 {
     
@@ -919,11 +884,9 @@ void GestureVariationFollower::loadTemplates(std::string filename)
 
     ifstream infile;
     stringstream doung;
-    
-    //        post("%s",filename.c_str());
+
     infile.open (filename.c_str(), ifstream::in);
     
-    //        post("%i",infile.good());
     string line;
     vector<string> list;
     int cl=-1;

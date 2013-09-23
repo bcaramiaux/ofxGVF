@@ -7,11 +7,10 @@
 //  Copyright (C) 2013 Baptiste Caramiaux, Goldsmiths College, University of London
 //
 //  The GVF library is under the GNU Lesser General Public License (LGPL v3)
-//  version: 19-09-2013
+//  version: 09-2013
 //
 //  The interfacing in Pure Data has been realized by Thomas Rushmore
 //
-//  contact: b.caramiaux@gold.ac.uk
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -69,83 +68,11 @@ std::vector<t_float> vect_0_l;
 std::vector<t_float> vect_0_d;
 enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
-static void gvf_auto(t_gvf *x)
-{
-
-    int num_templates = 3;
-    gvf_clear(x, 0, 0, 0);
-    std::string dir = "/Users/thomasrushmore/EAVI/PD/gvflibrary/test gestures/tem";
-    std::string dirg = "/Users/thomasrushmore/EAVI/PD/gvflibrary/test gestures/g";
-    
-    for(int i = 0 ; i < num_templates; i++)
-    {
-        t_atom ab;
-        ab.a_type = A_FLOAT;
-        ab.a_w.w_float = i;
-        gvf_learn(x, 0, 1, &ab);
-        std::string state_file(dir);
-        char buf[10];
-        sprintf(buf, "%d", i+1);
-        state_file.append(buf);
-        state_file.append(".txt");
-        post(state_file.c_str());
-        std::ifstream state_summary;
-        state_summary.open(state_file.c_str());
-        float a;
-        float b;
-        t_atom *ar = new t_atom[2];
-                
-        ar[0].a_type = A_FLOAT;
-        ar[1].a_type = A_FLOAT;
-        
-        while(true){
-            state_summary >> a;
-            state_summary >> b;
-            ar[0].a_w.w_float = a;
-            ar[1].a_w.w_float = b;
-            gvf_data(x, 0, 2, ar);
-            if(state_summary.eof()) break;
-        }
-        gvf_restart(x, 0, 0, 0);
-        state_summary.close();
-        delete ar;
-    }
-    
-    // gvf follow
-    gvf_follow(x,0, 0, 0);
-    // gvf data
-    std::string state_file(dirg);
-    char buf[10];
-    int gesture = 4;
-    
-    sprintf(buf, "%d",gesture);
-    state_file.append(buf);
-    state_file.append(".txt");
-    post(state_file.c_str());
-    std::ifstream state_summary;
-    state_summary.open(state_file.c_str());
-    t_atom *ar = new t_atom[2];
-    
-    ar[0].a_type = A_FLOAT;
-    ar[1].a_type = A_FLOAT;
-    float a,b;
-    while(true){
-        state_summary >> a;
-        state_summary >> b;
-        ar[0].a_w.w_float = a;
-        ar[1].a_w.w_float = b;
-        gvf_data(x, 0, 2, ar);
-        if(state_summary.eof()) break;
-    }
-    gvf_restart(x,0, 0, 0);
-}
-
 
 static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
 {
-    post("\ngvf - realtime adaptive gesture recognition (version: 13-09-2013)");
+    post("\ngvf - realtime adaptive gesture recognition (version: 19-09-2013)");
     post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
-    post("    contact: Baptiste Caramiaux b.caramiaux@gold.ac.uk");
     
     t_gvf *x = (t_gvf *)pd_new(gvf_class);
     
@@ -197,7 +124,7 @@ static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
     x->Number_templates= outlet_new(&x->x_obj, &s_list);
 //    x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
     
-    x->translate = 0;
+    x->translate = 1;
     
     return (void *)x;
 }
@@ -213,21 +140,6 @@ static void gvf_destructor(t_gvf *x)
 }
 
 
-
-// Methods order:
-// - learn
-// - follow
-// - data
-// - save_vocabulary
-// - load_vocabulary
-// - clear
-// - printme
-// - restart
-// - tolerance
-// - resampling_threshold
-// - spreading_means
-// - spreading_ranges
-// - adaptation_speed
 
 
 ///////////////////////////////////////////////////////////
@@ -299,8 +211,8 @@ static void gvf_data(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
     if(x->state == STATE_LEARNING)
     {
         std::vector<float> vect(argc);
-                if (x->translate){
-//        if (argc ==2){
+                
+	if (x->translate){
             if (restarted_l==1)
             {
                 // store the incoming list as a vector of float
@@ -444,6 +356,7 @@ static void gvf_save_vocabulary(t_gvf *x,const t_symbol *sss,int argc, t_atom *a
     std::string filename(mpath);
     x->bubi->saveTemplates(filename);
 }
+
 
 
 ///////////////////////////////////////////////////////////
