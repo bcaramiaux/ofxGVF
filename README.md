@@ -18,11 +18,12 @@ The repository contains the following folders
 Credits
 ===
 
-The library itself has been designed and developped at Ircam Centre Pompidou Paris by Baptiste Caramiaux and Nicola Montecchio.It has been extended and realeased at Goldsmiths College, University of London. 
+The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova)
+It has been extended at Goldsmiths College, University of London, by Baptiste Caramiaux.
 
 Reading:
-- B. Caramiaux, N. Montecchio, F. Bevilacqua. Adaptive Gesture Recognition with Variations Estimation for Interactive Systems.
-
+- B. Caramiaux, N. Montecchio, F. Bevilacqua. **Adaptive Gesture Recognition with Variations Estimation for Interactive Systems**.
+- B. Caramiaux. **Studies on the Relationship between Gesture and Sound in Musical Performance**. PhD Thesis, University of Pierre et Marie Curie (Paris 6) and Ircam Centre Pompidou. France. 2012
 
 License
 ===
