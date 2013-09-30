@@ -1,7 +1,7 @@
 gvf
 ===
 
-Gesture Variation Follower is a first a library for realtime gesture recognition and variations estimation. It has been designed for new human-computer interactions, and specifically for creative applications such as controlling sounds and visuals. 
+Gesture Variation Follower is a library for realtime gesture recognition and variations estimation. It has been designed for new human-computer interactions, and specifically for creative applications such as controlling sounds and visuals. 
 
 
 Content
