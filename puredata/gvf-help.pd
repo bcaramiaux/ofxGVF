@@ -338,6 +338,10 @@ to the first input point by sending "translate 1" otherwise "translate
 #X text -3 -82 (c) Goldsmiths University of London | Ircam Centre Pompidou
 version: 09-2013 sources: https://github.com/bcaramiaux/gvf;
 #X obj 615 94 import gvf;
+#N canvas 98 193 414 94 credits 0;
+#X text 11 7 Patch created by Baptiste Caramiaux (contact: b.caramiaux@gold.ac.uk)
+Marco Donnarumma;
+#X restore 278 -132 pd credits;
 #X connect 0 0 18 0;
 #X connect 1 0 52 0;
 #X connect 6 0 37 0;
