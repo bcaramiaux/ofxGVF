@@ -39,7 +39,7 @@ class gvf : public MaxCpp6<gvf> {
 private:
 	GestureVariationFollower *bubi;
 	int state;
-	int lastreferencelearned;
+	int lastreferencelearned, currentToBeLearned;
 	map<int,vector<pair<float,float> > > refmap;
 	int Nspg, Rtpg;
 	float sp, sv, sr, ss, so; // pos,vel,rot,scal,observation
@@ -90,6 +90,7 @@ public:
 		state = STATE_CLEAR;
         
         lastreferencelearned = -1;
+        currentToBeLearned = -1;
         value_mmax = -INFINITY;
         
         toBeTranslated = 1;
@@ -133,16 +134,26 @@ public:
         }
         int refI = atom_getlong(&av[0]);
         refI = refI-1; // start at 1 in the patch but 0 in C++
-        if(refI != lastreferencelearned+1)
+        currentToBeLearned=refI;
+        if(refI > lastreferencelearned+1)
         {
             post("you need to learn reference %d first",lastreferencelearned+1);
             return;
         }
-        lastreferencelearned++;
-        refmap[refI] = vector<pair<float, float> >();
-        post("learning reference %d", refI+1);
-        
-        bubi->addTemplate();
+        else{
+            if(refI == lastreferencelearned+1)
+            {
+                lastreferencelearned++;
+                //refmap[refI] = vector<pair<float, float> >();
+                post("learning reference %d", refI+1);
+                bubi->addTemplate();
+            }
+            else{
+                //refmap[refI] = vector<pair<float, float> >();
+                post("modifying reference %d", refI+1);
+                bubi->clearTemplate(refI);
+            }
+        }
         
         state = STATE_LEARNING;
         
@@ -234,8 +245,8 @@ public:
             //            float newcov = so *value_mmax;
             //            bubi->setIcovSingleValue(1/(newcov*newcov));
             // Fill template with the observation
-            bubi->fillTemplate(lastreferencelearned,vect);
-            
+            //            bubi->fillTemplate(lastreferencelearned,vect);
+            bubi->fillTemplate(currentToBeLearned,vect);
             
         }
         

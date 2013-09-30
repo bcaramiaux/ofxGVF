@@ -35,6 +35,7 @@ typedef struct _gvf {
     GestureVariationFollower *bubi;
 	t_int state;
 	t_int lastreferencelearned;
+    t_int currentToBeLearned;
     std::map<int,std::vector<std::pair<float,float> > > *refmap;
 	t_int Nspg, Rtpg;
 	t_float sp, sv, sr, ss, so; // pos,vel,rot,scal,observation
@@ -71,7 +72,7 @@ enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
 {
-    post("\ngvf - realtime adaptive gesture recognition (version: 19-09-2013)");
+    post("\ngvf - realtime adaptive gesture recognition (version: 30-09-2013)");
     post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
     
     t_gvf *x = (t_gvf *)pd_new(gvf_class);
@@ -108,7 +109,7 @@ static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
     
     x->state = STATE_CLEAR;
     x->lastreferencelearned = -1;
-    
+    x->currentToBeLearned = -1;
    
     if (argc > 0)
         x->Nspg = getint(argv);
@@ -154,18 +155,36 @@ static void gvf_learn(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
     }
     int refI = getint(argv);
     refI=refI-1; // starts at 1 in the patch but 0 in C++
-    if(refI != x->lastreferencelearned+1)
+    x->currentToBeLearned=refI;
+    if(refI > x->lastreferencelearned+1)
     {
         post("you need to learn reference %d first",x->lastreferencelearned+1);
         return;
     }
-    x->lastreferencelearned++;
+    else{
+        if(refI == x->lastreferencelearned+1)
+            {
+                x->lastreferencelearned++;
+                //refmap[refI] = vector<pair<float, float> >();
+                post("learning reference %d", refI+1);
+                x->bubi->addTemplate();
+            }
+            else{
+                //refmap[refI] = vector<pair<float, float> >();
+                post("modifying reference %d", refI+1);
+                x->bubi->clearTemplate(refI);
+            }
+        }
+    //x->lastreferencelearned++;
     //x->refmap[refI];// = std::vector<std::pair<float, float> >();
-    (*x->refmap)[refI] = std::vector<std::pair<float, float> >();
-    post("learning reference %d", refI+1);
-    x->bubi->addTemplate();
+    //(*x->refmap)[refI] = std::vector<std::pair<float, float> >();
+    //post("learning reference %d", refI+1);
+    //x->bubi->addTemplate();
+    
     x->state = STATE_LEARNING;
+    
     restarted_l=1;
+    
     
     // output number of templates
     t_atom *outAtoms = new t_atom[1];
@@ -241,7 +260,8 @@ static void gvf_data(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
         //				xy.second = y -xy0_l.second;
         
         // Fill template
-        x->bubi->fillTemplate(x->lastreferencelearned,vect);
+        //x->bubi->fillTemplate(x->lastreferencelearned,vect);
+        x->bubi->fillTemplate(x->currentToBeLearned,vect);
         
     }
     else if(x->state == STATE_FOLLOWING)

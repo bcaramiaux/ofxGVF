@@ -143,6 +143,15 @@ void GestureVariationFollower::fillTemplate(int id, vector<float> data)
 	}
 }
 
+// clear template given by id
+void GestureVariationFollower::clearTemplate(int id)
+{
+    if (id<=lrndGstr)
+	{
+        R_single[id] = vector<vector<float> >();      // allocate the memory for the gesture's data
+        gestureLengths[id] = 0;                        // add an element (0) in the gesture lengths table
+    }
+}
 
 
 // Clear the internal data (templates)

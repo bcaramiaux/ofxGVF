@@ -60,9 +60,7 @@ class GestureVariationFollower
 {
 private:
     
-    Eigen::VectorXf obs_eigen;
-    Eigen::VectorXf vref;
-    Eigen::VectorXf vrefmineigen;
+
 	Eigen::MatrixXf X;          // each row is a particle
 	Eigen::VectorXi g;          // gesture index for each particle [g is ns x 1]
 	Eigen::VectorXf w;          // weight of each particle [w is ns x 1]
@@ -123,7 +121,10 @@ public:
 	
 	// fill tempalte given by id with data vector
 	void fillTemplate(int id, std::vector<float> data);
-	
+
+    // clear template given by id
+    void clearTemplate(int id);
+    
 	// clear the templates
 	void clear();
     
@@ -203,7 +204,9 @@ public:
     bool new_gest;
     void setInitCoord(std::vector<float> s_origin);
     
-    
+    Eigen::VectorXf obs_eigen;
+    Eigen::VectorXf vref;
+    Eigen::VectorXf vrefmineigen;
     
 };
 

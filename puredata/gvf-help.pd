@@ -1,4 +1,5 @@
-#N canvas 375 43 1040 784 10;
+#N canvas 384 22 1040 784 10;
+#X declare -lib gvf;
 #X declare -lib gvf;
 #X msg 35 95 follow;
 #X msg 428 62 data \$1 \$2;
@@ -336,6 +337,7 @@ to the first input point by sending "translate 1" otherwise "translate
 ;
 #X text -3 -82 (c) Goldsmiths University of London | Ircam Centre Pompidou
 version: 09-2013 sources: https://github.com/bcaramiaux/gvf;
+#X obj 615 94 import gvf;
 #X connect 0 0 18 0;
 #X connect 1 0 52 0;
 #X connect 6 0 37 0;
