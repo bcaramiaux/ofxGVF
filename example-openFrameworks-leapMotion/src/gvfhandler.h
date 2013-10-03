@@ -114,7 +114,7 @@ private:
     std::vector<gvfGesture> templates;
 
     // reference to the gvf object
-    gvf *mygvf;
+    GestureVariationFollower *mygvf;
     
     // variance coefficients
     float sigPosition, sigSpeed, sigScale, sigRotation;
