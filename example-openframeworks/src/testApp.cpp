@@ -27,9 +27,6 @@ void testApp::setup(){
     
     initializeGui();
     initColors();
-
-    //leap: open the controller
-    	leap.open();
     
 }
 
@@ -45,18 +42,6 @@ void testApp::update(){
     {
         gvfh.gvf_data(currentGesture.getLastPointAdded());
   }
-    
-    
-    //leap
-    //here we get the points from the leap motion
-    //only the position of the first hand is considered:
-    //  simpleHands[0].handPos
-    //to be continued...
-    simpleHands = leap.getSimpleHands();
-    if( leap.isFrameNew() && simpleHands.size() )
-    {
-        ofPoint pt = simpleHands[0].handPos;
-    }
     
 }
 

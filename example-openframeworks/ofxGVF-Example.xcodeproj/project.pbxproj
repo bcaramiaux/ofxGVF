@@ -39,9 +39,6 @@
 		E45BE9810E8CC7DD009D7055 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9770E8CC7DD009D7055 /* CoreServices.framework */; };
 		E45BE9830E8CC7DD009D7055 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE9790E8CC7DD009D7055 /* OpenGL.framework */; };
 		E45BE9840E8CC7DD009D7055 /* QuickTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E45BE97A0E8CC7DD009D7055 /* QuickTime.framework */; };
-		E48D77601695DA7C00900C70 /* libLeap.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = E48D77571695DA7C00900C70 /* libLeap.dylib */; };
-		E48D77701695DB1B00900C70 /* libLeap.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = E48D77571695DA7C00900C70 /* libLeap.dylib */; };
-		E48D77731695DB2600900C70 /* ofxLeapMotion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E48D77721695DB2600900C70 /* ofxLeapMotion.cpp */; };
 		E48D783D1695F4B800900C70 /* ofxStrip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E48D783B1695F4B800900C70 /* ofxStrip.cpp */; };
 		E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E4B69E1D0A3A1BDC003C02F2 /* main.cpp */; };
 		E4B69E210A3A1BDC003C02F2 /* testApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E4B69E1E0A3A1BDC003C02F2 /* testApp.cpp */; };
@@ -78,7 +75,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 6;
 			files = (
-				E48D77701695DB1B00900C70 /* libLeap.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -199,11 +195,6 @@
 		E45BE9770E8CC7DD009D7055 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		E45BE9790E8CC7DD009D7055 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		E45BE97A0E8CC7DD009D7055 /* QuickTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickTime.framework; path = /System/Library/Frameworks/QuickTime.framework; sourceTree = "<absolute>"; };
-		E48D77501695DA7C00900C70 /* Leap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Leap.h; path = src/ofxLeapMotion/libs/include/Leap.h; sourceTree = SOURCE_ROOT; };
-		E48D77521695DA7C00900C70 /* LeapMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LeapMath.h; path = src/ofxLeapMotion/libs/include/LeapMath.h; sourceTree = SOURCE_ROOT; };
-		E48D77571695DA7C00900C70 /* libLeap.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libLeap.dylib; path = src/ofxLeapMotion/libs/lib/osx/libLeap.dylib; sourceTree = SOURCE_ROOT; };
-		E48D77711695DB2600900C70 /* ofxLeapMotion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxLeapMotion.h; sourceTree = "<group>"; };
-		E48D77721695DB2600900C70 /* ofxLeapMotion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxLeapMotion.cpp; sourceTree = "<group>"; };
 		E48D783B1695F4B800900C70 /* ofxStrip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxStrip.cpp; path = src/ofxStrip/ofxStrip.cpp; sourceTree = SOURCE_ROOT; };
 		E48D783C1695F4B800900C70 /* ofxStrip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxStrip.h; path = src/ofxStrip/ofxStrip.h; sourceTree = SOURCE_ROOT; };
 		E4B69B5B0A3A1756003C02F2 /* ofxGVF-ExampleDebug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "ofxGVF-ExampleDebug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -243,7 +234,6 @@
 				E4C2424810CC5A17004149E2 /* Cocoa.framework in Frameworks */,
 				E4C2424910CC5A17004149E2 /* IOKit.framework in Frameworks */,
 				E7E077E515D3B63C0020DFD4 /* CoreVideo.framework in Frameworks */,
-				E48D77601695DA7C00900C70 /* libLeap.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -513,64 +503,6 @@
 			name = frameworks;
 			sourceTree = "<group>";
 		};
-		E48D774D1695DA7C00900C70 /* ofxLeapMotion */ = {
-			isa = PBXGroup;
-			children = (
-				E48D774E1695DA7C00900C70 /* libs */,
-				E48D775D1695DA7C00900C70 /* src */,
-			);
-			name = ofxLeapMotion;
-			path = src/ofxLeapMotion;
-			sourceTree = SOURCE_ROOT;
-		};
-		E48D774E1695DA7C00900C70 /* libs */ = {
-			isa = PBXGroup;
-			children = (
-				E48D774F1695DA7C00900C70 /* include */,
-				E48D77551695DA7C00900C70 /* lib */,
-			);
-			name = libs;
-			path = src/ofxLeapMotion/libs;
-			sourceTree = SOURCE_ROOT;
-		};
-		E48D774F1695DA7C00900C70 /* include */ = {
-			isa = PBXGroup;
-			children = (
-				E48D77501695DA7C00900C70 /* Leap.h */,
-				E48D77521695DA7C00900C70 /* LeapMath.h */,
-			);
-			name = include;
-			path = src/ofxLeapMotion/libs/include;
-			sourceTree = SOURCE_ROOT;
-		};
-		E48D77551695DA7C00900C70 /* lib */ = {
-			isa = PBXGroup;
-			children = (
-				E48D77561695DA7C00900C70 /* osx */,
-			);
-			name = lib;
-			path = src/ofxLeapMotion/libs/lib;
-			sourceTree = SOURCE_ROOT;
-		};
-		E48D77561695DA7C00900C70 /* osx */ = {
-			isa = PBXGroup;
-			children = (
-				E48D77571695DA7C00900C70 /* libLeap.dylib */,
-			);
-			name = osx;
-			path = src/ofxLeapMotion/libs/lib/osx;
-			sourceTree = SOURCE_ROOT;
-		};
-		E48D775D1695DA7C00900C70 /* src */ = {
-			isa = PBXGroup;
-			children = (
-				E48D77721695DB2600900C70 /* ofxLeapMotion.cpp */,
-				E48D77711695DB2600900C70 /* ofxLeapMotion.h */,
-			);
-			name = src;
-			path = src/ofxLeapMotion/src;
-			sourceTree = SOURCE_ROOT;
-		};
 		E48D783A1695F4B800900C70 /* ofxStrip */ = {
 			isa = PBXGroup;
 			children = (
@@ -605,7 +537,6 @@
 				21B4D36B17A2D99700A7071D /* plotter.h */,
 				21B4D3DE17A2DBDF00A7071D /* ofxUI */,
 				E48D783A1695F4B800900C70 /* ofxStrip */,
-				E48D774D1695DA7C00900C70 /* ofxLeapMotion */,
 				E4B69E1D0A3A1BDC003C02F2 /* main.cpp */,
 				E4B69E1E0A3A1BDC003C02F2 /* testApp.cpp */,
 				E4B69E1F0A3A1BDC003C02F2 /* testApp.h */,
@@ -709,7 +640,6 @@
 			files = (
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* testApp.cpp in Sources */,
-				E48D77731695DB2600900C70 /* ofxLeapMotion.cpp in Sources */,
 				E48D783D1695F4B800900C70 /* ofxStrip.cpp in Sources */,
 				218FF39517A17FB100E4606A /* IpEndpointName.cpp in Sources */,
 				218FF39617A17FB100E4606A /* NetworkingUtils.cpp in Sources */,

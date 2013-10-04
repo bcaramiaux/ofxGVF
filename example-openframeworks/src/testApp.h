@@ -6,8 +6,6 @@
 
 //#include "gvfGesture.h"
 #include "gvfhandler.h"
-#include "ofxLeapMotion.h"
-
 
 using namespace Eigen;
 
@@ -80,9 +78,5 @@ private:
     ofxUINumberDialer *soNumDialer;
     ofxUINumberDialer *sigPosND, *sigSpeedND, *sigScaleND, *sigRotND;
     
-    //leap
-    ofxLeapMotion leap;
-	vector <ofxLeapMotionSimpleHand> simpleHands;
-	vector <int> fingersFound;
 };
 
