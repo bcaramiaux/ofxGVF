@@ -1,15 +1,15 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxUI.h"
-#include "GestureVariationFollower.h"
+#include "ofxGui.h"
+#include "ofxXmlSettings.h"
 
-//#include "gvfGesture.h"
+#include "GestureVariationFollower.h"
 #include "gvfhandler.h"
 
 using namespace Eigen;
 
-class testApp : public ofBaseApp{
+class ofApp : public ofBaseApp{
 	
 public:
     
@@ -26,18 +26,38 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    void guiEvent(ofxUIEventArgs &e);
     
-    void saveGestures(ofFileDialogResult dialogResult);
-    void loadGestures(ofFileDialogResult dialogResult);
-    float 	counter;
+    void saveGestures();
+    void loadGestures();
+    float counter;
     
 private:
     
     void initColors();
     ofColor generateRandomColor();
     
+    // gui stuff
     void initializeGui();
+    
+    ofxPanel gui;
+    
+    ofParameter<int> numParticles;
+	ofParameter<int> resampleThreshold;
+	ofParameter<float> smoothingCoefficient;
+	ofParameter<float> sigPosition;
+    ofParameter<float> sigRotation;
+    ofParameter<float> sigScale;
+	ofParameter<float> sigSpeed;
+    
+    ofxButton save;
+    ofxButton load;
+    
+    ofxLabel label;
+    
+    void numParticlesChanged(int & numParticles);
+    void resampleThresholdChanged(int & resampleThreshold);
+    void smoothingCoefficientChanged(float & smoothingCoefficient);
+    void varianceCoefficentsChanged(float & coefficent);
     
     int scrW, scrH;
     
@@ -70,13 +90,6 @@ private:
     float viewXRotation;
     
     std::vector<ofColor> colors;
-    
-    ofRectangle guiArea;
-    ofxUICanvas *settingsGui;
-    ofxUINumberDialer *nsNumDialer;
-    ofxUINumberDialer *rtNumDialer;
-    ofxUINumberDialer *soNumDialer;
-    ofxUINumberDialer *sigPosND, *sigSpeedND, *sigScaleND, *sigRotND;
     
 };
 

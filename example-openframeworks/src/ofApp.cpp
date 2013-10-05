@@ -1,8 +1,9 @@
-#include "testApp.h"
+#include "ofApp.h"
 
 string testString;
+
 //--------------------------------------------------------------
-void testApp::setup(){
+void ofApp::setup(){
 
 	ofSetCircleResolution(50);
     
@@ -30,9 +31,8 @@ void testApp::setup(){
     
 }
 
-
 //--------------------------------------------------------------
-void testApp::update(){
+void ofApp::update(){
 
     // if the user is performing a gesture,
     // feed the last point on the gesture to the gvf handler
@@ -46,11 +46,13 @@ void testApp::update(){
 }
 
 //--------------------------------------------------------------
-void testApp::draw(){
+void ofApp::draw(){
     
     float templatesScale = 0.5f;
     ofBackgroundGradient(ofColor(2), ofColor(40), OF_GRADIENT_CIRCULAR);
     ofPushMatrix();
+    
+    gui.draw();
     
     if(rotate)
     {
@@ -142,7 +144,7 @@ void testApp::draw(){
 
 
 //--------------------------------------------------------------
-void testApp::keyPressed(int key){
+void ofApp::keyPressed(int key){
 
 	if (key == 'l' || key == 'L'){
         // get ready to learn a new gesture
@@ -188,12 +190,12 @@ void testApp::keyPressed(int key){
 }
 
 //--------------------------------------------------------------
-void testApp::keyReleased(int key){
+void ofApp::keyReleased(int key){
 
 }
 
 //--------------------------------------------------------------
-void testApp::mouseMoved(int x, int y ){
+void ofApp::mouseMoved(int x, int y ){
     // if rotating, the mouse will determing how many degrees
     if(rotate)
     {
@@ -203,7 +205,7 @@ void testApp::mouseMoved(int x, int y ){
 }
 
 //--------------------------------------------------------------
-void testApp::mouseDragged(int x, int y, int button){
+void ofApp::mouseDragged(int x, int y, int button){
     
     // if a gesture has already been starded, a new point is added to it
     if(isMouseDrawing)
@@ -213,10 +215,10 @@ void testApp::mouseDragged(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void testApp::mousePressed(int x, int y, int button){
+void ofApp::mousePressed(int x, int y, int button){
 
     // a new gesture will not start if the user clicks on the UI area or outside the gesture area
-    if(currentGesture.isPointInGestureArea(x, y) && !currentGesture.isPointInArea(guiArea, x, y))
+    if(currentGesture.isPointInGestureArea(x, y) && !currentGesture.isPointInArea(gui.getShape(), x, y))
     {
         // the current gesture is initialised with its initial point
         currentGesture.initialiseNonNormalised(x, y);
@@ -238,7 +240,7 @@ void testApp::mousePressed(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void testApp::mouseReleased(int x, int y, int button){
+void ofApp::mouseReleased(int x, int y, int button){
     if(isMouseDrawing)
     {
         isMouseDrawing = false;
@@ -253,7 +255,7 @@ void testApp::mouseReleased(int x, int y, int button){
 }
 
 //--------------------------------------------------------------
-void testApp::windowResized(int w, int h){
+void ofApp::windowResized(int w, int h){
     ofPoint wSize = ofGetWindowSize();
     scrW = wSize.x;
     scrH = wSize.y;
@@ -266,133 +268,88 @@ void testApp::windowResized(int w, int h){
 }
 
 //--------------------------------------------------------------
-void testApp::gotMessage(ofMessage msg){
+void ofApp::gotMessage(ofMessage msg){
     
 }
 
 //--------------------------------------------------------------
-void testApp::dragEvent(ofDragInfo dragInfo){
+void ofApp::dragEvent(ofDragInfo dragInfo){
     
 }
 
-void testApp::initializeGui()
-{
-    float guiWidth = 200;
-    float guiHeight = 500;
-    guiArea = ofRectangle(0, 100, guiWidth, guiHeight);
-    settingsGui = new ofxUICanvas(guiArea);
+//--------------------------------------------------------------
+void ofApp::initializeGui(){
     
     // the initial parameters values set here are not connected to the initial parameters values on the gvfhandler constructor
     // those are the real initial values. The values here will only take effect once the user changes them
     // (this is inconsistent and should be fixed)
     
-    settingsGui->addWidgetDown(new ofxUILabel("Amount of particles", OFX_UI_FONT_MEDIUM));
-    nsNumDialer = new ofxUINumberDialer(10, 10000, 2000, 0, "amount of particles", OFX_UI_FONT_MEDIUM);
-    settingsGui->addWidgetDown(nsNumDialer);
-    settingsGui->addSpacer(guiWidth - 2, 2);
+    gui.setup("ofxGVF Settings");
     
-    settingsGui->addWidgetDown(new ofxUILabel("Resampling Threshold", OFX_UI_FONT_MEDIUM));
-    rtNumDialer = new ofxUINumberDialer(100, 10000, 1000, 0, "resampling threshold", OFX_UI_FONT_MEDIUM);
-    settingsGui->addWidgetDown(rtNumDialer);
-    settingsGui->addSpacer(guiWidth - 2, 2);
+    gui.add(numParticles.set("Number of particles", 2000, 10, 10000));
+    gui.add(resampleThreshold.set("Resampling threshold", 1000, 100, 10000));
+    gui.add(smoothingCoefficient.set("Smoothing coefficient", 0.2, 0.01, 2.0));
     
-    settingsGui->addWidgetDown(new ofxUILabel("Smoothing Coefficient", OFX_UI_FONT_MEDIUM));
-    soNumDialer = new ofxUINumberDialer(0.01, 2, 0.2, 2, "smoothing coefficient", OFX_UI_FONT_MEDIUM);
-    settingsGui->addWidgetDown(soNumDialer);
-    settingsGui->addSpacer(guiWidth - 2, 2);
+    gui.add(label.setup("Variance coefficients", ""));
+    gui.add(sigPosition.set("Position", 0.0001, 0.000001, 0.1));
+    gui.add(sigSpeed.set("Speed", 0.01, 0.000001, 0.1));
+    gui.add(sigScale.set("Scale", 0.0001, 0.000001, 0.1));
+    gui.add(sigRotation.set("Rotation", 0.0001, 0.000001, 0.1));
     
-    settingsGui->addWidgetDown(new ofxUILabel("", OFX_UI_FONT_MEDIUM));
-    settingsGui->addWidgetDown(new ofxUILabel("Variance coefficients", OFX_UI_FONT_MEDIUM));
+    gui.add(save.setup("save gestures"));
+    gui.add(load.setup("load gestures"));
     
-    settingsGui->addWidgetDown(new ofxUILabel("Position", OFX_UI_FONT_MEDIUM));
-    sigPosND = new ofxUINumberDialer(0.000001, 0.1, 0.0001, 6, "position", OFX_UI_FONT_MEDIUM);
-    settingsGui->addWidgetDown(sigPosND);
+    numParticles.addListener(this, &ofApp::numParticlesChanged);
+    resampleThreshold.addListener(this, &ofApp::resampleThresholdChanged);
+    smoothingCoefficient.addListener(this, &ofApp::smoothingCoefficientChanged);
+
+    sigPosition.addListener(this, &ofApp::varianceCoefficentsChanged);
+    sigSpeed.addListener(this, &ofApp::varianceCoefficentsChanged);
+    sigScale.addListener(this, &ofApp::varianceCoefficentsChanged);
+    sigRotation.addListener(this, &ofApp::varianceCoefficentsChanged);
     
-    settingsGui->addWidgetDown(new ofxUILabel("Speed", OFX_UI_FONT_MEDIUM));
-    sigSpeedND = new ofxUINumberDialer(0.000001, 0.1, 0.01, 6, "speed", OFX_UI_FONT_MEDIUM);
-    settingsGui->addWidgetDown(sigSpeedND);
+	save.addListener(this, &ofApp::saveGestures);
+    load.addListener(this, &ofApp::loadGestures);
     
-    settingsGui->addWidgetDown(new ofxUILabel("Scale", OFX_UI_FONT_MEDIUM));
-    sigScaleND = new ofxUINumberDialer(0.000001, 0.1, 0.0001, 6, "scale", OFX_UI_FONT_MEDIUM);
-    settingsGui->addWidgetDown(sigScaleND);
+    gui.setShape(ofRectangle(30, 110, 250, 100));
+    gui.setPosition(30, 110);
+    gui.setWidthElements(250);
     
-    settingsGui->addWidgetDown(new ofxUILabel("Rotation", OFX_UI_FONT_MEDIUM));
-    sigRotND = new ofxUINumberDialer(0.000001, 0.1, 0.000001, 6, "rotation", OFX_UI_FONT_MEDIUM);
-    settingsGui->addWidgetDown(sigRotND);
-    
-    settingsGui->addWidgetDown(new ofxUILabel("", OFX_UI_FONT_MEDIUM));
-    settingsGui->addLabelButton("Save gesture(s)", false);
-    settingsGui->addLabelButton("Load gesture(s)", false);
-    
-    ofAddListener(settingsGui->newGUIEvent, this, &testApp::guiEvent);
 }
 
-void testApp::guiEvent(ofxUIEventArgs &e)
-{
-	string name = e.widget->getName();
-	int kind = e.widget->getKind();
-    
-	cout << "got event from: " << name << endl;
-	
-    // if any paramenter needs to be adjusted,
-    // the appropriate gvfhandler method will be called
-    
-    if(name == "amount of particles")
-	{
-        cout << nsNumDialer->getValue() << endl;
-        gvfh.setNumberOfParticles(nsNumDialer->getValue());
-    }
-    else if(name == "resampling threshold")
-    {
-        gvfh.gvf_rt((int) rtNumDialer->getValue());
-    }
-    else if(name == "smoothing coefficient")
-    {
-        gvfh.gvf_std(soNumDialer->getValue());
-    }
-    else if(name == "position" || name == "speed" ||
-            name == "scale" || name == "rotation")
-    {
-        std::vector<float> sigs;
-        sigs.push_back(sigPosND->getValue());
-        sigs.push_back(sigSpeedND->getValue());
-        sigs.push_back(sigScaleND->getValue());
-        sigs.push_back(sigRotND->getValue());
-        
-        gvfh.gvf_adaptspeed(sigs);
-    }
-    
-    // if save or load is requested,
-    // the appropriate dialog is shown and the task is carried out
-    else if(name == "Save gesture(s)")
-    {
-        ofxUILabelButton *button = (ofxUILabelButton*) e.widget;
-        if(button->getValue() && gvfh.getTemplateCount() > 0)
-        {
-            ofFileDialogResult dialogResult = ofSystemSaveDialog("my gestures.xml", "Save gestures");
-            if(dialogResult.bSuccess)
-            {
-                saveGestures(dialogResult);
-            }
-        }
-    }
-    else if(name == "Load gesture(s)")
-    {
-        ofxUILabelButton *button = (ofxUILabelButton*) e.widget;
-        if(button->getValue())
-        {
-            ofFileDialogResult dialogResult = ofSystemLoadDialog("Select the xml file containing gesture data");
-            if(dialogResult.bSuccess)
-            {
-                loadGestures(dialogResult);
-            }
-            
-        }
-    }
+//--------------------------------------------------------------
+void ofApp::numParticlesChanged(int & numParticles){
+	//cout << numParticles << endl;
+    gvfh.setNumberOfParticles(numParticles);
 }
 
-void testApp::loadGestures(ofFileDialogResult dialogResult)
-{
+void ofApp::resampleThresholdChanged(int & resampleThreshold){
+	//cout << resampleThreshold << endl;
+    gvfh.gvf_rt(resampleThreshold);
+}
+
+void ofApp::smoothingCoefficientChanged(float & smoothingCoefficient){
+	//cout << smoothingCoefficient << endl;
+    gvfh.gvf_std(smoothingCoefficient);
+}
+
+void ofApp::varianceCoefficentsChanged(float & coefficent){
+	//cout << coefficent << endl;
+    // just get all the coefficients and ignore the passed value
+    std::vector<float> sigs;
+    sigs.push_back(sigPosition.get());
+    sigs.push_back(sigSpeed.get());
+    sigs.push_back(sigScale.get());
+    sigs.push_back(sigRotation.get());
+    gvfh.gvf_adaptspeed(sigs);
+}
+
+//--------------------------------------------------------------
+void ofApp::loadGestures(){
+    
+    ofFileDialogResult dialogResult = ofSystemLoadDialog("Select the xml file containing gesture data");
+    if(!dialogResult.bSuccess) return;
+    
     ofxXmlSettings file;
     if(!file.loadFile(dialogResult.filePath))
         return;
@@ -434,8 +391,12 @@ void testApp::loadGestures(ofFileDialogResult dialogResult)
     }
 }
 
-void testApp::saveGestures(ofFileDialogResult dialogResult)
-{
+//--------------------------------------------------------------
+void ofApp::saveGestures(){
+    
+    ofFileDialogResult dialogResult = ofSystemSaveDialog("my gestures.xml", "Save gestures");
+    if(!dialogResult.bSuccess) return;
+    
     ofxXmlSettings file;
     cout << dialogResult.filePath << endl;
     cout << dialogResult.fileName << endl;
@@ -467,8 +428,8 @@ void testApp::saveGestures(ofFileDialogResult dialogResult)
     file.saveFile(dialogResult.filePath);
 }
 
-void testApp::initColors()
-{
+//--------------------------------------------------------------
+void ofApp::initColors(){
     colors.clear();
     colors.push_back(ofColor::white);
     colors.push_back(ofColor::gray);
@@ -480,8 +441,8 @@ void testApp::initColors()
     colors.push_back(ofColor::violet);
 }
 
-ofColor testApp::generateRandomColor()
-{
+//--------------------------------------------------------------
+ofColor ofApp::generateRandomColor(){
     ofColor c;
     
     if(colors.size() == 0)
@@ -495,5 +456,3 @@ ofColor testApp::generateRandomColor()
     colors.erase(colors.begin() + index);
     return c;
 }
-
-
