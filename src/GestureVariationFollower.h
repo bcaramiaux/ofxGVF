@@ -22,7 +22,6 @@
 #define GestureVariationFollower_H
 
 #include <vector>
-#include <Eigen/Core>
 #include <tr1/random>
 #include <map>
 
@@ -37,7 +36,7 @@
 #include <boost/random.hpp>
 #endif
 
-
+using namespace std;
 
 
 
@@ -60,31 +59,33 @@ class GestureVariationFollower
 {
 private:
     
+    // private variables
+	vector<vector<float> >  X;                  // each row is a particle
+	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
+	vector<float>           w;                  // weight of each particle [w is ns x 1]
+    vector<float>           offS;               // translation offset
+	vector<float>           featVariances;      // vector of variances
+	vector<float>           means;              // vector of means for particles initial spreading
+	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
+    float   tolerance;          // standard deviation of the observation distribution
+	float   nu;                 // degree of freedom for the t-distribution; if 0, use a gaussian
+	float   sp, sv, sr, ss;     // sigma values (actually, their square root)
+	int     resamplingThreshold;// resampling threshol
+    int     ns;
+	int     pdim;               // number of state dimension
+	int     numTemplates;       // number of learned gestures (starts at 0)
+    int     inputDim;           // Dimension of the input data
+    vector<int>    gestureLengths;             // length of each reference gesture
+    vector<float>  particlesPhaseLt0;          // store particles whose phase is < 0 (outside of the gesture)
+    vector<float>  particlesPhaseGt1;          // store particles whose phase is > 1 (outside of the gesture)
+    
+	std::map<int,std::vector<vector<float> > > R_single;   // gesture references (1 example)
 
-	Eigen::MatrixXf X;          // each row is a particle
-	Eigen::VectorXi g;          // gesture index for each particle [g is ns x 1]
-	Eigen::VectorXf w;          // weight of each particle [w is ns x 1]
-    Eigen::VectorXf logW;       // non-normalized weights
-    Eigen::VectorXf offS;       // translation offset
-	Eigen::VectorXf sigt;       // vector of variances
-	Eigen::VectorXf means;      // vector of means for particles initial spreading
-	Eigen::VectorXf ranges;     // vector of ranges around the means for particles initial spreading
-	std::vector<std::pair<Eigen::MatrixXf, Eigen::MatrixXf> > R_multi;  // gesture references (several examples)
-	std::map<int,std::vector<std::vector<float> > > R_single;       // gesture references (1 example)
-	float icov_single;          // inverse covariance (coeff. for the diagonal matrix)
-	float nu;                   // degree of freedom for the t-distribution; if 0, use a gaussian
-	float sp, sv, sr, ss;       // sigma values (actually, their square root)
-	int resampling_threshold;   // resampling threshol
-    int ns;
-	int pdim;                   // number of state dimension
-    int pdim_m1;
-	int lrndGstr;               // number of learned gestures (starts at 0)
-	std::vector<int> gestureLengths;   // length of each reference gesture
-    std::string input_type;
-    std::vector<float> particle_before_0;
-    std::vector<float> particle_after_1;
+    
+    // private functions
+    void initweights();                         // initialize weights
 	
-	
+    
     // random number generator
 #if BOOSTLIB
 	boost::variate_generator<boost::mt19937&, boost::normal_distribution<float> > *rndnorm(rng, normdist);
@@ -98,12 +99,8 @@ private:
 #endif
     
     
-	// private functions
-    void initweights();                         // initialize weights
-    
-	
 
-    
+
 	
 	
 	
@@ -111,7 +108,8 @@ public:
 	
     
 	// constructor of the gvf instance
-	GestureVariationFollower(int ns, Eigen::VectorXf sigs, float icov, int resThresh, float nu = 0.);
+	GestureVariationFollower(int inputDim);     // use default parameter values
+    GestureVariationFollower(int inputDim, int ns, vector<float> featVariances, float tolerance, int resamplingThreshold, float nu = 0.);
 	
 	// destructor
     ~GestureVariationFollower();
@@ -120,7 +118,7 @@ public:
 	void addTemplate();
 	
 	// fill tempalte given by id with data vector
-	void fillTemplate(int id, std::vector<float> data);
+	void fillTemplate(int id, vector<float> & data);
 
     // clear template given by id
     void clearTemplate(int id);
@@ -129,41 +127,41 @@ public:
 	void clear();
     
 	// spread particles
-	void spreadParticles(Eigen::VectorXf meanPVRS, Eigen::VectorXf rangePVRS);
+	void spreadParticles();         // use default parameter values
+	void spreadParticles(vector<float> & means, vector<float> & ranges);
     
 	// inference
-    void particleFilter(std::vector<float> obs);    // core algorithm but DEPRECATED
-    void particleFilterOptim(std::vector<float> obs);
+    void particleFilter(vector<float> & obs);
 	
     // resample particles according to the proba distrib given by the weights
     void resampleAccordingToWeights();
 	
     // makes the inference by calling particleFilteringOptim
-	void infer(std::vector<float> vect);    // -- DEPRECATED --
+	void infer(vector<float> & vect); 
     
     
 	
 	// Gets
 	/////////
-	float getObservationNoiseStd();
-    int getResamplingThreshold();
-	int getNbOfParticles();
-	int getNbOfTemplates();
-	int getLengthOfTemplateByInd(int Ind);
-    std::vector<std::vector<float> > getTemplateByInd(int Ind);
-    Eigen::MatrixXf getX();
-	Eigen::VectorXi getG();
-	Eigen::VectorXf getW();
-    Eigen::VectorXf getGestureConditionnalProbabilities();
-    Eigen::VectorXf getGestureLikelihoods();	// -- DEPRECATED --
-	Eigen::VectorXf getEndGestureProbabilities(float minpos=0.);// -- DEPRECATED --
-	Eigen::MatrixXf getEstimatedStatus();
+	float   getObservationNoiseStd();
+    int     getResamplingThreshold();
+	int     getNbOfParticles();
+	int     getNbOfTemplates();
+	int     getLengthOfTemplateByInd(int Ind);
+    vector<vector<float> > getTemplateByInd(int Ind);
+    vector<vector<float> > getX();
+	vector<int>    getG();
+	vector<float>  getW();
+    vector<float>  getGestureProbabilities();
+    vector<float>  getGestureConditionnalProbabilities(); // ----- DEPRECATED ------
+	vector<vector<float> > getEstimatedStatus();
+    vector<float>  getFeatureVariances();
 	
     
     // Sets
 	////////
 	void setNumberOfParticles(int newNs);
-	void setIcovSingleValue(float f);
+	void setToleranceValue(float f);
 	void setAdaptSpeed(std::vector<float> as);
 	void setResamplingThreshold(int r);
     
@@ -197,16 +195,96 @@ public:
     int currentGest;
     bool compa;
     float old_max;
-    Eigen::VectorXf meanPVRScopy;
-    Eigen::VectorXf rangePVRScopy;
+    vector<float> meansCopy;
+    vector<float> rangesCopy;
     std::vector<float> origin;
     std::vector<float> *offset;
     bool new_gest;
     void setInitCoord(std::vector<float> s_origin);
+	
+	
+	
+	
+	// =====================
+	//
+	// matrices and vectors
+    //
+	//
     
-    Eigen::VectorXf obs_eigen;
-    Eigen::VectorXf vref;
-    Eigen::VectorXf vrefmineigen;
+    // init matrix by allocating memory
+    void initMatf(vector<vector<float> > &T, int rows, int cols)
+    {
+        T.resize(rows);
+        for (int n=0;n<rows;n++)
+            T[n].resize(cols);
+    }
+    // init matrix and copy values from another matrix
+    void setMatf(vector<vector<float> > &T, vector<vector<float> > M)
+    {
+        int rows = M.size();
+        int cols = M[0].size();
+        T.resize(rows);
+        for (int n=0;n<rows;n++){
+            T[n].resize(cols);
+            for (int m=0;m<cols;m++)
+                T[n][m]=M[n][m];
+        }
+    }
+    // init matrix by allocating memory and fill with float f
+    void setMatf(vector<vector<float> > &T, float f, int rows, int cols)
+    {
+        T.resize(rows);
+        for (int n=0;n<rows;n++){
+            T[n].resize(cols);
+            for (int m=0;m<cols;m++)
+                T[n][m]=f;
+        }
+    }
+    // set matrix filled with float f
+    void setMatf(vector<vector<float> > &T, float f)
+    {
+        for (int n=0;n<T.size();n++)
+            for (int m=0;m<T[n].size();m++)
+                T[n][m]=f;
+    }
+
+	
+    void initVeci(vector<int> &T, int rows)
+    {
+        T.resize(rows);
+    }
+    void setVeci(vector<int> &T, vector<int> V)
+    {
+        int rows = V.size();
+        T.resize(rows);
+        for (int n=0;n<rows;n++)
+            T[n]=V[n];
+    }
+    void initVecf(vector<float> &T, int rows)
+    {
+        T.resize(rows);
+    }
+    
+    void setVecf(vector<float> &T, vector<float> V)
+    {
+        int rows = V.size();
+        T.resize(rows);
+        for (int n=0;n<rows;n++)
+            T[n]=V[n];
+    }
+    void setVecf(vector<float> &T, float f, int rows)
+    {
+        T.resize(rows);
+        for (int n=0;n<rows;n++)
+            T[n]=f;
+    }
+    void setVecf(vector<float> &T, float f)
+    {
+        for (int n=0;n<T.size();n++)
+            T[n]=f;
+    }
+	
+    
     
 };
 
