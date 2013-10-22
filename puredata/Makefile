@@ -176,7 +176,7 @@ ifeq ($(UNAME),Linux)
   ALL_LIBS += -lc $(LIBS_linux)
   STRIP = strip --strip-unneeded -R .note -R .comment
   DISTBINDIR=$(DISTDIR)-$(OS)-$(shell uname -m)
-  if test -d $(PD_PATH)/include/pdextended; then PD_INCLUDE = $(PD_PATH)/include/pdextended; else PD_INCLUDE = $(PD_PATH)/include/pd; fi
+  PD_INCLUDE = $(PD_PATH)/include/pdextended
 endif
 ifeq ($(UNAME),GNU)
   # GNU/Hurd, should work like GNU/Linux for basically all externals
