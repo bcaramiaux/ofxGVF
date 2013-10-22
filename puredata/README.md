@@ -14,6 +14,8 @@ make
 
 The object will be generated in a folder corresponding to your platform in the Build/ directory. For instance, compiling the object on a Mac OSX will create a Darwin/ directory with the gvf.pd_darwin object inside (note that this folder might already exist).
 
+NOTE to LINUX users: PureData include folder is not always consistent. In the makefile, we might have change the line: "PD_INCLUDE = $(PD_PATH)/include/pdextended" in case the "m_pd.h" is not in this folder on your computer
+
 Installing
 ===
 
