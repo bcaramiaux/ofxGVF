@@ -14,6 +14,8 @@
 
 #endif /* defined(__ofgvfVisualiser__ofGesture__) */
 
+using namespace std;
+
 // the gvfGesture class is used to represent the gesture throughout the application.
 // it contains the coordinates of all the points the form the gesture and also the coordinates of a special point, the initial point.
 // a gvfGesture should also contain all the information needed in order to draw the gesture to the screen.

@@ -7,8 +7,6 @@
 #include "GestureVariationFollower.h"
 #include "gvfhandler.h"
 
-using namespace Eigen;
-
 class ofApp : public ofBaseApp{
 	
 public:
