@@ -83,7 +83,7 @@ GestureVariationFollower::GestureVariationFollower(int inputDim,
     
     //logW.setConstant(0.0);              // log of weights equal to 0
     this->inputDim=inputDim;
-    initVecf(offS,inputDim);
+    initMatf(offS,ns,inputDim);
     
     
 #if !BOOSTLIB
@@ -114,7 +114,7 @@ GestureVariationFollower::GestureVariationFollower(int inputDim,
 GestureVariationFollower::GestureVariationFollower(int inputDim)
 {
     this->inputDim=inputDim;
-    initVecf(offS,inputDim);
+    //initVecf(offS,inputDim);
     
     ns              = 2000;
     pdim            = 4;
@@ -128,7 +128,7 @@ GestureVariationFollower::GestureVariationFollower(int inputDim)
 	initMatf(X,ns,pdim);            // Matrix of NS particles
 	initVeci(g,ns);                 // Vector of gesture class
 	initVecf(w,ns);                 // Weights
-    initVecf(offS,ns);                 // translation offsets
+    //initVecf(offS,ns);                 // translation offsets
 	
 	initVecf(this->featVariances,pdim);   // Fill variances
 	for (int k=0; k<pdim; k++)
@@ -261,12 +261,13 @@ void GestureVariationFollower::spreadParticles(vector<float> & means, vector<flo
     //    logW.setConstant(0.0);
 	
     // Spread uniformly the gesture class among the particles
-	for(int n = 0; n < ns; n++)
+	for(int n = 0; n < ns; n++){
 		g[n] = n % ngestures;
     
-    // offsets are set to 0
-    for (int k=0; k<inputDim; k++)
-        offS[k]=0.0;
+        // offsets are set to 0
+        for (int k=0; k<inputDim; k++)
+            offS[n][k]=0.0;
+    }
     
 }
 
@@ -327,7 +328,13 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
 //        }
 //    }
     
-    
+#if BOOSTLIB
+	boost::uniform_real<float> ur(0,1);
+	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
+#else
+    std::tr1::uniform_real<float> ur(0,1);
+    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+#endif
     
     // particles outside the beginning (phase=0) or end (phase=1) of a gesture
     // must have a weight equals to 0
@@ -364,45 +371,66 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
 			X[n][l] += (*rndnorm)() * featVariances[l];
 		vector<float> x_n = X[n];
         
+        
         // can't observe a particle outside (0,1) range [this behaviour could be changed]
-		if(X[n][0] < 0)
+		if(x_n[0] < 0)
         {
-            w[n] = 0;
+            //experimental!
+            w[n] = 1/ns;
+            // Spread particles using a uniform distribution
+            for(int i = 0; i < pdim; i++)
+                x_n[i] = (rnduni() - 0.5) * rangesCopy[i] + meansCopy[i];
+            g[n] = n % gestureLengths.size();
             particlesPhaseLt0.push_back(n);
             numParticlesPhaseLt0 += 1;
-            //            logW(n) = -INFINITY;
+            
+            for (int k=0;k<inputDim;k++)
+                offS[n][k] = obs[k];
         }
-        else if(X[n][0] > 1)
+        else if(x_n[0] > 1)
         {
-            w[n] = 0;
+
+            //experimental!
+            w[n] = 1/ns;
+            // Spread particles using a uniform distribution
+            for(int i = 0; i < pdim; i++)
+                x_n[i] = (rnduni() - 0.5) * rangesCopy[i] + meansCopy[i];
+            g[n] = n % gestureLengths.size();
             particlesPhaseGt1.push_back(n);
             numParticlesPhaseGt1 += 1;
-            //            logW(n) = -INFINITY;
+            for (int k=0;k<inputDim;k++)
+                offS[n][k] = obs[k];
         }
         // Can observe a particle inside (0,1) range
-		else
-        {
+	//	else
+    //    {
             // gesture index for the particle
             int pgi = g[n];
             
             // given the phase between 0 and 1 (first value of the particle x),
             // return the index of the corresponding gesture, given by g(n)
-            int frameindex = min((int)(gestureLengths[pgi]-1),(int)(floor(X[n][0] * gestureLengths[pgi])));
+            int frameindex = min((int)(gestureLengths[pgi]-1),(int)(floor(x_n[0] * gestureLengths[pgi])));
             
             // given the index, return the gesture template value at this index
             vector<float> vref(inputDim);
-			setVecf(vref,R_single[pgi][frameindex]);
-            //for (int os=0; os<inputDim; os++)
-            //    vref[os] = R_single[pgi][frameindex][os];
+            setVecf(vref,R_single[pgi][frameindex]);
+
+            vector<float> vobs(inputDim);
+            setVecf(vobs,obs);
         
-            
             // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
             if (inputDim==2){
+                
+                // offset!
+                //for (int k=0;k<inputDim;k++)
+                //    vobs[k] -= offS[n][k];
+                
                 // sca1ing
                 for (int k=0;k<inputDim;k++)
-                    vref[k] *= X[n][2];
+                    vref[k] *= x_n[2];
+                
                 // rotation
-                float alpha = X[n][3];
+                float alpha = x_n[3];
                 float tmp0=vref[0]; float tmp1=vref[1];
                 vref[0] = cos(alpha)*tmp0 - sin(alpha)*tmp1;
                 vref[1] = sin(alpha)*tmp0 + cos(alpha)*tmp1;
@@ -416,10 +444,11 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
                 
             }
             // If incoming data is N-dimensional
-            else if (inputDim!=2){                
-                // scaling
+            else if (inputDim!=2){
+                
+                // sca1ing
                 for (int k=0;k<inputDim;k++)
-                    vref[k] *= X[n][2];
+                    vref[k] *= x_n[2];
                 
                 // put the positions into vector
                 // [used for visualization]
@@ -440,9 +469,7 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
             // observation likelihood and update weights
             float dist = distance_weightedEuclidean(vref,obs,dimWeights) * 1/(tolerance*tolerance);
             
-            //float dist = ((vref[0]-obs[0])*(vref[0]-obs[0])+(vref[1]-obs[1])*(vref[1]-obs[1])) * tolerance;
             
-            //cout << dist << " " << tolerance << endl;
             if(nu == 0.)    // Gaussian distribution
             {
                 w[n]   *= exp(-dist);
@@ -452,19 +479,11 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
             {
                 w[n]   *= pow(dist/nu + 1,-nu/2-1);    // dimension is 2 .. pay attention if editing]
             }
-        }
+
+      //  }
         sumw+=w[n];
     }
     
-    
-    // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
-#if BOOSTLIB
-    boost::uniform_real<float> ur(0,1);
-    boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
-#else
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
-#endif
     
     // normalize weights and compute criterion for degeneracy
     //	w /= w.sum();

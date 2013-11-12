@@ -64,7 +64,7 @@ private:
 	vector<vector<float> >  X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]
-    vector<float>           offS;               // translation offset
+    vector<vector<float> >  offS;               // translation offset
 	vector<float>           featVariances;      // vector of variances
 	vector<float>           means;              // vector of means for particles initial spreading
 	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
