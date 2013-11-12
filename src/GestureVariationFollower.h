@@ -158,6 +158,7 @@ public:
 	vector< vector<float> > getEstimatedStatus();
     vector<float>  getFeatureVariances();
 	
+    int getMostProbableGestureIndex();
     
     // Sets
 	////////
@@ -250,6 +251,15 @@ public:
                 T[n][m]=f;
     }
 
+    void printMatf(vector< vector< float> > &M){
+        for (int k=0; k<M.size(); k++){
+            cout << k << ": ";
+            for (int l=0; l<M[0].size(); l++)
+                cout << M[k][l] << " ";
+            cout << endl;
+        }
+        cout << endl;
+    }
 	
     void initVeci(vector<int> &T, int rows)
     {
@@ -285,6 +295,8 @@ public:
         for (int n=0;n<T.size();n++)
             T[n]=f;
     }
+    
+    // TODO(Baptiste) bugged, to be fixed
     vector< vector<float> > dotMatf(vector< vector<float> > &M1, vector< vector<float> > &M2)
     {
         assert(M1[0].size() == M2.size()); // columns in M1 == rows in M2
@@ -316,6 +328,27 @@ public:
             }
         }
         return multiply;
+    }
+    vector< vector<float> > multiplyMatf(vector< vector<float> > &M1, vector< vector<float> > &M2)
+    {
+        assert(M1[0].size() == M2.size()); // columns in M1 == rows in M2
+        vector< vector<float> > multiply;
+        initMatf(multiply, M1.size(), M2[0].size()); // rows in M1 x cols in M2
+        for (int i=0;i<M1.size();i++)
+        {
+            for (int j=0;j<M2[i].size();j++)
+            {
+                multiply[i][j] = 0.0f;
+                for(int k=0;k<M1[0].size();k++)
+                {
+                    multiply[i][j] += M1[i][k] * M2[k][j]; // ??? is this right ???
+                }
+                
+            }
+        }
+        return multiply;
+        
+    
     }
     
 	float getMeanVecf(vector<float> &T)

@@ -69,10 +69,11 @@ GestureVariationFollower::GestureVariationFollower(int inputDim,
 	initVeci(g,ns);                 // Vector of gesture class
 	initVecf(w,ns);                 // Weights
 
+    
 	this->featVariances = featVariances;    // Fill variances
 	for (int k=0; k<pdim; k++)
 		this->featVariances[k]=sqrt(featVariances[k]);
-
+    
     this->resamplingThreshold = resamplingThreshold;    // Set resampling threshold (usually NS/2)
     this->nu = nu;                          // Set Student's distribution parameter Nu
     this->tolerance = tolerance;            // inverse of the global tolerance (variance)
@@ -344,8 +345,7 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
     
     
     float sumw=0.0;
-    
-    
+
     
     
     // MAIN LOOP: same process for EACH particle (row n in X)
@@ -356,6 +356,7 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
         // Position respects a first order dynamic: p = p + v/L
 		//X(n,0) = X(n,0) + (*rndnorm)() * featVariances(0) + X(n,1)/gestureLengths[g(n)];
         X[n][0] += (*rndnorm)() * featVariances[0] + X[n][1]/gestureLengths[g[n]];
+
         //post("n=%i g(n)=%i length=%i | %f %f",n,g[n],gestureLengths[g[n]],(*rndnorm)() * featVariances[0], X[n][1]/gestureLengths[g[n]]);
 		// Move the other state elements according a gaussian noise
         // featVariances vector of variances
@@ -437,8 +438,11 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
             for(int k=0;k<inputDim;k++) dimWeights[k]=1.0/inputDim;
             
             // observation likelihood and update weights
-            float dist = distance_weightedEuclidean(vref,obs,dimWeights) * (1/(tolerance*tolerance));
-
+            float dist = distance_weightedEuclidean(vref,obs,dimWeights) * 1/(tolerance*tolerance);
+            
+            //float dist = ((vref[0]-obs[0])*(vref[0]-obs[0])+(vref[1]-obs[1])*(vref[1]-obs[1])) * tolerance;
+            
+            //cout << dist << " " << tolerance << endl;
             if(nu == 0.)    // Gaussian distribution
             {
                 w[n]   *= exp(-dist);
@@ -471,10 +475,11 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
         dotProdw+=w[k]*w[k];
     }
     float neff = 1./dotProdw;
-    
+    //cout << neff << endl;
     // Try segmentation from here...
     
     // do naive maximum value
+    /*
     float maxSoFar = abs_weights[0];
     currentGest = 1;
     for(int i = 1; i< abs_weights.size();i++)
@@ -499,7 +504,7 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
         (*offset)[0] = obs[0];
         (*offset)[1] = obs[1];
         compa = false;
-    }
+    }*/
     
     // ... to here.
     
@@ -508,7 +513,7 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
     // around the active particles
 	if(neff<resamplingThreshold)
     {
-        //post("resampling");
+            //cout << "Resampling" << endl;
         resampleAccordingToWeights();
         initweights();
     }
@@ -556,7 +561,7 @@ void GestureVariationFollower::resampleAccordingToWeights()
         }
         
         if(j < ns - free_pool){
-            for (int kk=0;kk<pdim;kk++)
+            for (int kk=0;kk<X[0].size();kk++)
                 X[j][kk] = oldX[i][kk];
             g[j] = oldG[i];
             //            logW(j) = oldLogW(i);
@@ -579,6 +584,7 @@ void GestureVariationFollower::setInitCoord(std::vector<float> s_origin)
 // a set of observation.
 void GestureVariationFollower::infer(vector<float> & vect)
 {
+
     particleFilter(vect);
 }
 
@@ -702,10 +708,12 @@ vector<vector<float> > GestureVariationFollower::getEstimatedStatus()
 	
     // get the number of gestures in the vocabulary
 	unsigned int ngestures = numTemplates+1;
-	
+	//cout << "getEstimatedStatus():: ngestures= "<< numTemplates+1<< endl;
+    
     vector<vector<float> > es;
     setMatf(es, 0., ngestures, pdim+1);   // rows are gestures, cols are features + probabilities
-	
+	//printMatf(es);
+    
 	// compute the estimated features by computing the expected values
     // sum ( feature values * weights)
 	for(int n = 0; n < ns; n++)
@@ -730,6 +738,20 @@ vector<vector<float> > GestureVariationFollower::getEstimatedStatus()
 vector<float> GestureVariationFollower::getFeatureVariances()
 {
     return featVariances;
+}
+
+// Returns the index of the currently recognized gesture
+int GestureVariationFollower::getMostProbableGestureIndex(){
+    vector< vector< float> > M = getEstimatedStatus();
+    float maxprob=0.0;
+    int   indexMaxprob=0;
+    for (int k=0;k<M.size();k++){
+        if (M[k][M[0].size()-1]>maxprob){
+            maxprob=M[k][M[0].size()-1];
+            indexMaxprob=k;
+        }
+    }
+    return indexMaxprob;
 }
 
 

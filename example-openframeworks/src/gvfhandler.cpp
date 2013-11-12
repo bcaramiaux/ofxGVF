@@ -2,8 +2,6 @@
 //  gvfhandler.cpp
 //  ofgvfVisualiser
 //
-//  Created by Thomas Rushmore on 21/06/2013.
-//  Modified by Igor Correa
 //
 
 #include "gvfhandler.h"
@@ -16,11 +14,11 @@ gvfhandler::gvfhandler()
     sigScale = 0.0001;
     sigRotation = 0.000001;
     smoothingCoef = 0.2;
-    ns = Nspg = 2000;
+    ns = 2000;
 
     rp = 1000;
     pdim = 4;
-    rt = Rtpg = 1000;
+    rt = 1000;
     
     // variance coefficients
     vector<float> sigs(pdim);
@@ -31,7 +29,7 @@ gvfhandler::gvfhandler()
     sigs[2] = sigScale;
     sigs[3] = sigRotation;
     
-    mygvf = new GestureVariationFollower(2, ns, sigs, 1./(smoothingCoef * smoothingCoef), rt, 0.);
+    mygvf = new GestureVariationFollower(2, ns, sigs, smoothingCoef, rt, 0.);
     
     mpvrs = vector<float>(pdim);
     rpvrs = vector<float>(pdim);
@@ -355,7 +353,8 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
             rotmat[1][1] = cos(alpha);
 
             // are these working correctly?
-            vref = mygvf->dotMatf(rotmat, vref);
+            //vref = mygvf->dotMatf(rotmat, vref);
+            vref = mygvf->multiplyMatf(rotmat, vref);
             vref = mygvf->multiplyMatf(vref, estimatedScale);
             
             gesturePoint.push_back(vref[0][0]);
