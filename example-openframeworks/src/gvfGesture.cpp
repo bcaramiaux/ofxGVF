@@ -49,7 +49,7 @@ void gvfGesture::addNonNormalisedPoint(float x, float y)
 }
 void gvfGesture::addPoint(ofPoint p)
 {
-    std::vector<float> pointVf(2);
+    vector<float> pointVf(2);
     pointVf[0] = p.x;
     pointVf[1] = p.y;
     data.push_back(pointVf);
@@ -159,7 +159,7 @@ bool gvfGesture::isPointInArea(ofRectangle area, float x, float y)
 
 // sets
 
-void gvfGesture::setData(std::vector<std::vector<float> > _data)
+void gvfGesture::setData(vector<vector<float> > _data)
 {
     data.clear();
     data = _data;
@@ -210,7 +210,7 @@ ofRectangle gvfGesture::getDrawArea()
     return drawArea;
 }
 
-std::vector<std::vector<float> > gvfGesture::getData(){
+vector<vector<float> > gvfGesture::getData(){
     return data;
 }
 

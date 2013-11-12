@@ -17,10 +17,7 @@
 #include "ofMain.h"
 
 #include "GestureVariationFollower.h"
-#include <Eigen/LU> // To use MatrixXf on overloaded gvf_data method
 #include "gvfGesture.h"
-
-using namespace Eigen;
 
 // enumaration defining the 3 states the application can be
 // STATE_CLEAR: no gestures learnt
@@ -105,7 +102,7 @@ public:
     // the one the user is trying to perform
     int getIndexMostProbable();
 
-    Eigen::VectorXf getVref();
+    vector<float> getVref();
     
 private:
 
@@ -124,8 +121,8 @@ private:
     int rt, ns; // resampling threshold and amount of particles;
     
     int rp, pdim;
-    Eigen::VectorXf mpvrs;
-	Eigen::VectorXf rpvrs;
+    vector<float> mpvrs;
+	vector<float> rpvrs;
     int Nspg, Rtpg;
     int state;
 	int lastreferencelearned;

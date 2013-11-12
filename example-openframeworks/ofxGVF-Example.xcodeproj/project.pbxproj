@@ -145,7 +145,6 @@
 		21B4D3AB17A2DABF00A7071D /* ofxXmlSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxXmlSettings.h; sourceTree = "<group>"; };
 		77A122BE17FE1F8E00142A0C /* GestureVariationFollower.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GestureVariationFollower.cpp; sourceTree = "<group>"; };
 		77A122BF17FE1F8E00142A0C /* GestureVariationFollower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GestureVariationFollower.h; sourceTree = "<group>"; };
-		77A122C017FE1F8E00142A0C /* globalutilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = globalutilities.h; sourceTree = "<group>"; };
 		77D7ABA517FF67250023B2B4 /* ofxBaseGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBaseGui.cpp; sourceTree = "<group>"; };
 		77D7ABA617FF67250023B2B4 /* ofxBaseGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxBaseGui.h; sourceTree = "<group>"; };
 		77D7ABA717FF67250023B2B4 /* ofxButton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxButton.cpp; sourceTree = "<group>"; };
@@ -366,7 +365,6 @@
 			children = (
 				77A122BE17FE1F8E00142A0C /* GestureVariationFollower.cpp */,
 				77A122BF17FE1F8E00142A0C /* GestureVariationFollower.h */,
-				77A122C017FE1F8E00142A0C /* globalutilities.h */,
 			);
 			path = src;
 			sourceTree = "<group>";

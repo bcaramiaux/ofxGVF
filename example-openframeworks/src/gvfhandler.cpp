@@ -23,17 +23,27 @@ gvfhandler::gvfhandler()
     rt = Rtpg = 1000;
     
     // variance coefficients
-    Eigen::VectorXf sigs(pdim);
+    vector<float> sigs(pdim);
 
     // possition, speed, scale, rotation
-    sigs << sigPosition, sigSpeed, sigScale, sigRotation;
+    sigs[0] = sigPosition;
+    sigs[1] = sigSpeed;
+    sigs[2] = sigScale;
+    sigs[3] = sigRotation;
     
-    mygvf = new GestureVariationFollower(ns, sigs, 1./(smoothingCoef * smoothingCoef), rt, 0.);
+    mygvf = new GestureVariationFollower(2, ns, sigs, 1./(smoothingCoef * smoothingCoef), rt, 0.);
     
-    mpvrs = Eigen::VectorXf(pdim);
-    rpvrs = Eigen::VectorXf(pdim);
-    mpvrs << 0.05, 1.0, 1.0, 0.0;
-    rpvrs << 0.1,  0.4, 0.3, 0.0;
+    mpvrs = vector<float>(pdim);
+    rpvrs = vector<float>(pdim);
+    mpvrs[0] = 0.05;
+    mpvrs[1] = 1.0;
+    mpvrs[2] = 1.0;
+    mpvrs[3] = 0.0;
+    
+    rpvrs[0] = 0.1;
+    rpvrs[1] = 0.4;
+    rpvrs[2] = 0.3;
+    rpvrs[3] = 0.0;
     
     state = STATE_CLEAR;
     
@@ -41,7 +51,7 @@ gvfhandler::gvfhandler()
     restarted_l=1;
     restarted_d=1;
     
-    refmap = new std::map<int,std::vector<std::pair<float,float> > >;
+    refmap = new map<int,vector<pair<float,float> > >;
 }
 
 gvfhandler::~gvfhandler()
@@ -56,7 +66,7 @@ gvfhandler::~gvfhandler()
 int gvfhandler::gvf_learn()
 {
     lastreferencelearned++;
-    (*refmap)[lastreferencelearned] = std::vector<std::pair<float, float> >();
+    (*refmap)[lastreferencelearned] = vector<pair<float, float> >();
     mygvf->addTemplate();
     state = STATE_LEARNING;
     restarted_l=1;
@@ -106,7 +116,7 @@ void gvfhandler::gvf_data(int argc, float *argv)
     }
     if(state == STATE_LEARNING)
     {
-        std::vector<float> vect(argc);
+        vector<float> vect(argc);
         if (argc ==2){
             if (restarted_l==1)
             {
@@ -140,7 +150,7 @@ void gvfhandler::gvf_data(int argc, float *argv)
     }
     else if(state == STATE_FOLLOWING)
     {
-        std::vector<float> vect(argc);
+        vector<float> vect(argc);
         if (argc==2){
             if (restarted_d==1)
             {
@@ -167,10 +177,10 @@ void gvfhandler::gvf_data(int argc, float *argv)
         // ------- Fill template
         mygvf->infer(vect);
         // output recognition
-        Eigen::MatrixXf statu = mygvf->getEstimatedStatus();
+        vector< vector<float> > statu = mygvf->getEstimatedStatus();
         //getGestureProbabilities();
-        Eigen::VectorXf glikelihoods = mygvf->getGestureLikelihoods();
-        Eigen::VectorXf gprob = mygvf->getGestureConditionnalProbabilities();
+//        vector<float> glikelihoods = mygvf->getGestureLikelihoods();
+        vector<float> gprob = mygvf->getGestureConditionnalProbabilities();
 
         char temp[100];
         int templates_count = gprob.size();
@@ -180,12 +190,12 @@ void gvfhandler::gvf_data(int argc, float *argv)
         for(int i = 0; i < templates_count; i++)
         {
             recognitionInfo info;
-            info.likelihoods = glikelihoods(i, 0);
-            info.probability = gprob(i, 0);
-            info.phase = statu(i, 0);
-            info.speed = statu(i, 1);
-            info.scale = statu(i, 2);
-            info.rotation = statu(i, 3);
+//            info.likelihoods = glikelihoods(i, 0);
+            info.probability = gprob[i];
+            info.phase = statu[i][0];
+            info.speed = statu[i][1];
+            info.scale = statu[i][2];
+            info.rotation = statu[i][3];
             recogInfo.push_back(info);
         }
     }
@@ -232,7 +242,7 @@ string gvfhandler::gvf_get_status()
     float stdnew = smoothingCoeficient;
     if (stdnew == 0.0)
         stdnew = 0.1;
-    mygvf->setIcovSingleValue(1/(stdnew*stdnew));
+    mygvf->setToleranceValue(1/(stdnew*stdnew));
 }
 
  void gvfhandler::gvf_rt(int resamplingThreshold)
@@ -244,7 +254,7 @@ string gvfhandler::gvf_get_status()
     mygvf->setResamplingThreshold(rtnew);
 }
 
-void gvfhandler::gvf_adaptspeed(std::vector<float> varianceCoeficients)
+void gvfhandler::gvf_adaptspeed(vector<float> varianceCoeficients)
 {
     mygvf->setAdaptSpeed(varianceCoeficients);
 }
@@ -260,12 +270,12 @@ int gvfhandler::getTemplateCount()
     return mygvf->getNbOfTemplates();
 }
 
-std::vector<std::vector<float> > gvfhandler::get_template_data(int index)
+vector<vector<float> > gvfhandler::get_template_data(int index)
 {
     return mygvf->getTemplateByInd(index);
 }
 
-std::vector<recognitionInfo> gvfhandler::getRecogInfo()
+vector<recognitionInfo> gvfhandler::getRecogInfo()
 {
     return recogInfo;
 }
@@ -305,9 +315,9 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
     // if there is a probable gesture...
     if(indexMostProbable > -1)
     {
-        std::vector<std::vector<float> > templateData;
-        std::vector<std::vector<float> > partialGestureData;
-        std::vector<float> gesturePoint;
+        vector<vector<float> > templateData;
+        vector<vector<float> > partialGestureData;
+        vector<float> gesturePoint;
         recognitionInfo info = recogInfo[indexMostProbable];
     
         // a new gesture is created and by combining the template with the recognition info
@@ -327,19 +337,29 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
                 
         for(int i = 0; i < amountToBeCopied; i++)
         {
-            Eigen::VectorXf vref(2);
-            vref[0] = templateData[i][0];
-            vref[1] = templateData[i][1];
+            // is this the right way around?
+            vector< vector<float> > vref;
+            mygvf->initMatf(vref, 2, 1);
+            
+            vref[0][0] = templateData[i][0];
+            vref[1][0] = templateData[i][1];
             
             float alpha = info.rotation;
-            Matrix2f rotmat;
-            rotmat << cos(alpha), -sin(alpha), sin(alpha), cos(alpha);
-
-            vref = rotmat * vref;
-            vref = vref * estimatedScale;
+            vector< vector<float> > rotmat;
+            mygvf->initMatf(rotmat, 2, 2);
             
-            gesturePoint.push_back(vref.x());
-            gesturePoint.push_back(vref.y());
+            // is this the correct order?
+            rotmat[0][0] = cos(alpha);
+            rotmat[0][1] = -sin(alpha);
+            rotmat[1][0] = sin(alpha);
+            rotmat[1][1] = cos(alpha);
+
+            // are these working correctly?
+            vref = mygvf->dotMatf(rotmat, vref);
+            vref = mygvf->multiplyMatf(vref, estimatedScale);
+            
+            gesturePoint.push_back(vref[0][0]);
+            gesturePoint.push_back(vref[1][0]);
             partialGestureData.push_back(gesturePoint);
             gesturePoint.clear();
         }
@@ -420,14 +440,9 @@ void gvfhandler::drawTemplates(float scale)
     }
 }
 
-Eigen::VectorXf gvfhandler::getVref()
-{
-    return mygvf->vref;
-}
-
 void gvfhandler::printParticleInfo(gvfGesture currentGesture)
 {
-    std::vector<std::vector<float> > pp = mygvf->particlesPositions;
+    vector<vector<float> > pp = mygvf->particlesPositions;
     int ppSize = pp.size();
     float scale = 1;
 
@@ -436,12 +451,12 @@ void gvfhandler::printParticleInfo(gvfGesture currentGesture)
 
     // as the colors show, the vector returned by getG()
     // does not seem to be in synch with the information returned by particlesPositions
-    Eigen::VectorXi gestureIndex = mygvf->getG();
-        Eigen::VectorXf weights = mygvf->getW();
+    vector<int> gestureIndex = mygvf->getG();
+        vector<float> weights = mygvf->getW();
 
         ofFill();
         
-        float weightAverage = weights.mean();
+        float weightAverage = mygvf->getMeanVecf(weights);
         for(int i = 0; i < ppSize; i++)
         {
             gvfGesture g = templates[gestureIndex[i]];

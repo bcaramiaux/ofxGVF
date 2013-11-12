@@ -24,6 +24,7 @@
 #include <vector>
 #include <tr1/random>
 #include <map>
+#include <iostream>
 
 
 #define BOOSTLIB 0
@@ -79,7 +80,7 @@ private:
     vector<float>  particlesPhaseLt0;          // store particles whose phase is < 0 (outside of the gesture)
     vector<float>  particlesPhaseGt1;          // store particles whose phase is > 1 (outside of the gesture)
     
-	std::map<int,std::vector<vector<float> > > R_single;   // gesture references (1 example)
+	map<int,vector<vector<float> > > R_single;   // gesture references (1 example)
 
     
     // private functions
@@ -92,10 +93,10 @@ private:
 	boost::mt19937 rng;
 	boost::normal_distribution<float> normdist;
 #else
-    std::tr1::mt19937 rng;
-    std::tr1::normal_distribution<float> *normdist;
-    std::tr1::uniform_real<float> *unifdist;
-	std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> > *rndnorm;//(rng, *normdist);
+    tr1::mt19937 rng;
+    tr1::normal_distribution<float> *normdist;
+    tr1::uniform_real<float> *unifdist;
+	tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm;//(rng, *normdist);
 #endif
     
     
@@ -148,13 +149,13 @@ public:
 	int     getNbOfParticles();
 	int     getNbOfTemplates();
 	int     getLengthOfTemplateByInd(int Ind);
-    vector<vector<float> > getTemplateByInd(int Ind);
-    vector<vector<float> > getX();
+    vector< vector<float> > getTemplateByInd(int Ind);
+    vector< vector<float> > getX();
 	vector<int>    getG();
 	vector<float>  getW();
     vector<float>  getGestureProbabilities();
     vector<float>  getGestureConditionnalProbabilities(); // ----- DEPRECATED ------
-	vector<vector<float> > getEstimatedStatus();
+	vector< vector<float> > getEstimatedStatus();
     vector<float>  getFeatureVariances();
 	
     
@@ -162,13 +163,13 @@ public:
 	////////
 	void setNumberOfParticles(int newNs);
 	void setToleranceValue(float f);
-	void setAdaptSpeed(std::vector<float> as);
+	void setAdaptSpeed(vector<float> as);
 	void setResamplingThreshold(int r);
     
 	// Misc
 	////////
-	void saveTemplates(std::string filename);
-    void loadTemplates(std::string filename);
+	void saveTemplates(string filename);
+    void loadTemplates(string filename);
 	
     
     //    void testSetup(int ge);
@@ -176,20 +177,20 @@ public:
     //    int testGestureIdx;
     //    struct costTest{
     //        int idx;
-    //        std::pair<int,int> transition;
+    //        pair<int,int> transition;
     //        int tranPoint;
     //    };
     //    int testIdx;
     //    int realGest;
     //    costTest gest;
-    //    std::vector<int> testScore;
+    //    vector<int> testScore;
     
     //in order to output particles
-    std::vector<std::vector<float> > particlesPositions;
+    vector<vector<float> > particlesPositions;
     
     
 	// Segmentation variables
-	std::vector<float> abs_weights;
+	vector<float> abs_weights;
 	double probThresh;
     double probThreshMin;
     int currentGest;
@@ -197,10 +198,11 @@ public:
     float old_max;
     vector<float> meansCopy;
     vector<float> rangesCopy;
-    std::vector<float> origin;
-    std::vector<float> *offset;
+    vector<float> origin;
+    vector<float> *offset;
+    
     bool new_gest;
-    void setInitCoord(std::vector<float> s_origin);
+    void setInitCoord(vector<float> s_origin);
 	
 	
 	
@@ -212,14 +214,14 @@ public:
 	//
     
     // init matrix by allocating memory
-    void initMatf(vector<vector<float> > &T, int rows, int cols)
+    void initMatf(vector< vector<float> > &T, int rows, int cols)
     {
         T.resize(rows);
         for (int n=0;n<rows;n++)
             T[n].resize(cols);
     }
     // init matrix and copy values from another matrix
-    void setMatf(vector<vector<float> > &T, vector<vector<float> > M)
+    void setMatf(vector< vector<float> > &T, vector<vector<float> > &M)
     {
         int rows = M.size();
         int cols = M[0].size();
@@ -231,7 +233,7 @@ public:
         }
     }
     // init matrix by allocating memory and fill with float f
-    void setMatf(vector<vector<float> > &T, float f, int rows, int cols)
+    void setMatf(vector< vector<float> > &T, float f, int rows, int cols)
     {
         T.resize(rows);
         for (int n=0;n<rows;n++){
@@ -241,7 +243,7 @@ public:
         }
     }
     // set matrix filled with float f
-    void setMatf(vector<vector<float> > &T, float f)
+    void setMatf(vector< vector<float> > &T, float f)
     {
         for (int n=0;n<T.size();n++)
             for (int m=0;m<T[n].size();m++)
@@ -253,7 +255,7 @@ public:
     {
         T.resize(rows);
     }
-    void setVeci(vector<int> &T, vector<int> V)
+    void setVeci(vector<int> &T, vector<int> &V)
     {
         int rows = V.size();
         T.resize(rows);
@@ -265,7 +267,7 @@ public:
         T.resize(rows);
     }
     
-    void setVecf(vector<float> &T, vector<float> V)
+    void setVecf(vector<float> &T, vector<float> &V)
     {
         int rows = V.size();
         T.resize(rows);
@@ -283,7 +285,48 @@ public:
         for (int n=0;n<T.size();n++)
             T[n]=f;
     }
-	
+    vector< vector<float> > dotMatf(vector< vector<float> > &M1, vector< vector<float> > &M2)
+    {
+        assert(M1[0].size() == M2.size()); // columns in M1 == rows in M2
+        vector< vector<float> > dot;
+        initMatf(dot, M1.size(), M2[0].size()); // rows in M1 x cols in M2
+        for (int i=0;i<M1.size();i++)
+        {
+            for (int j=0;j<M2[i].size();j++)
+            {
+                dot[i][j] = 0.0f;
+                for(int k=0;k<M1.size();k++)
+                {
+                    dot[i][j] += M1[i][k] * M2[k][j]; // ??? is this right ???
+                }
+                
+            }
+        }
+        return dot;
+    }
+    vector< vector<float> > multiplyMatf(vector< vector<float> > &M1, float v)
+    {
+        vector< vector<float> > multiply;
+        initMatf(multiply, M1.size(), M1[0].size());
+        for (int i=0;i<M1.size();i++)
+        {
+            for (int j=0;j<M1[i].size();j++)
+            {
+                multiply[i][j] = M1[i][j] * v;
+            }
+        }
+        return multiply;
+    }
+    
+	float getMeanVecf(vector<float> &T)
+    {
+        float tSum = 0.0f;
+        for (int n=0;n<T.size();n++)
+        {
+            tSum += T[n];
+        }
+        return tSum / (float)T.size();
+    }
     
     
 };
