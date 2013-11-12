@@ -223,7 +223,7 @@ public:
     }
     
     // init matrix and copy values from another matrix
-    void setMatf(vector< vector<float> > &T, vector<vector<float> > &M)
+    void setMatf(vector< vector<float> > &T, vector< vector<float> > &M)
     {
         int rows = M.size();
         int cols = M[0].size();

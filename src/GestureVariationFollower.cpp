@@ -181,7 +181,7 @@ GestureVariationFollower::~GestureVariationFollower()
 void GestureVariationFollower::addTemplate()
 {
 	numTemplates++;                                         // increment the num. of learned gesture
-	R_single[numTemplates] = vector<vector<float> >();      // allocate the memory for the gesture's data
+	R_single[numTemplates] = vector< vector<float> >();      // allocate the memory for the gesture's data
     gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
     abs_weights.resize(numTemplates+1);
     
@@ -213,7 +213,7 @@ void GestureVariationFollower::clearTemplate(int id)
 {
     if (id<=numTemplates)
 	{
-        R_single[id] = vector<vector<float> >();      // allocate the memory for the gesture's data
+        R_single[id] = vector< vector<float> >();      // allocate the memory for the gesture's data
         gestureLengths[id] = 0;                // add an element (0) in the gesture lengths table
     }
 }
@@ -559,7 +559,7 @@ void GestureVariationFollower::resampleAccordingToWeights()
 #endif
     
     
-    vector<vector<float> > oldX;
+    vector< vector<float> > oldX;
     setMatf(oldX,X);
     vector<int> oldG;
     setVeci(oldG, g);
@@ -635,12 +635,12 @@ int GestureVariationFollower::getNbOfTemplates()
 }
 
 // Return the template given by its index in the vocabulary
-vector<vector<float> > GestureVariationFollower::getTemplateByInd(int Ind)
+vector< vector<float> > GestureVariationFollower::getTemplateByInd(int Ind)
 {
 	if (Ind < gestureLengths.size())
 		return R_single[Ind];
 	else
-		return vector<vector<float> > ();
+		return vector< vector<float> > ();
 }
 
 // Return the length of a specific template given by its index
@@ -665,7 +665,7 @@ float GestureVariationFollower::getObservationNoiseStd(){
 }
 
 // Return the particle data (each row is a particle)
-vector<vector<float> > GestureVariationFollower::getX()
+vector< vector<float> > GestureVariationFollower::getX()
 {
     return X;
 }
@@ -722,14 +722,14 @@ vector<float> GestureVariationFollower::getGestureConditionnalProbabilities()
 //   rows correspond to the gestures in the vocabulary
 //   cols correspond to the features (the last column is the [conditionnal] probability of each gesture)
 // The output matrix is an Eigen matrix
-vector<vector<float> > GestureVariationFollower::getEstimatedStatus()
+vector< vector<float> > GestureVariationFollower::getEstimatedStatus()
 {
 	
     // get the number of gestures in the vocabulary
 	unsigned int ngestures = numTemplates+1;
 	//cout << "getEstimatedStatus():: ngestures= "<< numTemplates+1<< endl;
     
-    vector<vector<float> > es;
+    vector< vector<float> > es;
     setMatf(es, 0., ngestures, pdim+1);   // rows are gestures, cols are features + probabilities
 	//printMatf(es);
     
