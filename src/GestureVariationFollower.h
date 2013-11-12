@@ -61,10 +61,10 @@ class GestureVariationFollower
 private:
     
     // private variables
-	vector<vector<float> >  X;                  // each row is a particle
+	vector< vector<float> >  X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]
-    vector<vector<float> >  offS;               // translation offset
+    vector< vector<float> >  offS;               // translation offset
 	vector<float>           featVariances;      // vector of variances
 	vector<float>           means;              // vector of means for particles initial spreading
 	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
@@ -80,7 +80,7 @@ private:
     vector<float>  particlesPhaseLt0;          // store particles whose phase is < 0 (outside of the gesture)
     vector<float>  particlesPhaseGt1;          // store particles whose phase is > 1 (outside of the gesture)
     
-	map<int,vector<vector<float> > > R_single;   // gesture references (1 example)
+	map<int,vector< vector<float> > > R_single;   // gesture references (1 example)
 
     
     // private functions
@@ -187,7 +187,7 @@ public:
     //    vector<int> testScore;
     
     //in order to output particles
-    vector<vector<float> > particlesPositions;
+    vector< vector<float> > particlesPositions;
     
     
 	// Segmentation variables
@@ -221,6 +221,7 @@ public:
         for (int n=0;n<rows;n++)
             T[n].resize(cols);
     }
+    
     // init matrix and copy values from another matrix
     void setMatf(vector< vector<float> > &T, vector<vector<float> > &M)
     {
@@ -233,6 +234,7 @@ public:
                 T[n][m]=M[n][m];
         }
     }
+    
     // init matrix by allocating memory and fill with float f
     void setMatf(vector< vector<float> > &T, float f, int rows, int cols)
     {
@@ -243,6 +245,7 @@ public:
                 T[n][m]=f;
         }
     }
+    
     // set matrix filled with float f
     void setMatf(vector< vector<float> > &T, float f)
     {
@@ -265,6 +268,7 @@ public:
     {
         T.resize(rows);
     }
+    
     void setVeci(vector<int> &T, vector<int> &V)
     {
         int rows = V.size();
@@ -272,6 +276,7 @@ public:
         for (int n=0;n<rows;n++)
             T[n]=V[n];
     }
+    
     void initVecf(vector<float> &T, int rows)
     {
         T.resize(rows);
@@ -284,38 +289,26 @@ public:
         for (int n=0;n<rows;n++)
             T[n]=V[n];
     }
+    
     void setVecf(vector<float> &T, float f, int rows)
     {
         T.resize(rows);
         for (int n=0;n<rows;n++)
             T[n]=f;
     }
+    
     void setVecf(vector<float> &T, float f)
     {
         for (int n=0;n<T.size();n++)
             T[n]=f;
     }
     
-    // TODO(Baptiste) bugged, to be fixed
+    
     vector< vector<float> > dotMatf(vector< vector<float> > &M1, vector< vector<float> > &M2)
     {
-        assert(M1[0].size() == M2.size()); // columns in M1 == rows in M2
-        vector< vector<float> > dot;
-        initMatf(dot, M1.size(), M2[0].size()); // rows in M1 x cols in M2
-        for (int i=0;i<M1.size();i++)
-        {
-            for (int j=0;j<M2[i].size();j++)
-            {
-                dot[i][j] = 0.0f;
-                for(int k=0;k<M1.size();k++)
-                {
-                    dot[i][j] += M1[i][k] * M2[k][j]; // ??? is this right ???
-                }
-                
-            }
-        }
-        return dot;
+        // TODO(Baptiste)
     }
+    
     vector< vector<float> > multiplyMatf(vector< vector<float> > &M1, float v)
     {
         vector< vector<float> > multiply;
@@ -329,6 +322,7 @@ public:
         }
         return multiply;
     }
+    
     vector< vector<float> > multiplyMatf(vector< vector<float> > &M1, vector< vector<float> > &M2)
     {
         assert(M1[0].size() == M2.size()); // columns in M1 == rows in M2
@@ -341,14 +335,12 @@ public:
                 multiply[i][j] = 0.0f;
                 for(int k=0;k<M1[0].size();k++)
                 {
-                    multiply[i][j] += M1[i][k] * M2[k][j]; // ??? is this right ???
+                    multiply[i][j] += M1[i][k] * M2[k][j];
                 }
                 
             }
         }
         return multiply;
-        
-    
     }
     
 	float getMeanVecf(vector<float> &T)
