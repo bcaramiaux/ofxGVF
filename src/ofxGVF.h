@@ -58,17 +58,39 @@ class ofxGVF{
 	
 public:
 	
+    enum ofxGVFState{
+        STATE_CLEAR = 0,
+        STATE_LEARNING,
+        STATE_FOLLOWING
+    };
+    
+    typedef struct{
+        int inputDimensions;
+        int numberParticles;
+        float phaseVariance;
+        float speedVariance;
+        float scaleVariance;
+        float rotationVariance;
+        float tolerance;
+        int resamplingThreshold;
+        float distribution;
+    } ofxGVFParameters;
+    
 	// constructor of the gvf instance
-	ofxGVF(int inputDim);     // use default parameter values
-    ofxGVF(int inputDim, int ns, vector<float> featVariances, float tolerance, int resamplingThreshold, float nu = 0.);
-	
+	ofxGVF(); // use defualt parameters
+	ofxGVF(ofxGVFParameters parameters);
+    
 	// destructor
     ~ofxGVF();
 	
+    void setup();
+    void setup(ofxGVFParameters parameters);
+    
 	// add template to the vocabulary
 	void addTemplate();
-	
-	// fill tempalte given by id with data vector
+	void addTemplate(vector<float> & data);
+    
+	// fill template given by id with data vector
 	void fillTemplate(int id, vector<float> & data);
 
     // clear template given by id
@@ -94,15 +116,18 @@ public:
 	/////////
 	float   getObservationNoiseStd();
     int     getResamplingThreshold();
-	int     getNbOfParticles();
-	int     getNbOfTemplates();
-	int     getLengthOfTemplateByInd(int Ind);
-    vector< vector<float> > getTemplateByInd(int Ind);
+	int     getNumberOfParticles();
+	int     getNumberOfTemplates();
+	int     getLengthOfTemplateByIndex(int index);
+    vector< vector<float> >& getTemplateByIndex(int index);
+    
     vector< vector<float> > getX();
 	vector<int>    getG();
 	vector<float>  getW();
+    
     vector<float>  getGestureProbabilities();
     vector<float>  getGestureConditionnalProbabilities(); // ----- DEPRECATED ------
+    
 	vector< vector<float> > getEstimatedStatus();
     vector<float>  getFeatureVariances();
 	vector< vector<float> >& getParticlesPositions();
@@ -123,6 +148,8 @@ public:
 private:
     
     // private variables
+    ofxGVFState state;
+    vector< vector<float> > EmptyTemplate;      // dummy empty template for passing as ref
 	vector< vector<float> > X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]

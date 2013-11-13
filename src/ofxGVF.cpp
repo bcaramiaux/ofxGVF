@@ -17,8 +17,8 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-
 #include "ofxGVF.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
@@ -27,15 +27,7 @@
 #include <tr1/memory>
 #include <unistd.h>
 
-
-
-
 using namespace std;
-
-
-
-
-
 
 // Constructor of the class ofxGVF
 // This creates an object that is able to learn gesture template,
@@ -53,45 +45,72 @@ using namespace std;
 //    that are meant to be used for 2-dimensional input shapes. For general N-dimensional input, the class will
 //    only consider phase, speed, scaling
 //ofxGVF::ofxGVF(int ns, VectorXf sigs, float icov, int resThresh, float nu)
-ofxGVF::ofxGVF(int inputDim,
-                                                   int ns,
-                                                   vector<float> featVariances,
-                                                   float tolerance,
-                                                   int resamplingThreshold,
-                                                   float nu)
-{
-    	this->ns=ns;
-    int count = featVariances.size();
-    
-    // State dimension depends on the number of noise variances
-	pdim    = static_cast<int>(count);      // state space dimension is given by the number of std dev
-	initMat(X,ns,pdim);            // Matrix of NS particles
-	initVec(g,ns);                 // Vector of gesture class
-	initVec(w,ns);                 // Weights
 
+
+ofxGVF::ofxGVF(){
+    // nothing?
+}
+
+ofxGVF::ofxGVF(ofxGVFParameters parameters){
+    setup(parameters);
+}
+
+void ofxGVF::setup(){
     
-	this->featVariances = featVariances;    // Fill variances
-	for (int k=0; k<pdim; k++)
-		this->featVariances[k]=sqrt(featVariances[k]);
+    // use defualt parameters
+    // EXPERIMENTAL!!!
     
-    this->resamplingThreshold = resamplingThreshold;    // Set resampling threshold (usually NS/2)
-    this->nu = nu;                          // Set Student's distribution parameter Nu
-    this->tolerance = tolerance;            // inverse of the global tolerance (variance)
+    ofxGVFParameters parameters;
+    
+    parameters.inputDimensions = 2;
+    parameters.numberParticles = 2000;
+    parameters.phaseVariance = 0.00001;
+    parameters.speedVariance = 0.00001;
+    parameters.scaleVariance = 0.00001;
+    parameters.rotationVariance = 0.00001;
+    parameters.tolerance = 0.2f;
+    parameters.resamplingThreshold = 500;
+    parameters.distribution = 0.0f;
+    
+    setup(parameters);
+}
+
+void ofxGVF::setup(ofxGVFParameters parameters){
+    
+    clear(); // just in case
+    
+    inputDim = parameters.inputDimensions;
+    ns = parameters.numberParticles;
+    
+    if(inputDim > 2 && parameters.rotationVariance != 0.0){
+        cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
+        parameters.rotationVariance = 0.0f;
+    }
+    
+    if(parameters.phaseVariance != 0.0f) featVariances.push_back(sqrt(parameters.phaseVariance));
+    if(parameters.speedVariance != 0.0f) featVariances.push_back(sqrt(parameters.speedVariance));
+    if(parameters.scaleVariance != 0.0f) featVariances.push_back(sqrt(parameters.scaleVariance));
+    if(parameters.rotationVariance != 0.0f) featVariances.push_back(sqrt(parameters.rotationVariance));
+    
+    pdim = featVariances.size();
+    
+	initMat(X, ns, pdim);           // Matrix of NS particles
+	initVec(g, ns);                 // Vector of gesture class
+	initVec(w, ns);                 // Weights
+    initMat(offS, ns, inputDim);    // Offsets
+    
+    resamplingThreshold = parameters.resamplingThreshold;   // Set resampling threshold (usually NS/2)
+    tolerance = parameters.tolerance;                       // inverse of the global tolerance (variance)
+    nu = parameters.distribution;                           // Set Student's distribution parameter Nu
     
     numTemplates=-1;                        // Set num. of learned gesture to -1
     gestureLengths = vector<int>();         // Vector of gesture lengths
     
-    //logW.setConstant(0.0);              // log of weights equal to 0
-    this->inputDim=inputDim;
-    initMat(offS,ns,inputDim);
-    
-    
 #if !BOOSTLIB
     normdist = new std::tr1::normal_distribution<float>();
     unifdist = new std::tr1::uniform_real<float>();
     rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
 #endif
-    
     
     // Variables used for segmentation -- experimental (research in progress)
     // TODO(baptiste)
@@ -101,68 +120,12 @@ ofxGVF::ofxGVF(int inputDim,
     offset = new std::vector<float>(2); // offset that has to be updated
     compa = false;
     old_max = 0;
-    
-
-
     probThresh = 0.02*ns;               // thresholds on the absolute weights for segmentation
     probThreshMin = 0.1*ns;
-    
 }
-
-// Defautl constructor for default parameter values
-// EXPERIMENTAL!!!!
-ofxGVF::ofxGVF(int inputDim)
-{
-    this->inputDim=inputDim;
-    //initVecf(offS,inputDim);
-    
-    ns              = 2000;
-    pdim            = 4;
-    nu              = 0.;
-    tolerance       = 0.2;
-    numTemplates    = -1;
-    resamplingThreshold = 500;
-    
-    // State dimension depends on the number of noise variances
-	pdim    = 4;      // state space dimension is given by the number of std dev
-	initMat(X,ns,pdim);            // Matrix of NS particles
-	initVec(g,ns);                 // Vector of gesture class
-	initVec(w,ns);                 // Weights
-    //initVecf(offS,ns);                 // translation offsets
-	
-	initVec(this->featVariances,pdim);   // Fill variances
-	for (int k=0; k<pdim; k++)
-		this->featVariances[k]=sqrt(0.00001);
-    gestureLengths = vector<int>();         // Vector of gesture lengths
-
-    
-#if !BOOSTLIB
-    normdist = new std::tr1::normal_distribution<float>();
-    unifdist = new std::tr1::uniform_real<float>();
-    rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
-#endif
-    
-    
-    // Variables used for segmentation -- experimental (research in progress)
-    // TODO(baptiste)
-    abs_weights = vector<float>();      // absolute weights used for segmentation
-    currentGest = 0;
-    new_gest = false;
-    offset = new std::vector<float>(2); // offset that has to be updated
-    compa = false;
-    old_max = 0;
-    
-    probThresh = 0.02*ns;               // thresholds on the absolute weights for segmentation
-    probThreshMin = 0.1*ns;
-    
-}
-
-
-
 
 // Destructor of the class
-ofxGVF::~ofxGVF()
-{
+ofxGVF::~ofxGVF(){
 #if !BOOSTLIB
     if(normdist != NULL)
         delete (normdist);
@@ -172,67 +135,55 @@ ofxGVF::~ofxGVF()
     
     // should we free here other variables such X, ...??
     //TODO(baptiste)
+    
+    clear(); // not really necessary but it's polite ;)
+    
 }
-
-
 
 // Add a template into the vocabulary. This method does not add the data but allocate
 // the memory and increases the number of learned gesture
-void ofxGVF::addTemplate()
-{
+void ofxGVF::addTemplate(){
 	numTemplates++;                                         // increment the num. of learned gesture
 	R_single[numTemplates] = vector< vector<float> >();      // allocate the memory for the gesture's data
     gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
     abs_weights.resize(numTemplates+1);
-    
 }
 
-
+void ofxGVF::addTemplate(vector<float> & data){
+	addTemplate();
+    fillTemplate(getNumberOfTemplates(), data);
+}
 
 // Fill the template given by the integer 'id' by appending the current data vector 'data'
 // This example fills the template 1 with the live gesture data (stored in liveGesture)
 // for (int k=0; k<SizeLiveGesture; k++)
 //    myGVF->fillTemplate(1, liveGesture[k]);
-void ofxGVF::fillTemplate(int id, vector<float> & data)
-{
-    //post("fill %i with %f %f",id,data[0],data[1]);
-	if (id<=numTemplates)
-	{
-        //float* tmp;
-        //R_single[id].push_back(tmp);
-        //R_single[id][gestureLengths[id]] = (float*)malloc(inputDim*sizeof(float));
-        //for (int k=0;k<inputDim;k++)
-        //R_single[id][gestureLengths[id]][k]=data[k];
+void ofxGVF::fillTemplate(int id, vector<float> & data){
+	if (id <= numTemplates){
 		R_single[id].push_back(data);
 		gestureLengths[id]=gestureLengths[id]+1;
 	}
 }
 
 // clear template given by id
-void ofxGVF::clearTemplate(int id)
-{
-    if (id<=numTemplates)
-	{
+void ofxGVF::clearTemplate(int id){
+    if (id <= numTemplates){
         R_single[id] = vector< vector<float> >();      // allocate the memory for the gesture's data
         gestureLengths[id] = 0;                // add an element (0) in the gesture lengths table
     }
 }
 
-
 // Clear the internal data (templates)
-void ofxGVF::clear()
-{
+void ofxGVF::clear(){
+    state = STATE_CLEAR;
 	R_single.clear();
 	gestureLengths.clear();
 	numTemplates=-1;
 }
 
-
-
 // Spread the particles by sampling values from intervals given my their means and ranges.
 // Note that the current implemented distribution for sampling the particles is the uniform distribution
-void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges)
-{
+void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     
 	// we copy the initial means and ranges to be able to restart the algorithm
     meansCopy  = means;
@@ -248,7 +199,6 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges)
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
 	
-    
 	unsigned int ngestures = numTemplates+1;
 	
     // Spread particles using a uniform distribution
@@ -271,19 +221,14 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges)
     
 }
 
-
-
 // Initialialize the weights of the particles. The initial values of the weights is a
 // unifrom weight over the particles
-void ofxGVF::initweights()
-{
+void ofxGVF::initweights(){
     for (int k=0; k<ns; k++)
         w[k]=1.0/ns;
 }
 
-
-float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float> w)
-{
+float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float> w){
     int count = x.size();
     // the size must be > 0
     if (count<=0)
@@ -297,8 +242,6 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
     return dist;
 }
 
-
-
 // Performs the inference based on a given new observation. This is the core algorithm: does
 // one step of inference using particle filtering. It is the optimized version of the
 // function ParticleFilter(). Note that the inference is possible only if some templates
@@ -306,8 +249,7 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 //
 // The inferring values are the weights of each particle that represents a possible gesture,
 // plus a possible configuration of the features (value of speec, scale,...)
-void ofxGVF::particleFilter(vector<float> & obs)
-{
+void ofxGVF::particleFilter(vector<float> & obs){
     
 //    post("%f %f", obs[0], obs[1]);
     
@@ -342,19 +284,16 @@ void ofxGVF::particleFilter(vector<float> & obs)
     int numParticlesPhaseGt1 = 0;
     
     // zero abs weights
-    for(int i = 0 ; i < getNbOfTemplates(); i++){
+    for(int i = 0 ; i < getNumberOfTemplates(); i++){
         abs_weights[i] = 0.0;
     }
     
     // clear any previous information about the particles' positions
     // (this is used for possible visualization but not in the inference)
     particlesPositions.clear();
-    
-    
+
     float sumw=0.0;
 
-    
-    
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = ns-1; n >= 0; --n)
     {
@@ -484,7 +423,6 @@ void ofxGVF::particleFilter(vector<float> & obs)
         sumw+=w[n];
     }
     
-    
     // normalize weights and compute criterion for degeneracy
     //	w /= w.sum();
     //	float neff = 1./w.dot(w);
@@ -542,8 +480,6 @@ void ofxGVF::particleFilter(vector<float> & obs)
     
 }
 
-
-
 // Resampling function. The function resamples the particles based on the weights.
 // Particles with negligeable weights will be respread near the particles with non-
 // neglieable weigths (which means the most likely estimation).
@@ -557,7 +493,6 @@ void ofxGVF::resampleAccordingToWeights()
     std::tr1::uniform_real<float> ur(0,1);
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
-    
     
     vector< vector<float> > oldX;
     setMat(oldX,X);
@@ -589,30 +524,17 @@ void ofxGVF::resampleAccordingToWeights()
     
 }
 
-
 // Set the initial coordinates
-void ofxGVF::setInitCoord(std::vector<float> s_origin)
-{
+void ofxGVF::setInitCoord(std::vector<float> s_origin){
     origin = s_origin;
 }
-
-
 
 // Step function is the function called outside for inference. It
 // has been originally created to be able to infer on a new observation or
 // a set of observation.
-void ofxGVF::infer(vector<float> & vect)
-{
-
+void ofxGVF::infer(vector<float> & vect){
     particleFilter(vect);
 }
-
-
-
-
-
-
-
 
 ////////////////////////////////////////////////////////////////
 //
@@ -621,41 +543,35 @@ void ofxGVF::infer(vector<float> & vect)
 ////////////////////////////////////////////////////////////////
 
 
-
 // Return the number of particles
-int ofxGVF::getNbOfParticles()
-{
-	return static_cast<int>(ns);
+int ofxGVF::getNumberOfParticles(){
+	return ns;
 }
 
 // Return the number of templates in the vocabulary
-int ofxGVF::getNbOfTemplates()
-{
-	return static_cast<int>(gestureLengths.size());
+int ofxGVF::getNumberOfTemplates(){
+	return gestureLengths.size();
 }
 
 // Return the template given by its index in the vocabulary
-vector< vector<float> > ofxGVF::getTemplateByInd(int Ind)
-{
-	if (Ind < gestureLengths.size())
-		return R_single[Ind];
+vector< vector<float> >& ofxGVF::getTemplateByIndex(int index){
+	if (index < gestureLengths.size())
+		return R_single[index];
 	else
-		return vector< vector<float> > ();
+		return EmptyTemplate;
 }
 
 // Return the length of a specific template given by its index
 // in the vocabulary
-int ofxGVF::getLengthOfTemplateByInd(int Ind)
-{
-	if (Ind < gestureLengths.size())
-		return gestureLengths[Ind];
+int ofxGVF::getLengthOfTemplateByIndex(int index){
+	if (index < gestureLengths.size())
+		return gestureLengths[index];
 	else
 		return -1;
 }
 
 // Return the resampling threshold used to avoid degeneracy problem
-int ofxGVF::getResamplingThreshold()
-{
+int ofxGVF::getResamplingThreshold(){
     return resamplingThreshold;
 }
 
@@ -665,20 +581,17 @@ float ofxGVF::getObservationNoiseStd(){
 }
 
 // Return the particle data (each row is a particle)
-vector< vector<float> > ofxGVF::getX()
-{
+vector< vector<float> > ofxGVF::getX(){
     return X;
 }
 
 // Return the gesture index for each particle
-vector<int> ofxGVF::getG()
-{
+vector<int> ofxGVF::getG(){
     return g;
 }
 
 // Return particles' weights
-vector<float> ofxGVF::getW()
-{
+vector<float> ofxGVF::getW(){
     return w;
 }
 
@@ -712,11 +625,6 @@ vector<float> ofxGVF::getGestureConditionnalProbabilities()
     
 	return gp;
 }
-
-
-
-
-
 
 // Returns the estimates features. It calls status to refer to the status of the state
 // space which comprises the features to be adapted. If features are phase, speed, scale and angle,
@@ -757,8 +665,7 @@ vector< vector<float> > ofxGVF::getEstimatedStatus()
 	return es;
 }
 
-vector<float> ofxGVF::getFeatureVariances()
-{
+vector<float> ofxGVF::getFeatureVariances(){
     return featVariances;
 }
 
@@ -767,10 +674,10 @@ int ofxGVF::getMostProbableGestureIndex(){
     vector< vector< float> > M = getEstimatedStatus();
     float maxprob=0.0;
     int   indexMaxprob=0;
-    for (int k=0;k<M.size();k++){
-        if (M[k][M[0].size()-1]>maxprob){
-            maxprob=M[k][M[0].size()-1];
-            indexMaxprob=k;
+    for (int k=0; k<M.size(); k++){
+        if (M[k][M[0].size() - 1] > maxprob){
+            maxprob = M[k][M[0].size() - 1];
+            indexMaxprob = k;
         }
     }
     return indexMaxprob;
