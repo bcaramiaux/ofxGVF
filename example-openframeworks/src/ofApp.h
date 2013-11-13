@@ -4,7 +4,6 @@
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
 
-#include "GestureVariationFollower.h"
 #include "gvfhandler.h"
 
 class ofApp : public ofBaseApp{
@@ -61,12 +60,6 @@ private:
     
     ofPoint templates_area = ofPoint(200, 90);
     
-    //    ofRectangle drawArea = ofRectangle(ofGetWindowWidth()/2 - side_of_drawing_area/2,
-    //                             templates_area.y + side_of_drawing_area,
-    //                             side_of_drawing_area,
-    //                             side_of_drawing_area);
-    //
-    
     ofRectangle drawArea = ofRectangle(ofPoint(0, 0), ofGetWindowWidth(), ofGetWindowHeight());
     
     ofRectangle testRect = ofRectangle(900, 400, 330, 330);
@@ -83,7 +76,7 @@ private:
     bool displayTemplate = true;
     
     float zDist = 10;
-    ofEasyCam cam; // add mouse controls for camera movement
+
     float viewYRotation;
     float viewXRotation;
     

@@ -16,7 +16,7 @@
 #include <iostream>
 #include "ofMain.h"
 
-#include "GestureVariationFollower.h"
+#include "ofxGVF.h"
 #include "gvfGesture.h"
 
 // enumaration defining the 3 states the application can be
@@ -111,7 +111,7 @@ private:
     std::vector<gvfGesture> templates;
 
     // reference to the gvf object
-    GestureVariationFollower *mygvf;
+    ofxGVF *mygvf;
     
     // variance coefficients
     float sigPosition, sigSpeed, sigScale, sigRotation;

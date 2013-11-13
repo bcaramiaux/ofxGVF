@@ -20,19 +20,24 @@ gvfhandler::gvfhandler()
     pdim = 4;
     rt = 1000;
     
-    // variance coefficients
-    vector<float> sigs(pdim);
-
-    // possition, speed, scale, rotation
-    sigs[0] = sigPosition;
-    sigs[1] = sigSpeed;
-    sigs[2] = sigScale;
-    sigs[3] = sigRotation;
+    ofxGVF::ofxGVFParameters parameters;
     
-    mygvf = new GestureVariationFollower(2, ns, sigs, smoothingCoef, rt, 0.);
+    parameters.inputDimensions = 2;
+    parameters.numberParticles = ns;
+    parameters.phaseVariance = sigPosition;
+    parameters.speedVariance = sigSpeed;
+    parameters.scaleVariance = sigScale;
+    parameters.rotationVariance = sigRotation;
+    parameters.tolerance = smoothingCoef;
+    parameters.resamplingThreshold = rt;
+    parameters.distribution = 0.0f;
+
+    mygvf = new ofxGVF();
+    mygvf->setup(parameters);
     
     mpvrs = vector<float>(pdim);
     rpvrs = vector<float>(pdim);
+    
     mpvrs[0] = 0.05;
     mpvrs[1] = 1.0;
     mpvrs[2] = 1.0;
@@ -46,10 +51,10 @@ gvfhandler::gvfhandler()
     state = STATE_CLEAR;
     
     lastreferencelearned = -1;
-    restarted_l=1;
-    restarted_d=1;
+    restarted_l = 1;
+    restarted_d = 1;
     
-    refmap = new map<int,vector<pair<float,float> > >;
+    refmap = new map<int, vector< pair<float,float> > >;
 }
 
 gvfhandler::~gvfhandler()
@@ -115,28 +120,28 @@ void gvfhandler::gvf_data(int argc, float *argv)
     if(state == STATE_LEARNING)
     {
         vector<float> vect(argc);
-        if (argc ==2){
-            if (restarted_l==1)
-            {
-                // store the incoming list as a vector of float
-                for (int k=0; k<argc; k++){
-                    //vect[k] = *(argv[k]);
-                    //may not be correct..
-                    vect[k] = *(argv + k);
-                }
-                // keep track of the first point
-                vect_0_l = vect;
-                restarted_l=0;
-            }
-            for (int k=0; k<argc; k++){
-                vect[k] = *(argv + k);
-                vect[k]=vect[k]-vect_0_l[k];
-            }
-        }
-        else {
+//        if (argc ==2){
+//            if (restarted_l==1)
+//            {
+//                // store the incoming list as a vector of float
+//                for (int k=0; k<argc; k++){
+//                    //vect[k] = *(argv[k]);
+//                    //may not be correct..
+//                    vect[k] = *(argv + k);
+//                }
+//                // keep track of the first point
+//                vect_0_l = vect;
+//                restarted_l=0;
+//            }
+//            for (int k=0; k<argc; k++){
+//                vect[k] = *(argv + k);
+//                vect[k]=vect[k]-vect_0_l[k];
+//            }
+//        }
+//        else {
             for (int k=0; k<argc; k++)
                 vect[k] = *(argv + k);
-        }
+//        }
         
         //				pair<float,float> xy;
         //				xy.first  = x -xy0_l.first;
@@ -149,27 +154,27 @@ void gvfhandler::gvf_data(int argc, float *argv)
     else if(state == STATE_FOLLOWING)
     {
         vector<float> vect(argc);
-        if (argc==2){
-            if (restarted_d==1)
-            {
-                // store the incoming list as a vector of float
-                for (int k=0; k<argc; k++){
-                    vect[k] = *(argv + k);
-                }
-                // keep track of the first point
-                vect_0_d = vect;
-                restarted_d=0;
-            }
-            for (int k=0; k<argc; k++){
-                vect[k] = vect[k] = *(argv + k);
-                vect[k]=vect[k]-vect_0_d[k];
-            }
-        }
-        else{
+//        if (argc==2){
+//            if (restarted_d==1)
+//            {
+//                // store the incoming list as a vector of float
+//                for (int k=0; k<argc; k++){
+//                    vect[k] = *(argv + k);
+//                }
+//                // keep track of the first point
+//                vect_0_d = vect;
+//                restarted_d=0;
+//            }
+//            for (int k=0; k<argc; k++){
+//                vect[k] = vect[k] = *(argv + k);
+//                vect[k]=vect[k]-vect_0_d[k];
+//            }
+//        }
+//        else{
             printf("%i",argc);
             for (int k=0; k<argc; k++)
-                vect[k] = vect[k] = *(argv + k);
-        }
+                vect[k] = *(argv + k);
+//        }
         //printf("%f %f",xy(0,0),xy(0,1));
         
         // ------- Fill template
@@ -246,7 +251,7 @@ string gvfhandler::gvf_get_status()
  void gvfhandler::gvf_rt(int resamplingThreshold)
 {
     int rtnew = resamplingThreshold;
-    int cNS = mygvf->getNbOfParticles();
+    int cNS = mygvf->getNumberOfParticles();
     if (rtnew >= cNS)
         rtnew = floor(cNS/2);
     mygvf->setResamplingThreshold(rtnew);
@@ -265,12 +270,12 @@ void gvfhandler::setNumberOfParticles(int newNs)
 
 int gvfhandler::getTemplateCount()
 {
-    return mygvf->getNbOfTemplates();
+    return mygvf->getNumberOfTemplates();
 }
 
-vector<vector<float> > gvfhandler::get_template_data(int index)
+vector< vector<float> > gvfhandler::get_template_data(int index)
 {
-    return mygvf->getTemplateByInd(index);
+    return mygvf->getTemplateByIndex(index);
 }
 
 vector<recognitionInfo> gvfhandler::getRecogInfo()
@@ -313,8 +318,8 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
     // if there is a probable gesture...
     if(indexMostProbable > -1)
     {
-        vector<vector<float> > templateData;
-        vector<vector<float> > partialGestureData;
+        vector< vector<float> > templateData;
+        vector< vector<float> > partialGestureData;
         vector<float> gesturePoint;
         recognitionInfo info = recogInfo[indexMostProbable];
     
@@ -335,27 +340,23 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
                 
         for(int i = 0; i < amountToBeCopied; i++)
         {
-            // is this the right way around?
             vector< vector<float> > vref;
-            mygvf->initMatf(vref, 2, 1);
+            initMat(vref, 2, 1);
             
             vref[0][0] = templateData[i][0];
             vref[1][0] = templateData[i][1];
             
             float alpha = info.rotation;
             vector< vector<float> > rotmat;
-            mygvf->initMatf(rotmat, 2, 2);
+            initMat(rotmat, 2, 2);
             
-            // is this the correct order?
             rotmat[0][0] = cos(alpha);
             rotmat[0][1] = -sin(alpha);
             rotmat[1][0] = sin(alpha);
             rotmat[1][1] = cos(alpha);
 
-            // are these working correctly?
-            //vref = mygvf->dotMatf(rotmat, vref);
-            vref = mygvf->multiplyMatf(rotmat, vref);
-            vref = mygvf->multiplyMatf(vref, estimatedScale);
+            vref = multiplyMatf(rotmat, vref);
+            vref = multiplyMatf(vref, estimatedScale);
             
             gesturePoint.push_back(vref[0][0]);
             gesturePoint.push_back(vref[1][0]);
@@ -441,7 +442,7 @@ void gvfhandler::drawTemplates(float scale)
 
 void gvfhandler::printParticleInfo(gvfGesture currentGesture)
 {
-    vector<vector<float> > pp = mygvf->particlesPositions;
+    vector< vector<float> >& pp = mygvf->getParticlesPositions();
     int ppSize = pp.size();
     float scale = 1;
 
@@ -455,7 +456,7 @@ void gvfhandler::printParticleInfo(gvfGesture currentGesture)
 
         ofFill();
         
-        float weightAverage = mygvf->getMeanVecf(weights);
+        float weightAverage = getMeanVec(weights);
         for(int i = 0; i < ppSize; i++)
         {
             gvfGesture g = templates[gestureIndex[i]];

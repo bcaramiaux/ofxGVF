@@ -66,7 +66,6 @@ void ofApp::draw(){
     // draw the current templates on a small scale
     gvfh.drawTemplates(templatesScale);
     
-    
     if(gvfh.get_state() != STATE_FOLLOWING && isMouseDrawing)
         currentGesture.draw();
     else if(displayCurrentGesture)
@@ -75,7 +74,6 @@ void ofApp::draw(){
     ofDisableAlphaBlending();
 
     // string used to comunicate to the user of possible commands and of the current state of the application
-
     string state_string;
     state_string.append("'l' to learn a new template\n'c' to clear\n"
                         "numbers 1 to 4 to toggle visual feedback "
@@ -102,7 +100,6 @@ void ofApp::draw(){
             {
                 temp.setAppearance(ofColor(0,255,0), 5, 255, 180, 1);
                 temp.draw(templatesScale);
-                
                 temp.setDrawArea(da);
                 temp.setInitialPoint(p + 1);
                 temp.centraliseDrawing = false;

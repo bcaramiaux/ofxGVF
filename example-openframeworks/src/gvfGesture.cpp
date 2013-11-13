@@ -159,7 +159,7 @@ bool gvfGesture::isPointInArea(ofRectangle area, float x, float y)
 
 // sets
 
-void gvfGesture::setData(vector<vector<float> > _data)
+void gvfGesture::setData(vector< vector<float> > _data)
 {
     data.clear();
     data = _data;
@@ -210,7 +210,7 @@ ofRectangle gvfGesture::getDrawArea()
     return drawArea;
 }
 
-vector<vector<float> > gvfGesture::getData(){
+vector< vector<float> > gvfGesture::getData(){
     return data;
 }
 
