@@ -160,8 +160,20 @@ void ofxGVF::addTemplate(vector<float> & data){
 //    myGVF->fillTemplate(1, liveGesture[k]);
 void ofxGVF::fillTemplate(int id, vector<float> & data){
 	if (id <= numTemplates){
+        
+        // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
+        if(data.size() == 2){
+            if(R_single[id].size() == 0){
+                R_initial[id] = data;
+            }
+            
+            for(int i = 0; i < data.size(); i++){
+                data[i] -= R_initial[id][i];
+            }
+        }
+
 		R_single[id].push_back(data);
-		gestureLengths[id]=gestureLengths[id]+1;
+		gestureLengths[id] = gestureLengths[id]+1;
 	}
 }
 
@@ -177,6 +189,7 @@ void ofxGVF::clearTemplate(int id){
 void ofxGVF::clear(){
     state = STATE_CLEAR;
 	R_single.clear();
+    R_initial.clear();
 	gestureLengths.clear();
 	numTemplates=-1;
 }
@@ -184,6 +197,8 @@ void ofxGVF::clear(){
 // Spread the particles by sampling values from intervals given my their means and ranges.
 // Note that the current implemented distribution for sampling the particles is the uniform distribution
 void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
+    
+    O_initial.clear();
     
 	// we copy the initial means and ranges to be able to restart the algorithm
     meansCopy  = means;
@@ -269,6 +284,16 @@ void ofxGVF::particleFilter(vector<float> & obs){
 //            }
 //        }
 //    }
+    
+    if(obs.size() == 2){
+        if(O_initial.size() == 0){ // then it's a new gesture observation
+            O_initial = obs;
+        }else{
+            for(int i = 0; i < obs.size(); i++){
+                obs[i] -= O_initial[i];
+            }
+        }
+    }
     
 #if BOOSTLIB
 	boost::uniform_real<float> ur(0,1);
@@ -358,7 +383,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
             setVec(vobs,obs);
         
             // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
-            if (inputDim==2){
+            if (inputDim == 2){
                 
                 // offset!
                 //for (int k=0;k<inputDim;k++)
@@ -383,7 +408,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
                 
             }
             // If incoming data is N-dimensional
-            else if (inputDim!=2){
+            else if (inputDim != 2){
                 
                 // sca1ing
                 for (int k=0;k<inputDim;k++)

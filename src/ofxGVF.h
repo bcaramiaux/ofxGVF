@@ -170,6 +170,9 @@ private:
     vector<float>  particlesPhaseGt1;          // store particles whose phase is > 1 (outside of the gesture)
     
 	map<int, vector< vector<float> > > R_single;   // gesture references (1 example)
+    map<int, vector<float> > R_initial;  // gesture initial data
+    
+    vector<float> O_initial;  // observed initial data
     
     // private functions
     void initweights();                         // initialize weights
