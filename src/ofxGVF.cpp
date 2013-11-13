@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////
 //
-//  GestureVariationFollower class
+//  ofxGVF class
 //
-//  The library (GestureVariationFollower.cpp, GestureVariationFollower.h) has been created in 2010-2011 at Ircam Centre Pompidou by
+//  The library (ofxGVF.cpp, ofxGVF.h) has been created in 2010-2011 at Ircam Centre Pompidou by
 //  - Baptiste Caramiaux
 //  previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
 //  - Nicola Montecchio
@@ -18,7 +18,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 
-#include "GestureVariationFollower.h"
+#include "ofxGVF.h"
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
@@ -37,14 +37,14 @@ using namespace std;
 
 
 
-// Constructor of the class GestureVariationFollower
+// Constructor of the class ofxGVF
 // This creates an object that is able to learn gesture template,
 // to recognize in realtime the live gesture and to estimate the
 // live gesture variations according to the template (e.g. scale, speed, ...)
 //
 // typical use
-//   GestureVariationFollower *myGVF;
-//   myGVF = new GestureVariationFollower(NS, Sigs, Icov, ResThresh, Nu)
+//   ofxGVF *myGVF;
+//   myGVF = new ofxGVF(NS, Sigs, Icov, ResThresh, Nu)
 //
 // ns is the number of particles
 // Sigs is the variance for each varying feature that has to be estimated (speed, scale, twisting angle)
@@ -52,8 +52,8 @@ using namespace std;
 // Note about the current implementation: it involves geometric features: phase, speed, scale, angle of rotation
 //    that are meant to be used for 2-dimensional input shapes. For general N-dimensional input, the class will
 //    only consider phase, speed, scaling
-//GestureVariationFollower::GestureVariationFollower(int ns, VectorXf sigs, float icov, int resThresh, float nu)
-GestureVariationFollower::GestureVariationFollower(int inputDim,
+//ofxGVF::ofxGVF(int ns, VectorXf sigs, float icov, int resThresh, float nu)
+ofxGVF::ofxGVF(int inputDim,
                                                    int ns,
                                                    vector<float> featVariances,
                                                    float tolerance,
@@ -65,9 +65,9 @@ GestureVariationFollower::GestureVariationFollower(int inputDim,
     
     // State dimension depends on the number of noise variances
 	pdim    = static_cast<int>(count);      // state space dimension is given by the number of std dev
-	initMatf(X,ns,pdim);            // Matrix of NS particles
-	initVeci(g,ns);                 // Vector of gesture class
-	initVecf(w,ns);                 // Weights
+	initMat(X,ns,pdim);            // Matrix of NS particles
+	initVec(g,ns);                 // Vector of gesture class
+	initVec(w,ns);                 // Weights
 
     
 	this->featVariances = featVariances;    // Fill variances
@@ -83,7 +83,7 @@ GestureVariationFollower::GestureVariationFollower(int inputDim,
     
     //logW.setConstant(0.0);              // log of weights equal to 0
     this->inputDim=inputDim;
-    initMatf(offS,ns,inputDim);
+    initMat(offS,ns,inputDim);
     
     
 #if !BOOSTLIB
@@ -111,7 +111,7 @@ GestureVariationFollower::GestureVariationFollower(int inputDim,
 
 // Defautl constructor for default parameter values
 // EXPERIMENTAL!!!!
-GestureVariationFollower::GestureVariationFollower(int inputDim)
+ofxGVF::ofxGVF(int inputDim)
 {
     this->inputDim=inputDim;
     //initVecf(offS,inputDim);
@@ -125,12 +125,12 @@ GestureVariationFollower::GestureVariationFollower(int inputDim)
     
     // State dimension depends on the number of noise variances
 	pdim    = 4;      // state space dimension is given by the number of std dev
-	initMatf(X,ns,pdim);            // Matrix of NS particles
-	initVeci(g,ns);                 // Vector of gesture class
-	initVecf(w,ns);                 // Weights
+	initMat(X,ns,pdim);            // Matrix of NS particles
+	initVec(g,ns);                 // Vector of gesture class
+	initVec(w,ns);                 // Weights
     //initVecf(offS,ns);                 // translation offsets
 	
-	initVecf(this->featVariances,pdim);   // Fill variances
+	initVec(this->featVariances,pdim);   // Fill variances
 	for (int k=0; k<pdim; k++)
 		this->featVariances[k]=sqrt(0.00001);
     gestureLengths = vector<int>();         // Vector of gesture lengths
@@ -161,7 +161,7 @@ GestureVariationFollower::GestureVariationFollower(int inputDim)
 
 
 // Destructor of the class
-GestureVariationFollower::~GestureVariationFollower()
+ofxGVF::~ofxGVF()
 {
 #if !BOOSTLIB
     if(normdist != NULL)
@@ -178,7 +178,7 @@ GestureVariationFollower::~GestureVariationFollower()
 
 // Add a template into the vocabulary. This method does not add the data but allocate
 // the memory and increases the number of learned gesture
-void GestureVariationFollower::addTemplate()
+void ofxGVF::addTemplate()
 {
 	numTemplates++;                                         // increment the num. of learned gesture
 	R_single[numTemplates] = vector< vector<float> >();      // allocate the memory for the gesture's data
@@ -193,7 +193,7 @@ void GestureVariationFollower::addTemplate()
 // This example fills the template 1 with the live gesture data (stored in liveGesture)
 // for (int k=0; k<SizeLiveGesture; k++)
 //    myGVF->fillTemplate(1, liveGesture[k]);
-void GestureVariationFollower::fillTemplate(int id, vector<float> & data)
+void ofxGVF::fillTemplate(int id, vector<float> & data)
 {
     //post("fill %i with %f %f",id,data[0],data[1]);
 	if (id<=numTemplates)
@@ -209,7 +209,7 @@ void GestureVariationFollower::fillTemplate(int id, vector<float> & data)
 }
 
 // clear template given by id
-void GestureVariationFollower::clearTemplate(int id)
+void ofxGVF::clearTemplate(int id)
 {
     if (id<=numTemplates)
 	{
@@ -220,7 +220,7 @@ void GestureVariationFollower::clearTemplate(int id)
 
 
 // Clear the internal data (templates)
-void GestureVariationFollower::clear()
+void ofxGVF::clear()
 {
 	R_single.clear();
 	gestureLengths.clear();
@@ -231,7 +231,7 @@ void GestureVariationFollower::clear()
 
 // Spread the particles by sampling values from intervals given my their means and ranges.
 // Note that the current implemented distribution for sampling the particles is the uniform distribution
-void GestureVariationFollower::spreadParticles(vector<float> & means, vector<float> & ranges)
+void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges)
 {
     
 	// we copy the initial means and ranges to be able to restart the algorithm
@@ -275,7 +275,7 @@ void GestureVariationFollower::spreadParticles(vector<float> & means, vector<flo
 
 // Initialialize the weights of the particles. The initial values of the weights is a
 // unifrom weight over the particles
-void GestureVariationFollower::initweights()
+void ofxGVF::initweights()
 {
     for (int k=0; k<ns; k++)
         w[k]=1.0/ns;
@@ -306,7 +306,7 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 //
 // The inferring values are the weights of each particle that represents a possible gesture,
 // plus a possible configuration of the features (value of speec, scale,...)
-void GestureVariationFollower::particleFilter(vector<float> & obs)
+void ofxGVF::particleFilter(vector<float> & obs)
 {
     
 //    post("%f %f", obs[0], obs[1]);
@@ -413,10 +413,10 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
             
             // given the index, return the gesture template value at this index
             vector<float> vref(inputDim);
-            setVecf(vref,R_single[pgi][frameindex]);
+            setVec(vref,R_single[pgi][frameindex]);
 
             vector<float> vobs(inputDim);
-            setVecf(vobs,obs);
+            setVec(vobs,obs);
         
             // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
             if (inputDim==2){
@@ -548,7 +548,7 @@ void GestureVariationFollower::particleFilter(vector<float> & obs)
 // Particles with negligeable weights will be respread near the particles with non-
 // neglieable weigths (which means the most likely estimation).
 // This steps is important to avoid degeneracy problem
-void GestureVariationFollower::resampleAccordingToWeights()
+void ofxGVF::resampleAccordingToWeights()
 {
 #if BOOSTLIB
     boost::uniform_real<float> ur(0,1);
@@ -560,9 +560,9 @@ void GestureVariationFollower::resampleAccordingToWeights()
     
     
     vector< vector<float> > oldX;
-    setMatf(oldX,X);
+    setMat(oldX,X);
     vector<int> oldG;
-    setVeci(oldG, g);
+    setVec(oldG, g);
     vector<float> c(ns);
     
     c[0] = 0;
@@ -591,7 +591,7 @@ void GestureVariationFollower::resampleAccordingToWeights()
 
 
 // Set the initial coordinates
-void GestureVariationFollower::setInitCoord(std::vector<float> s_origin)
+void ofxGVF::setInitCoord(std::vector<float> s_origin)
 {
     origin = s_origin;
 }
@@ -601,7 +601,7 @@ void GestureVariationFollower::setInitCoord(std::vector<float> s_origin)
 // Step function is the function called outside for inference. It
 // has been originally created to be able to infer on a new observation or
 // a set of observation.
-void GestureVariationFollower::infer(vector<float> & vect)
+void ofxGVF::infer(vector<float> & vect)
 {
 
     particleFilter(vect);
@@ -623,19 +623,19 @@ void GestureVariationFollower::infer(vector<float> & vect)
 
 
 // Return the number of particles
-int GestureVariationFollower::getNbOfParticles()
+int ofxGVF::getNbOfParticles()
 {
 	return static_cast<int>(ns);
 }
 
 // Return the number of templates in the vocabulary
-int GestureVariationFollower::getNbOfTemplates()
+int ofxGVF::getNbOfTemplates()
 {
 	return static_cast<int>(gestureLengths.size());
 }
 
 // Return the template given by its index in the vocabulary
-vector< vector<float> > GestureVariationFollower::getTemplateByInd(int Ind)
+vector< vector<float> > ofxGVF::getTemplateByInd(int Ind)
 {
 	if (Ind < gestureLengths.size())
 		return R_single[Ind];
@@ -645,7 +645,7 @@ vector< vector<float> > GestureVariationFollower::getTemplateByInd(int Ind)
 
 // Return the length of a specific template given by its index
 // in the vocabulary
-int GestureVariationFollower::getLengthOfTemplateByInd(int Ind)
+int ofxGVF::getLengthOfTemplateByInd(int Ind)
 {
 	if (Ind < gestureLengths.size())
 		return gestureLengths[Ind];
@@ -654,56 +654,59 @@ int GestureVariationFollower::getLengthOfTemplateByInd(int Ind)
 }
 
 // Return the resampling threshold used to avoid degeneracy problem
-int GestureVariationFollower::getResamplingThreshold()
+int ofxGVF::getResamplingThreshold()
 {
     return resamplingThreshold;
 }
 
 // Return the standard deviation of the observation likelihood
-float GestureVariationFollower::getObservationNoiseStd(){
+float ofxGVF::getObservationNoiseStd(){
     return tolerance;
 }
 
 // Return the particle data (each row is a particle)
-vector< vector<float> > GestureVariationFollower::getX()
+vector< vector<float> > ofxGVF::getX()
 {
     return X;
 }
 
 // Return the gesture index for each particle
-vector<int> GestureVariationFollower::getG()
+vector<int> ofxGVF::getG()
 {
     return g;
 }
 
 // Return particles' weights
-vector<float> GestureVariationFollower::getW()
+vector<float> ofxGVF::getW()
 {
     return w;
 }
 
+vector< vector<float> >& ofxGVF::getParticlesPositions(){
+    return particlesPositions;
+}
 
 // Returns the probabilities of each gesture. This probability is conditionnal
 // because it depends on the other gestures in the vocabulary:
 // probability to be in gesture A knowing that we have gesture A, B, C, ... in the vocabulary
-vector<float> GestureVariationFollower::getGestureProbabilities()
+vector<float> ofxGVF::getGestureProbabilities()
 {
 	unsigned int ngestures = numTemplates+1;
     
 	vector<float> gp(ngestures);
-     setVecf(gp, 0.);
+     setVec(gp, 0.0f);
 	for(int n = 0; n < ns; n++)
 		gp[g[n]] += w[n];
     
 	return gp;
 }
 // ----- DEPRECATED ------
-vector<float> GestureVariationFollower::getGestureConditionnalProbabilities()
+vector<float> ofxGVF::getGestureConditionnalProbabilities()
 {
 	unsigned int ngestures = numTemplates+1;
 
     vector<float> gp(ngestures);
-    setVecf(gp, 0.);
+    setVec(gp, 0.0f);
 	for(int n = 0; n < ns; n++)
 		gp[g[n]] += w[n];
     
@@ -722,7 +725,7 @@ vector<float> GestureVariationFollower::getGestureConditionnalProbabilities()
 //   rows correspond to the gestures in the vocabulary
 //   cols correspond to the features (the last column is the [conditionnal] probability of each gesture)
 // The output matrix is an Eigen matrix
-vector< vector<float> > GestureVariationFollower::getEstimatedStatus()
+vector< vector<float> > ofxGVF::getEstimatedStatus()
 {
 	
     // get the number of gestures in the vocabulary
@@ -730,7 +733,7 @@ vector< vector<float> > GestureVariationFollower::getEstimatedStatus()
 	//cout << "getEstimatedStatus():: ngestures= "<< numTemplates+1<< endl;
     
     vector< vector<float> > es;
-    setMatf(es, 0., ngestures, pdim+1);   // rows are gestures, cols are features + probabilities
+    setMat(es, 0.0f, ngestures, pdim+1);   // rows are gestures, cols are features + probabilities
 	//printMatf(es);
     
 	// compute the estimated features by computing the expected values
@@ -754,13 +757,13 @@ vector< vector<float> > GestureVariationFollower::getEstimatedStatus()
 	return es;
 }
 
-vector<float> GestureVariationFollower::getFeatureVariances()
+vector<float> ofxGVF::getFeatureVariances()
 {
     return featVariances;
 }
 
 // Returns the index of the currently recognized gesture
-int GestureVariationFollower::getMostProbableGestureIndex(){
+int ofxGVF::getMostProbableGestureIndex(){
     vector< vector< float> > M = getEstimatedStatus();
     float maxprob=0.0;
     int   indexMaxprob=0;
@@ -782,12 +785,12 @@ int GestureVariationFollower::getMostProbableGestureIndex(){
 ////////////////////////////////////////////////////////////////
 
 // Update the number of particles
-void GestureVariationFollower::setNumberOfParticles(int newNs)
+void ofxGVF::setNumberOfParticles(int newNs)
 {
     particlesPositions.clear();
-    initMatf(X,newNs,pdim);          // Matrix of NS particles
-    initVeci(g,newNs);               // Vector of gesture class
-    initVecf(w,newNs);               // Weights
+    initMat(X,newNs,pdim);          // Matrix of NS particles
+    initVec(g,newNs);               // Vector of gesture class
+    initVec(w,newNs);               // Weights
     //    logW = VectorXf(newNs);
 }
 
@@ -795,14 +798,14 @@ void GestureVariationFollower::setNumberOfParticles(int newNs)
 // this value acts as a tolerance for the algorithm
 // low value: less tolerant so more precise but can diverge
 // high value: more tolerant so less precise but converge more easily
-void GestureVariationFollower::setToleranceValue(float f)
+void ofxGVF::setToleranceValue(float f)
 {
 	tolerance = f > 0 ? f : tolerance;
 }
 
 // Update the variance for each features which control their precision
 // and speed of convergence
-void GestureVariationFollower::setAdaptSpeed(vector<float> as)
+void ofxGVF::setAdaptSpeed(vector<float> as)
 {
 	
 	if (as.size() == pdim)
@@ -814,7 +817,7 @@ void GestureVariationFollower::setAdaptSpeed(vector<float> as)
 }
 
 // Update the resampling threshold used to avoid degeneracy problem
-void GestureVariationFollower::setResamplingThreshold(int r)
+void ofxGVF::setResamplingThreshold(int r)
 {
     resamplingThreshold = r;
 }
@@ -839,7 +842,7 @@ void GestureVariationFollower::setResamplingThreshold(int r)
 
 // Save function. This function is used by applications to save the
 // vocabulary in a text file given by filename (filename is also the complete path + filename)
-void GestureVariationFollower::saveTemplates(std::string filename)
+void ofxGVF::saveTemplates(std::string filename)
 {
     
     std::string directory = filename;
@@ -862,7 +865,7 @@ void GestureVariationFollower::saveTemplates(std::string filename)
 
 // Load function. This function is used by applications to load a vocabulary
 // given by filename (filename is also the complete path + filename)
-void GestureVariationFollower::loadTemplates(std::string filename)
+void ofxGVF::loadTemplates(std::string filename)
 {
     
     clear();
