@@ -24,16 +24,19 @@ gvfhandler::gvfhandler()
     
     parameters.inputDimensions = 2;
     parameters.numberParticles = ns;
-    parameters.phaseVariance = sigPosition;
-    parameters.speedVariance = sigSpeed;
-    parameters.scaleVariance = sigScale;
-    parameters.rotationVariance = sigRotation;
     parameters.tolerance = smoothingCoef;
     parameters.resamplingThreshold = rt;
     parameters.distribution = 0.0f;
 
-    mygvf = new ofxGVF();
-    mygvf->setup(parameters);
+    ofxGVF::ofxGVFVarianceCoefficents coefficients;
+    
+    coefficients.phaseVariance = sigPosition;
+    coefficients.speedVariance = sigSpeed;
+    coefficients.scaleVariance = sigScale;
+    coefficients.rotationVariance = sigRotation;
+    
+    mygvf = new ofxGVF();                       // could use mygvf = new ofxGVF(parameters, coefficients);
+    mygvf->setup(parameters, coefficients);     // but 'setup' is the 'OF' way ;)
     
     mpvrs = vector<float>(pdim);
     rpvrs = vector<float>(pdim);
@@ -183,7 +186,7 @@ void gvfhandler::gvf_data(int argc, float *argv)
         vector< vector<float> > statu = mygvf->getEstimatedStatus();
         //getGestureProbabilities();
 //        vector<float> glikelihoods = mygvf->getGestureLikelihoods();
-        vector<float> gprob = mygvf->getGestureConditionnalProbabilities();
+        vector<float> gprob = mygvf->getGestureProbabilities();
 
         char temp[100];
         int templates_count = gprob.size();
@@ -245,7 +248,7 @@ string gvfhandler::gvf_get_status()
     float stdnew = smoothingCoeficient;
     if (stdnew == 0.0)
         stdnew = 0.1;
-    mygvf->setToleranceValue(1/(stdnew*stdnew));
+    mygvf->setTolerance(1/(stdnew*stdnew));
 }
 
  void gvfhandler::gvf_rt(int resamplingThreshold)
@@ -259,7 +262,11 @@ string gvfhandler::gvf_get_status()
 
 void gvfhandler::gvf_adaptspeed(vector<float> varianceCoeficients)
 {
-    mygvf->setAdaptSpeed(varianceCoeficients);
+    mygvf->setPhaseVariance(varianceCoeficients[0]);
+    mygvf->setSpeedVariance(varianceCoeficients[1]);
+    mygvf->setScaleVariance(varianceCoeficients[2]);
+    mygvf->setRotationVariance(varianceCoeficients[3]);
+//    mygvf->setAdaptSpeed(varianceCoeficients);
 }
 
 void gvfhandler::setNumberOfParticles(int newNs)
@@ -442,7 +449,7 @@ void gvfhandler::drawTemplates(float scale)
 
 void gvfhandler::printParticleInfo(gvfGesture currentGesture)
 {
-    vector< vector<float> >& pp = mygvf->getParticlesPositions();
+    vector< vector<float> > pp = mygvf->getParticlesPositions();
     int ppSize = pp.size();
     float scale = 1;
 

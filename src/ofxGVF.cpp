@@ -46,51 +46,60 @@ using namespace std;
 //    only consider phase, speed, scaling
 //ofxGVF::ofxGVF(int ns, VectorXf sigs, float icov, int resThresh, float nu)
 
-
+//--------------------------------------------------------------
 ofxGVF::ofxGVF(){
     // nothing?
 }
 
-ofxGVF::ofxGVF(ofxGVFParameters parameters){
-    setup(parameters);
+//--------------------------------------------------------------
+ofxGVF::ofxGVF(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coefficents){
+    setup(parameters, _coefficents);
 }
 
+//--------------------------------------------------------------
 void ofxGVF::setup(){
     
     // use defualt parameters
     // EXPERIMENTAL!!!
     
-    ofxGVFParameters parameters;
+    ofxGVFParameters defaultParameters;
     
-    parameters.inputDimensions = 2;
-    parameters.numberParticles = 2000;
-    parameters.phaseVariance = 0.00001;
-    parameters.speedVariance = 0.00001;
-    parameters.scaleVariance = 0.00001;
-    parameters.rotationVariance = 0.00001;
-    parameters.tolerance = 0.2f;
-    parameters.resamplingThreshold = 500;
-    parameters.distribution = 0.0f;
+    defaultParameters.inputDimensions = 2;
+    defaultParameters.numberParticles = 2000;
+    defaultParameters.tolerance = 0.2f;
+    defaultParameters.resamplingThreshold = 500;
+    defaultParameters.distribution = 0.0f;
     
-    setup(parameters);
+    ofxGVFVarianceCoefficents defaultCoefficents;
+    
+    defaultCoefficents.phaseVariance = 0.00001;
+    defaultCoefficents.speedVariance = 0.00001;
+    defaultCoefficents.scaleVariance = 0.00001;
+    defaultCoefficents.rotationVariance = 0.00001;
+    
+    setup(defaultParameters, defaultCoefficents);
 }
 
-void ofxGVF::setup(ofxGVFParameters parameters){
+//--------------------------------------------------------------
+void ofxGVF::setup(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coefficents){
     
     clear(); // just in case
+    
+    parameters = _parameters;
+    coefficents = _coefficents;
     
     inputDim = parameters.inputDimensions;
     ns = parameters.numberParticles;
     
-    if(inputDim > 2 && parameters.rotationVariance != 0.0){
+    if(inputDim > 2 && coefficents.rotationVariance != 0.0){
         cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
-        parameters.rotationVariance = 0.0f;
+        coefficents.rotationVariance = 0.0f;
     }
     
-    if(parameters.phaseVariance != 0.0f) featVariances.push_back(sqrt(parameters.phaseVariance));
-    if(parameters.speedVariance != 0.0f) featVariances.push_back(sqrt(parameters.speedVariance));
-    if(parameters.scaleVariance != 0.0f) featVariances.push_back(sqrt(parameters.scaleVariance));
-    if(parameters.rotationVariance != 0.0f) featVariances.push_back(sqrt(parameters.rotationVariance));
+    if(coefficents.phaseVariance != -1.0f) featVariances.push_back(sqrt(coefficents.phaseVariance));
+    if(coefficents.speedVariance != -1.0f) featVariances.push_back(sqrt(coefficents.speedVariance));
+    if(coefficents.scaleVariance != -1.0f) featVariances.push_back(sqrt(coefficents.scaleVariance));
+    if(coefficents.rotationVariance != -1.0f) featVariances.push_back(sqrt(coefficents.rotationVariance));
     
     pdim = featVariances.size();
     
@@ -116,7 +125,7 @@ void ofxGVF::setup(ofxGVFParameters parameters){
     // TODO(baptiste)
     abs_weights = vector<float>();      // absolute weights used for segmentation
     currentGest = 0;
-    new_gest = false;
+//    new_gest = false;
     offset = new std::vector<float>(2); // offset that has to be updated
     compa = false;
     old_max = 0;
@@ -140,6 +149,7 @@ ofxGVF::~ofxGVF(){
     
 }
 
+//--------------------------------------------------------------
 // Add a template into the vocabulary. This method does not add the data but allocate
 // the memory and increases the number of learned gesture
 void ofxGVF::addTemplate(){
@@ -154,6 +164,7 @@ void ofxGVF::addTemplate(vector<float> & data){
     fillTemplate(getNumberOfTemplates(), data);
 }
 
+//--------------------------------------------------------------
 // Fill the template given by the integer 'id' by appending the current data vector 'data'
 // This example fills the template 1 with the live gesture data (stored in liveGesture)
 // for (int k=0; k<SizeLiveGesture; k++)
@@ -180,6 +191,7 @@ void ofxGVF::fillTemplate(int id, vector<float> & data){
 	}
 }
 
+//--------------------------------------------------------------
 // clear template given by id
 void ofxGVF::clearTemplate(int id){
     if (id <= numTemplates){
@@ -188,6 +200,7 @@ void ofxGVF::clearTemplate(int id){
     }
 }
 
+//--------------------------------------------------------------
 // Clear the internal data (templates)
 void ofxGVF::clear(){
     state = STATE_CLEAR;
@@ -198,6 +211,65 @@ void ofxGVF::clear(){
 	numTemplates=-1;
 }
 
+//--------------------------------------------------------------
+void ofxGVF::setState(ofxGVFState _state){
+    switch (_state) {
+        case STATE_CLEAR:
+            clear();
+            break;
+        case STATE_LEARNING:
+            state = _state;
+            break;
+        case STATE_FOLLOWING:
+            state = _state;
+            break;
+    }
+}
+
+//--------------------------------------------------------------
+ofxGVF::ofxGVFState ofxGVF::getState(){
+    return state;
+}
+
+//--------------------------------------------------------------
+string ofxGVF::getStateAsString(){
+    switch (state) {
+        case STATE_CLEAR:
+            return "STATE_CLEAR";
+            break;
+        case STATE_LEARNING:
+            return "STATE_LEARNING";
+            break;
+        case STATE_FOLLOWING:
+            return "STATE_FOLLOWING";
+            break;
+    }
+}
+
+//--------------------------------------------------------------
+void ofxGVF::spreadParticles(){
+    
+    // use default means and ranges - taken from gvfhandler
+    // BAPTISTE: what are these magic numbers ? ;)
+    
+    vector<float> mpvrs = vector<float>(pdim);
+    vector<float> rpvrs = vector<float>(pdim);
+    
+    mpvrs[0] = 0.05;
+    mpvrs[1] = 1.0;
+    mpvrs[2] = 1.0;
+    mpvrs[3] = 0.0;
+    
+    rpvrs[0] = 0.1;
+    rpvrs[1] = 0.4;
+    rpvrs[2] = 0.3;
+    rpvrs[3] = 0.0;
+    
+    spreadParticles(mpvrs, rpvrs);
+    
+}
+
+//--------------------------------------------------------------
 // Spread the particles by sampling values from intervals given my their means and ranges.
 // Note that the current implemented distribution for sampling the particles is the uniform distribution
 void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
@@ -240,6 +312,7 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     
 }
 
+//--------------------------------------------------------------
 // Initialialize the weights of the particles. The initial values of the weights is a
 // unifrom weight over the particles
 void ofxGVF::initweights(){
@@ -247,6 +320,7 @@ void ofxGVF::initweights(){
         w[k]=1.0/ns;
 }
 
+//--------------------------------------------------------------
 float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float> w){
     int count = x.size();
     // the size must be > 0
@@ -261,6 +335,7 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
     return dist;
 }
 
+//--------------------------------------------------------------
 // Performs the inference based on a given new observation. This is the core algorithm: does
 // one step of inference using particle filtering. It is the optimized version of the
 // function ParticleFilter(). Note that the inference is possible only if some templates
@@ -429,7 +504,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
             float dist = distance_weightedEuclidean(vref,obs,dimWeights) * 1/(tolerance*tolerance);
             
             
-            if(nu == 0.)    // Gaussian distribution
+            if(nu == 0.0f)    // Gaussian distribution
             {
                 w[n]   *= exp(-dist);
                 abs_weights[g[n]] += exp(-dist);
@@ -500,6 +575,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
     
 }
 
+//--------------------------------------------------------------
 // Resampling function. The function resamples the particles based on the weights.
 // Particles with negligeable weights will be respread near the particles with non-
 // neglieable weigths (which means the most likely estimation).
@@ -544,11 +620,7 @@ void ofxGVF::resampleAccordingToWeights()
     
 }
 
-// Set the initial coordinates
-void ofxGVF::setInitCoord(std::vector<float> s_origin){
-    origin = s_origin;
-}
-
+//--------------------------------------------------------------
 // Step function is the function called outside for inference. It
 // has been originally created to be able to infer on a new observation or
 // a set of observation.
@@ -558,67 +630,28 @@ void ofxGVF::infer(vector<float> & vect){
 
 ////////////////////////////////////////////////////////////////
 //
-// GET FUNCTIONS to ACCESS to INTERNAL VALUES
+// PROBABILITY AND TEMPLATE ACCESS
 //
 ////////////////////////////////////////////////////////////////
 
+// GESTURE PROBABILITIES + POSITIONS
 
-// Return the number of particles
-int ofxGVF::getNumberOfParticles(){
-	return ns;
+//--------------------------------------------------------------
+// Returns the index of the currently recognized gesture
+int ofxGVF::getMostProbableGestureIndex(){
+    vector< vector< float> > M = getEstimatedStatus();
+    float maxprob=0.0;
+    int   indexMaxprob=0;
+    for (int k=0; k<M.size(); k++){
+        if (M[k][M[0].size() - 1] > maxprob){
+            maxprob = M[k][M[0].size() - 1];
+            indexMaxprob = k;
+        }
+    }
+    return indexMaxprob;
 }
 
-// Return the number of templates in the vocabulary
-int ofxGVF::getNumberOfTemplates(){
-	return gestureLengths.size();
-}
-
-// Return the template given by its index in the vocabulary
-vector< vector<float> >& ofxGVF::getTemplateByIndex(int index){
-	if (index < gestureLengths.size())
-		return R_single[index];
-	else
-		return EmptyTemplate;
-}
-
-// Return the length of a specific template given by its index
-// in the vocabulary
-int ofxGVF::getLengthOfTemplateByIndex(int index){
-	if (index < gestureLengths.size())
-		return gestureLengths[index];
-	else
-		return -1;
-}
-
-// Return the resampling threshold used to avoid degeneracy problem
-int ofxGVF::getResamplingThreshold(){
-    return resamplingThreshold;
-}
-
-// Return the standard deviation of the observation likelihood
-float ofxGVF::getObservationNoiseStd(){
-    return tolerance;
-}
-
-// Return the particle data (each row is a particle)
-vector< vector<float> > ofxGVF::getX(){
-    return X;
-}
-
-// Return the gesture index for each particle
-vector<int> ofxGVF::getG(){
-    return g;
-}
-
-// Return particles' weights
-vector<float> ofxGVF::getW(){
-    return w;
-}
-
-vector< vector<float> >& ofxGVF::getParticlesPositions(){
-    return particlesPositions;
-}
-
+//--------------------------------------------------------------
 // Returns the probabilities of each gesture. This probability is conditionnal
 // because it depends on the other gestures in the vocabulary:
 // probability to be in gesture A knowing that we have gesture A, B, C, ... in the vocabulary
@@ -627,18 +660,6 @@ vector<float> ofxGVF::getGestureProbabilities()
 	unsigned int ngestures = numTemplates+1;
     
 	vector<float> gp(ngestures);
-     setVec(gp, 0.0f);
-	for(int n = 0; n < ns; n++)
-		gp[g[n]] += w[n];
-    
-	return gp;
-}
-// ----- DEPRECATED ------
-vector<float> ofxGVF::getGestureConditionnalProbabilities()
-{
-	unsigned int ngestures = numTemplates+1;
-
-    vector<float> gp(ngestures);
     setVec(gp, 0.0f);
 	for(int n = 0; n < ns; n++)
 		gp[g[n]] += w[n];
@@ -646,6 +667,7 @@ vector<float> ofxGVF::getGestureConditionnalProbabilities()
 	return gp;
 }
 
+//--------------------------------------------------------------
 // Returns the estimates features. It calls status to refer to the status of the state
 // space which comprises the features to be adapted. If features are phase, speed, scale and angle,
 // the function will return these estimateed features for each gesture, plus their probabilities.
@@ -671,7 +693,7 @@ vector< vector<float> > ofxGVF::getEstimatedStatus()
         int gi = g[n];
         for(int m=0; m<pdim; m++)
             es[gi][m] += X[n][m] * w[n];
-
+        
 		es[gi][pdim] += w[n];
     }
 	
@@ -685,76 +707,199 @@ vector< vector<float> > ofxGVF::getEstimatedStatus()
 	return es;
 }
 
-vector<float> ofxGVF::getFeatureVariances(){
-    return featVariances;
+//--------------------------------------------------------------
+vector< vector<float> > ofxGVF::getParticlesPositions(){
+    return particlesPositions;
 }
 
-// Returns the index of the currently recognized gesture
-int ofxGVF::getMostProbableGestureIndex(){
-    vector< vector< float> > M = getEstimatedStatus();
-    float maxprob=0.0;
-    int   indexMaxprob=0;
-    for (int k=0; k<M.size(); k++){
-        if (M[k][M[0].size() - 1] > maxprob){
-            maxprob = M[k][M[0].size() - 1];
-            indexMaxprob = k;
-        }
-    }
-    return indexMaxprob;
+// TEMPLATES
+
+//--------------------------------------------------------------
+// Return the number of templates in the vocabulary
+int ofxGVF::getNumberOfTemplates(){
+    return gestureLengths.size();
 }
 
+//--------------------------------------------------------------
+// Return the template given by its index in the vocabulary
+vector< vector<float> >& ofxGVF::getTemplateByIndex(int index){
+	if (index < gestureLengths.size())
+		return R_single[index];
+	else
+		return EmptyTemplate;
+}
 
+//--------------------------------------------------------------
+// Return the length of a specific template given by its index
+// in the vocabulary
+int ofxGVF::getLengthOfTemplateByIndex(int index){
+	if (index < gestureLengths.size())
+		return gestureLengths[index];
+	else
+		return -1;
+}
 
 ////////////////////////////////////////////////////////////////
 //
-// SET FUNCTIONS to UPDATE INTERNAL VALUES
+// GET & SET FUNCTIONS FOR ALL INTERNAL VALUES
 //
 ////////////////////////////////////////////////////////////////
 
+// PARAMETERS
+
+//--------------------------------------------------------------
+void ofxGVF::setParameters(ofxGVFParameters _parameters){
+    parameters = _parameters;
+}
+
+ofxGVF::ofxGVFParameters ofxGVF::getParameters(){
+    return parameters;
+}
+
+//--------------------------------------------------------------
 // Update the number of particles
-void ofxGVF::setNumberOfParticles(int newNs){
+void ofxGVF::setNumberOfParticles(int numberOfParticles){
     particlesPositions.clear();
-    initMat(X,newNs,pdim);          // Matrix of NS particles
-    initVec(g,newNs);               // Vector of gesture class
-    initVec(w,newNs);               // Weights
+    initMat(X, numberOfParticles, pdim);          // Matrix of NS particles
+    initVec(g, numberOfParticles);               // Vector of gesture class
+    initVec(w, numberOfParticles);               // Weights
     //    logW = VectorXf(newNs);
+    
 }
 
+//--------------------------------------------------------------
+int ofxGVF::getNumberOfParticles(){
+    return ns; // Return the number of particles
+}
+
+//--------------------------------------------------------------
+// Update the resampling threshold used to avoid degeneracy problem
+void ofxGVF::setResamplingThreshold(int _resamplingThreshold){
+    resamplingThreshold = _resamplingThreshold;
+}
+
+//--------------------------------------------------------------
+// Return the resampling threshold used to avoid degeneracy problem
+int ofxGVF::getResamplingThreshold(){
+    return resamplingThreshold;
+}
+
+//--------------------------------------------------------------
 // Update the standard deviation of the observation distribution
 // this value acts as a tolerance for the algorithm
 // low value: less tolerant so more precise but can diverge
 // high value: more tolerant so less precise but converge more easily
-void ofxGVF::setToleranceValue(float f){
-	tolerance = f > 0 ? f : tolerance;
+void ofxGVF::setTolerance(float _tolerance){
+	tolerance = _tolerance > 0.0f ? _tolerance : tolerance;
 }
 
-// Update the variance for each features which control their precision
-// and speed of convergence
-void ofxGVF::setAdaptSpeed(vector<float> as){
-	
-	if (as.size() == pdim){
-		for (int k=0; k<pdim; k++)
-			featVariances[k]=sqrt(as[k]);
-	}
-	
+//--------------------------------------------------------------
+float ofxGVF::getTolerance(){
+    return tolerance;
 }
 
-// Update the resampling threshold used to avoid degeneracy problem
-void ofxGVF::setResamplingThreshold(int r){
-    resamplingThreshold = r;
+//--------------------------------------------------------------
+void ofxGVF::setDistribution(float _distribution){
+    nu = _distribution;
 }
 
+//--------------------------------------------------------------
+float ofxGVF::getDistribution(){
+    return nu;
+}
 
-////////////////////////////////////////////////////////////////
-//
-// MISC FUNCTIONS
-//
-////////////////////////////////////////////////////////////////
+// COEFFICIENTS
 
+//--------------------------------------------------------------
+void ofxGVF::setVarianceCoefficents(ofxGVFVarianceCoefficents _coefficients){
+    coefficents = _coefficients;
+}
+
+//--------------------------------------------------------------
+ofxGVF::ofxGVFVarianceCoefficents ofxGVF::getVarianceCoefficents(){
+    return coefficents;
+}
+
+//--------------------------------------------------------------
+void ofxGVF::setPhaseVariance(float phaseVariance){
+    coefficents.phaseVariance = phaseVariance;
+    featVariances[0] = phaseVariance;
+}
+
+//--------------------------------------------------------------
+float ofxGVF::getPhaseVariance(){
+    return coefficents.phaseVariance;
+}
+
+//--------------------------------------------------------------
+void ofxGVF::setSpeedVariance(float speedVariance){
+    coefficents.speedVariance = speedVariance;
+    featVariances[1] = speedVariance;
+}
+
+//--------------------------------------------------------------
+float ofxGVF::getSpeedVariance(){
+    return coefficents.speedVariance;
+}
+
+//--------------------------------------------------------------
+void ofxGVF::setScaleVariance(float scaleVariance){
+    coefficents.scaleVariance = scaleVariance;
+    featVariances[2] = scaleVariance;
+}
+
+//--------------------------------------------------------------
+float ofxGVF::getScaleVariance(){
+    return coefficents.scaleVariance;
+}
+
+//--------------------------------------------------------------
+void ofxGVF::setRotationVariance(float rotationVariance){
+    if(inputDim > 2 && rotationVariance != 0.0){
+        cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
+        rotationVariance = 0.0f;
+    }
+    coefficents.rotationVariance = rotationVariance;
+    featVariances[3] = rotationVariance;
+}
+
+//--------------------------------------------------------------
+float ofxGVF::getRotationVariance(){
+    return coefficents.rotationVariance;
+}
+
+// MATHS
+
+//--------------------------------------------------------------
+// Return the standard deviation of the observation likelihood
+float ofxGVF::getObservationStandardDeviation(){
+    return tolerance;
+}
+
+//--------------------------------------------------------------
+// Return the particle data (each row is a particle)
+vector< vector<float> > ofxGVF::getX(){
+    return X;
+}
+
+//--------------------------------------------------------------
+// Return the gesture index for each particle
+vector<int> ofxGVF::getG(){
+    return g;
+}
+
+//--------------------------------------------------------------
+// Return particles' weights
+vector<float> ofxGVF::getW(){
+    return w;
+}
+
+// UTILITIES
+
+//--------------------------------------------------------------
 // Save function. This function is used by applications to save the
 // vocabulary in a text file given by filename (filename is also the complete path + filename)
-void ofxGVF::saveTemplates(std::string filename){
-    
+void ofxGVF::saveTemplates(string filename){
     std::string directory = filename;
     
     std::ofstream file_write(directory.c_str());
@@ -768,20 +913,17 @@ void ofxGVF::saveTemplates(std::string filename){
         }
     }
     file_write.close();
-    //values.clear();
-    
 }
 
-
+//--------------------------------------------------------------
 // Load function. This function is used by applications to load a vocabulary
 // given by filename (filename is also the complete path + filename)
-void ofxGVF::loadTemplates(std::string filename){
-    
+void ofxGVF::loadTemplates(string filename){
     clear();
-
+    
     ifstream infile;
     stringstream doung;
-
+    
     infile.open (filename.c_str(), ifstream::in);
     
     string line;
@@ -816,7 +958,7 @@ void ofxGVF::loadTemplates(std::string filename){
         if (template_dim<=0){
             //post("bug dim = -1");
         }
-        else{          
+        else{
             
             vector<float> vect(template_dim);
             if (template_starting_point==1)
@@ -838,11 +980,10 @@ void ofxGVF::loadTemplates(std::string filename){
             //post("fill %i with %f %f",numTemplates,vect[0],vect[1]);
             fillTemplate(numTemplates,vect);
         }
-
+        
         k+=template_dim;
         
     }
     
     infile.close();
-    
 }
