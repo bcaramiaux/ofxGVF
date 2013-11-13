@@ -163,10 +163,13 @@ void ofxGVF::fillTemplate(int id, vector<float> & data){
         
         // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
         if(data.size() == 2){
+            
+            // store initial point
             if(R_single[id].size() == 0){
                 R_initial[id] = data;
             }
             
+            // 'center' data
             for(int i = 0; i < data.size(); i++){
                 data[i] -= R_initial[id][i];
             }
@@ -190,6 +193,7 @@ void ofxGVF::clear(){
     state = STATE_CLEAR;
 	R_single.clear();
     R_initial.clear();
+    O_initial.clear();
 	gestureLengths.clear();
 	numTemplates=-1;
 }
@@ -198,7 +202,7 @@ void ofxGVF::clear(){
 // Note that the current implemented distribution for sampling the particles is the uniform distribution
 void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     
-    O_initial.clear();
+    O_initial.clear(); // clear initial observation data (used to 'center' 2D obs)
     
 	// we copy the initial means and ranges to be able to restart the algorithm
     meansCopy  = means;
@@ -267,28 +271,19 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 void ofxGVF::particleFilter(vector<float> & obs){
     
 //    post("%f %f", obs[0], obs[1]);
-    
-    // TODO(baptiste) must be changed by not using Eigen anymore
-//    VectorXf obs_eigen(inputDim);
-//    for(int i=0; i <obs.size(); i++)
-//    {
-//        if(!new_gest)
-//        {
-//            obs_eigen(i)=obs[i];
-//        } else{
-//            if(obs.size() == 2)
-//            {
-//                obs_eigen(i)=obs[i]-(*offset)[i];
-//            } else {
-//                obs_eigen(i)=obs[i];
-//            }
-//        }
-//    }
-    
+    // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
+        
+        
     if(obs.size() == 2){
-        if(O_initial.size() == 0){ // then it's a new gesture observation
+        
+        if(O_initial.size() == 0){ // then it's a new gesture observation - cleared in spreadParticles
+        
+            // store initial obs data
             O_initial = obs;
+        
         }else{
+            
+            // 'center' data
             for(int i = 0; i < obs.size(); i++){
                 obs[i] -= O_initial[i];
             }
@@ -717,8 +712,7 @@ int ofxGVF::getMostProbableGestureIndex(){
 ////////////////////////////////////////////////////////////////
 
 // Update the number of particles
-void ofxGVF::setNumberOfParticles(int newNs)
-{
+void ofxGVF::setNumberOfParticles(int newNs){
     particlesPositions.clear();
     initMat(X,newNs,pdim);          // Matrix of NS particles
     initVec(g,newNs);               // Vector of gesture class
@@ -730,18 +724,15 @@ void ofxGVF::setNumberOfParticles(int newNs)
 // this value acts as a tolerance for the algorithm
 // low value: less tolerant so more precise but can diverge
 // high value: more tolerant so less precise but converge more easily
-void ofxGVF::setToleranceValue(float f)
-{
+void ofxGVF::setToleranceValue(float f){
 	tolerance = f > 0 ? f : tolerance;
 }
 
 // Update the variance for each features which control their precision
 // and speed of convergence
-void ofxGVF::setAdaptSpeed(vector<float> as)
-{
+void ofxGVF::setAdaptSpeed(vector<float> as){
 	
-	if (as.size() == pdim)
-	{
+	if (as.size() == pdim){
 		for (int k=0; k<pdim; k++)
 			featVariances[k]=sqrt(as[k]);
 	}
@@ -749,18 +740,9 @@ void ofxGVF::setAdaptSpeed(vector<float> as)
 }
 
 // Update the resampling threshold used to avoid degeneracy problem
-void ofxGVF::setResamplingThreshold(int r)
-{
+void ofxGVF::setResamplingThreshold(int r){
     resamplingThreshold = r;
 }
-
-
-
-
-
-
-
-
 
 
 ////////////////////////////////////////////////////////////////
@@ -769,13 +751,9 @@ void ofxGVF::setResamplingThreshold(int r)
 //
 ////////////////////////////////////////////////////////////////
 
-
-
-
 // Save function. This function is used by applications to save the
 // vocabulary in a text file given by filename (filename is also the complete path + filename)
-void ofxGVF::saveTemplates(std::string filename)
-{
+void ofxGVF::saveTemplates(std::string filename){
     
     std::string directory = filename;
     
@@ -797,8 +775,7 @@ void ofxGVF::saveTemplates(std::string filename)
 
 // Load function. This function is used by applications to load a vocabulary
 // given by filename (filename is also the complete path + filename)
-void ofxGVF::loadTemplates(std::string filename)
-{
+void ofxGVF::loadTemplates(std::string filename){
     
     clear();
 
@@ -869,7 +846,3 @@ void ofxGVF::loadTemplates(std::string filename)
     infile.close();
     
 }
-
-
-
-
