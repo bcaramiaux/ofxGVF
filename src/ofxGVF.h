@@ -124,7 +124,7 @@ public:
     
     int getMostProbableGestureIndex();
     vector<float> getMostProbableGestureStatus();
-    float getMostProbableProbability();
+    float getMostProbableProbability(); // this is horrible - maybe probability should be at index 0 OR we should use a struct rather than a vector??
     vector< vector<float> > getEstimatedStatus();
     
     vector<float> getGestureProbabilities();
