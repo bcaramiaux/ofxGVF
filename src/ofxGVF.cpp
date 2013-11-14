@@ -241,6 +241,7 @@ void ofxGVF::setState(ofxGVFState _state){
             state = _state;
             break;
         case STATE_FOLLOWING:
+            spreadParticles(); // TODO provide setter for mean and range on init
             state = _state;
             break;
     }
@@ -828,6 +829,7 @@ int ofxGVF::getNumberOfParticles(){
 //--------------------------------------------------------------
 // Update the resampling threshold used to avoid degeneracy problem
 void ofxGVF::setResamplingThreshold(int _resamplingThreshold){
+    if (_resamplingThreshold >= ns) _resamplingThreshold = floor(ns/2.0f); // TODO: we should provide feedback to the GUI!!! maybe a get max resampleThresh func??
     resamplingThreshold = _resamplingThreshold;
 }
 
@@ -843,6 +845,8 @@ int ofxGVF::getResamplingThreshold(){
 // low value: less tolerant so more precise but can diverge
 // high value: more tolerant so less precise but converge more easily
 void ofxGVF::setTolerance(float _tolerance){
+    if (_tolerance == 0.0) _tolerance = 0.1; // TODO: we should provide feedback to the GUI!!!
+    _tolerance = 1.0f / (_tolerance * _tolerance);
 	tolerance = _tolerance > 0.0f ? _tolerance : tolerance;
 }
 

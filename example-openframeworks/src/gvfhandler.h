@@ -23,7 +23,7 @@
 // STATE_CLEAR: no gestures learnt
 // STATE_LEARNING: learning new gesture or waiting for the user to perform it
 // STATE_FOLLOWING: following the current gesture or waiting for the user to perform it
-enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
+//enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 // struct to hold information on how a learnt template is being recognised.
 //typedef struct {
@@ -41,13 +41,13 @@ public:
     ~gvfhandler();
     
     // increases the count of references learnt and change the state to STATE_LEARNING
-    int  gvf_learn();
+//    int  gvf_learn();
     
     // spread particles and change the state to STATE_FOLLOWING
-    void gvf_follow();
+//    void gvf_follow();
     
     // clear all templates and change the state to STATE_CLEAR
-    void gvf_clear();
+//    void gvf_clear();
     
     // feeds data to gvf based on the current state
     // argc is the number of dimentions on the input and argv is the input array
@@ -56,7 +56,7 @@ public:
     // treats the 2 dimentional point p and calls gvf_data(int argc, float *argv);
     void gvf_data(ofPoint p);
     
-    void gvf_restart();
+//    void gvf_restart();
     
     // methods used to change gvf parameters
     void gvf_std(float smoothingCoeficient);
@@ -73,7 +73,7 @@ public:
     int getTemplateCount();
     
     // current state (STATE_CLEAR, STATE_LEARNING or STATE_FOLLOWING)
-    int get_state();
+//    int get_state();
 
     // vector containing one recognitionInfo struct for each template
     // these structs will contain real time information on how each template is being recognised
@@ -126,11 +126,11 @@ private:
     vector<float> mpvrs;
 	vector<float> rpvrs;
     int Nspg, Rtpg;
-    int state;
-	int lastreferencelearned;
+//    int state;
+//	int lastreferencelearned;
     std::map<int,std::vector<std::pair<float,float> > > *refmap;
-    int restarted_l;
-    int restarted_d;
+//    int restarted_l;
+//    int restarted_d;
     std::pair<float,float> xy0_l;
     std::pair<float,float> xy0_d;
     std::vector<float> vect_0_l;

@@ -5,6 +5,7 @@
 #include "ofxXmlSettings.h"
 
 #include "gvfhandler.h"
+#include "ofxGVF.h"
 
 class ofApp : public ofBaseApp{
 	
@@ -27,6 +28,8 @@ public:
     void saveGestures();
     void loadGestures();
     float counter;
+    
+    void drawParticles();
     
 private:
     

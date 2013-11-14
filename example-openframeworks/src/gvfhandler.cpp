@@ -51,11 +51,11 @@ gvfhandler::gvfhandler()
     rpvrs[2] = 0.3;
     rpvrs[3] = 0.0;
     
-    state = STATE_CLEAR;
+//    state = STATE_CLEAR;
     
-    lastreferencelearned = -1;
-    restarted_l = 1;
-    restarted_d = 1;
+//    lastreferencelearned = -1;
+//    restarted_l = 1;
+//    restarted_d = 1;
     
     refmap = new map<int, vector< pair<float,float> > >;
 }
@@ -69,38 +69,38 @@ gvfhandler::~gvfhandler()
 
 }
 
-int gvfhandler::gvf_learn()
-{
-    lastreferencelearned++;
-    (*refmap)[lastreferencelearned] = vector<pair<float, float> >();
-    mygvf->addTemplate();
-    state = STATE_LEARNING;
-    restarted_l=1;
-    return lastreferencelearned;
-}
+//int gvfhandler::gvf_learn()
+//{
+//    lastreferencelearned++;
+//    (*refmap)[lastreferencelearned] = vector<pair<float, float> >();
+//    mygvf->addTemplate();
+//    state = STATE_LEARNING;
+//    restarted_l=1;
+//    return lastreferencelearned;
+//}
 
- void gvfhandler:: gvf_follow()
-{
-    if(lastreferencelearned >= 0)
-    {
-        mygvf->spreadParticles(mpvrs,rpvrs);
-        state = STATE_FOLLOWING;
-    }
-    else
-    {
-        return;
-    }
-}
-
-void gvfhandler::gvf_clear()
-{
-    lastreferencelearned = -1;
-    mygvf->clear();
-    restarted_l=1;
-    restarted_d=1;
-    state = STATE_CLEAR;
-    templates.clear();
-}
+// void gvfhandler:: gvf_follow()
+//{
+//    if(lastreferencelearned >= 0)
+//    {
+//        mygvf->spreadParticles(mpvrs,rpvrs);
+//        state = STATE_FOLLOWING;
+//    }
+//    else
+//    {
+//        return;
+//    }
+//}
+//
+//void gvfhandler::gvf_clear()
+//{
+//    lastreferencelearned = -1;
+//    mygvf->clear();
+//    restarted_l=1;
+//    restarted_d=1;
+//    state = STATE_CLEAR;
+//    templates.clear();
+//}
 
 void gvfhandler::gvf_data(ofPoint p)
 {
@@ -112,7 +112,9 @@ void gvfhandler::gvf_data(ofPoint p)
 
 void gvfhandler::gvf_data(int argc, float *argv)
 {
-    if(state == STATE_CLEAR)
+    int state = mygvf->getState();
+    
+    if(state == ofxGVF::STATE_CLEAR)
     {
         return;
     }
@@ -120,7 +122,7 @@ void gvfhandler::gvf_data(int argc, float *argv)
     {
         return;
     }
-    if(state == STATE_LEARNING)
+    if(state == ofxGVF::STATE_LEARNING)
     {
         vector<float> vect(argc);
 //        if (argc ==2){
@@ -151,10 +153,10 @@ void gvfhandler::gvf_data(int argc, float *argv)
         //				xy.second = y -xy0_l.second;
         
         // Fill template
-        mygvf->fillTemplate(lastreferencelearned,vect);
+        mygvf->fillTemplate(mygvf->getNumberOfTemplates() - 1,vect);
         
     }
-    else if(state == STATE_FOLLOWING)
+    else if(state == ofxGVF::STATE_FOLLOWING)
     {
         vector<float> vect(argc);
 //        if (argc==2){
@@ -174,7 +176,7 @@ void gvfhandler::gvf_data(int argc, float *argv)
 //            }
 //        }
 //        else{
-            printf("%i",argc);
+//            printf("%i",argc);
             for (int k=0; k<argc; k++)
                 vect[k] = *(argv + k);
 //        }
@@ -237,32 +239,34 @@ string gvfhandler::gvf_get_status()
 
 }
 
- void gvfhandler::gvf_restart()
-{
-    restarted_l=1;
-    if(state == STATE_FOLLOWING)
-    {
-        mygvf->spreadParticles(mpvrs,rpvrs);
-        restarted_l=1;
-        restarted_d=1;
-    }
-}
+// void gvfhandler::gvf_restart()
+//{
+//    restarted_l=1;
+//    if(state == STATE_FOLLOWING)
+//    {
+//        mygvf->spreadParticles(mpvrs,rpvrs);
+//        restarted_l=1;
+//        restarted_d=1;
+//    }
+//}
 
  void gvfhandler::gvf_std(float smoothingCoeficient)
 {
-    float stdnew = smoothingCoeficient;
-    if (stdnew == 0.0)
-        stdnew = 0.1;
-    mygvf->setTolerance(1/(stdnew*stdnew));
+//    float stdnew = smoothingCoeficient;
+//    if (stdnew == 0.0)
+//        stdnew = 0.1;
+//    mygvf->setTolerance(1/(stdnew*stdnew));
+    mygvf->setTolerance(smoothingCoeficient);
 }
 
  void gvfhandler::gvf_rt(int resamplingThreshold)
 {
-    int rtnew = resamplingThreshold;
-    int cNS = mygvf->getNumberOfParticles();
-    if (rtnew >= cNS)
-        rtnew = floor(cNS/2);
-    mygvf->setResamplingThreshold(rtnew);
+//    int rtnew = resamplingThreshold;
+//    int cNS = mygvf->getNumberOfParticles();
+//    if (rtnew >= cNS)
+//        rtnew = floor(cNS/2);
+//    mygvf->setResamplingThreshold(rtnew);
+    mygvf->setResamplingThreshold(resamplingThreshold);
 }
 
 void gvfhandler::gvf_adaptspeed(vector<float> varianceCoeficients)
@@ -394,10 +398,10 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
 }
 
 
-int gvfhandler::get_state()
-{
-    return state;
-}
+//int gvfhandler::get_state()
+//{
+//    return state;
+//}
 
 void gvfhandler::addTemplateGesture(ofPoint initialPoint, ofColor templateColor)
 {
@@ -466,14 +470,12 @@ void gvfhandler::printParticleInfo(gvfGesture currentGesture)
     int ppSize = pp.size();
     float scale = 1;
 
-    if(ppSize > 0)
-    {
-
-    // as the colors show, the vector returned by getG()
-    // does not seem to be in synch with the information returned by particlesPositions
-    vector<int> gestureIndex = mygvf->getG();
+    if(ppSize > 0){
+        // as the colors show, the vector returned by getG()
+        // does not seem to be in synch with the information returned by particlesPositions
+        vector<int> gestureIndex = mygvf->getG();
         vector<float> weights = mygvf->getW();
-
+        
         ofFill();
         
         float weightAverage = getMeanVec(weights);
@@ -482,23 +484,23 @@ void gvfhandler::printParticleInfo(gvfGesture currentGesture)
             gvfGesture g = templates[gestureIndex[i]];
             ofRectangle drawArea = currentGesture.getDrawArea();
             ofPoint initialPoint = currentGesture.getInitialOfPoint() ;
-
+            
             // each particle position is retrieved
             ofPoint point(pp[i][0], pp[i][1]);
-
+            
             // and then scaled and translated in order to be drawn
             float x = (((point.x * scale - 0.5) * 2) + 1 + initialPoint.x) * ofGetWindowWidth() + drawArea.x;
             float y = (((point.y * scale - 0.5) * 2) + 1 + initialPoint.y) * ofGetWindowWidth() + drawArea.y;
-
+            
             // the weight of the particle is normalised
             // and then used as the radius of the circle representing the particle
             float radius = weights[i]/weightAverage;
             ofColor c = g.getColor();
-
+            
             c.setBrightness(198);
             ofSetColor(c);
             ofCircle(x, y, radius);
-
+            
         }
     }
 }

@@ -66,7 +66,7 @@ void ofApp::draw(){
     // draw the current templates on a small scale
     gvfh.drawTemplates(templatesScale);
     
-    if(gvfh.get_state() != STATE_FOLLOWING && isMouseDrawing)
+    if(gvfh.mygvf->getState() != ofxGVF::STATE_FOLLOWING && isMouseDrawing)
         currentGesture.draw();
     else if(displayCurrentGesture)
         currentGesture.draw();
@@ -80,8 +80,8 @@ void ofApp::draw(){
                         "(1 - particles; 2 - template; 3 - estimated gesture; 4 - current gesture)"
                         "\nSTATE_LEARINING [");
     
-    int state = gvfh.get_state();
-    if(state == STATE_FOLLOWING){
+    int state = gvfh.mygvf->getState();
+    if(state == ofxGVF::STATE_FOLLOWING){
         state_string.append(" ]\nSTATE_FOLLOWING [X]\nSTATE_CLEAR     [ ]");
         
         if(displayParticles)
@@ -124,7 +124,7 @@ void ofApp::draw(){
             }
         }
         
-    }else if (state == STATE_LEARNING)
+    }else if (state == ofxGVF::STATE_LEARNING)
         state_string.append("X]\nSTATE_FOLLOWING [ ]\nSTATE_CLEAR     [ ]");
     else
         state_string.append(" ]\nSTATE_FOLLOWING [ ]\nSTATE_CLEAR     [X]");
@@ -148,14 +148,17 @@ void ofApp::keyPressed(int key){
         // (will not start to learn a new gesture
         // if the user is in the middle of a gesture
         // or if the state is already STATE_LEARNING)
-		if(gvfh.get_state() != STATE_LEARNING && !isMouseDrawing)
+		if(gvfh.mygvf->getState() != ofxGVF::STATE_LEARNING && !isMouseDrawing)
         {
-            gvfh.gvf_learn();
+//            gvfh.gvf_learn();
+            gvfh.mygvf->addTemplate();
+            gvfh.mygvf->setState(ofxGVF::STATE_LEARNING);
         }
 	}
     else if(key == 'c' || key == 'C')
     {
-        gvfh.gvf_clear();
+        gvfh.mygvf->clear();
+//        gvfh.gvf_clear();
         initColors();
     }
     else if (key == 'r' || key == 'R')
@@ -223,7 +226,8 @@ void ofApp::mousePressed(int x, int y, int button){
         // here the point is already normalised
         ofPoint initialPoint = currentGesture.getInitialOfPoint();
         
-        if(gvfh.get_state() == STATE_LEARNING)
+//        if(gvfh.get_state() == STATE_LEARNING)
+        if(gvfh.mygvf->getState() == ofxGVF::STATE_LEARNING)
         {
             gvfh.addTemplateGesture(initialPoint, generateRandomColor());
         }
@@ -244,11 +248,16 @@ void ofApp::mouseReleased(int x, int y, int button){
     }
     
     // if a gesture has just been learnt, automatically switches the state to following
-    if(gvfh.get_state() == STATE_LEARNING)
-        gvfh.gvf_follow();
+//    if(gvfh.get_state() == STATE_LEARNING)
+//        gvfh.gvf_follow();
+//    
+//    if(gvfh.get_state() == STATE_FOLLOWING) gvfh.mygvf->spreadParticles();
+////        gvfh.gvf_restart();
     
-    if(gvfh.get_state() == STATE_FOLLOWING)
-        gvfh.gvf_restart();
+    
+    
+    if(gvfh.mygvf->getState() == ofxGVF::STATE_LEARNING) gvfh.mygvf->setState(ofxGVF::STATE_FOLLOWING);
+    if(gvfh.mygvf->getState() == ofxGVF::STATE_FOLLOWING) gvfh.mygvf->spreadParticles(); // just using default values for now
 }
 
 //--------------------------------------------------------------
@@ -351,7 +360,8 @@ void ofApp::loadGestures(){
     if(!file.loadFile(dialogResult.filePath))
         return;
     
-    gvfh.gvf_clear();
+    gvfh.mygvf->clear();
+//    gvfh.gvf_clear();
     initColors();
     
     int gestureCount = file.getNumTags("GESTURE");
@@ -373,7 +383,8 @@ void ofApp::loadGestures(){
             if(pointCount < 1)
                 return;
 
-            gvfh.gvf_learn();        
+            gvfh.mygvf->addTemplate();
+            gvfh.mygvf->setState(ofxGVF::STATE_LEARNING);
             gvfh.addTemplateGesture(p, generateRandomColor());
         
         for(int j = 0; j < pointCount; j++)
@@ -384,7 +395,8 @@ void ofApp::loadGestures(){
         }
         file.popTag();
         file.popTag();
-        gvfh.gvf_follow();
+//        gvfh.gvf_follow();
+        gvfh.mygvf->setState(ofxGVF::STATE_FOLLOWING);
     }
 }
 
@@ -448,7 +460,7 @@ ofColor ofApp::generateRandomColor(){
     int colorsRemaining = colors.size();
     
     int index = ofRandom(0, colorsRemaining - 1);
-    cout << index << endl;
+//    cout << index << endl;
     c = colors[index];
     colors.erase(colors.begin() + index);
     return c;
