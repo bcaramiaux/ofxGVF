@@ -119,7 +119,7 @@ void ofApp::draw(){
                                 1.5, 255, 50,
                                 ofLerp(1/gvfh.getTemplateCount(),
                                 1,
-                                gvfh.getRecogInfoOfMostProbable().probability));
+                                gvfh.mygvf->getMostProbableProbability()));
                g.draw();
             }
         }

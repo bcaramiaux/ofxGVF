@@ -17,12 +17,13 @@ using namespace std;
 // TODO: SEE BELOW FOR ofxGVFMatrix type/class...might also require ofxGVFVector...maybe over kill?
 // Anyway, skeleton is below for comparison with global, c style operations as per below...
 
-// =====================
+////////////////////////////////////////////////////////////////
 //
-// matrices and vectors
+// MATRICES & VECTORS
 //
-//
+////////////////////////////////////////////////////////////////
 
+//--------------------------------------------------------------
 // init matrix by allocating memory
 template <typename T>
 inline void initMat(vector< vector<T> > & M, int rows, int cols){
@@ -32,6 +33,7 @@ inline void initMat(vector< vector<T> > & M, int rows, int cols){
     }
 }
 
+//--------------------------------------------------------------
 // init matrix and copy values from another matrix
 template <typename T>
 inline void setMat(vector< vector<T> > & C, vector< vector<float> > & M){
@@ -46,6 +48,7 @@ inline void setMat(vector< vector<T> > & C, vector< vector<float> > & M){
     }
 }
 
+//--------------------------------------------------------------
 // init matrix by allocating memory and fill with T value
 template <typename T>
 inline void setMat(vector< vector<T> > & M, T value, int rows, int cols){
@@ -58,6 +61,7 @@ inline void setMat(vector< vector<T> > & M, T value, int rows, int cols){
     }
 }
 
+//--------------------------------------------------------------
 // set matrix filled with T value
 template <typename T>
 inline void setMat(vector< vector<T> > & M, T value){
@@ -68,6 +72,7 @@ inline void setMat(vector< vector<T> > & M, T value){
     }
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline void printMat(vector< vector<T> > & M){
     for (int k=0; k<M.size(); k++){
@@ -80,11 +85,22 @@ inline void printMat(vector< vector<T> > & M){
     cout << endl;
 }
 
+//--------------------------------------------------------------
+template <typename T>
+inline void printVec(vector<T> & V){
+    for (int k=0; k<V.size(); k++){
+        cout << k << ": " << V[k] << (k == V.size() - 1 ? "" : " ,");
+    }
+    cout << endl;
+}
+
+//--------------------------------------------------------------
 template <typename T>
 inline void initVec(vector<T> & V, int rows){
     V.resize(rows);
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline void setVec(vector<T> & C, vector<int> &V){
     int rows = V.size();
@@ -94,6 +110,7 @@ inline void setVec(vector<T> & C, vector<int> &V){
     }
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline void setVec(vector<T> & C, vector<float> & V){
     int rows = V.size();
@@ -103,6 +120,7 @@ inline void setVec(vector<T> & C, vector<float> & V){
     }
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline void setVec(vector<T> & V, T value){
     for (int n=0; n<V.size(); n++){
@@ -110,17 +128,20 @@ inline void setVec(vector<T> & V, T value){
     }
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline void setVec(vector<T> & V, T value, int rows){
     V.resize(rows);
     setVec(V, value);
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline vector< vector<T> > dotMat(vector< vector<T> > & M1, vector< vector<T> > & M2){
     // TODO(Baptiste)
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline vector< vector<T> > multiplyMatf(vector< vector<T> > & M1, T v){
     vector< vector<T> > multiply;
@@ -133,6 +154,7 @@ inline vector< vector<T> > multiplyMatf(vector< vector<T> > & M1, T v){
     return multiply;
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline vector< vector<T> > multiplyMatf(vector< vector<T> > & M1, vector< vector<T> > & M2){
     assert(M1[0].size() == M2.size()); // columns in M1 == rows in M2
@@ -150,6 +172,7 @@ inline vector< vector<T> > multiplyMatf(vector< vector<T> > & M1, vector< vector
     return multiply;
 }
 
+//--------------------------------------------------------------
 template <typename T>
 inline float getMeanVec(vector<T>& V){
     float tSum = 0.0f;

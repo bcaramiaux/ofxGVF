@@ -29,6 +29,12 @@
 
 using namespace std;
 
+////////////////////////////////////////////////////////////////
+//
+// CONSTRUCTOR, DESTRUCTOR & SETUP
+//
+////////////////////////////////////////////////////////////////
+
 // Constructor of the class ofxGVF
 // This creates an object that is able to learn gesture template,
 // to recognize in realtime the live gesture and to estimate the
@@ -149,6 +155,12 @@ ofxGVF::~ofxGVF(){
     
 }
 
+////////////////////////////////////////////////////////////////
+//
+// ADD & FILL TEMPLATES FOR GESTURES
+//
+////////////////////////////////////////////////////////////////
+
 //--------------------------------------------------------------
 // Add a template into the vocabulary. This method does not add the data but allocate
 // the memory and increases the number of learned gesture
@@ -208,8 +220,16 @@ void ofxGVF::clear(){
     R_initial.clear();
     O_initial.clear();
 	gestureLengths.clear();
+    mostProbableIndex = -1;
+    mostProbableStatus.clear();
 	numTemplates=-1;
 }
+
+////////////////////////////////////////////////////////////////
+//
+// STATE SET & GET - eg., clear, learn, follow
+//
+////////////////////////////////////////////////////////////////
 
 //--------------------------------------------------------------
 void ofxGVF::setState(ofxGVFState _state){
@@ -245,6 +265,12 @@ string ofxGVF::getStateAsString(){
             break;
     }
 }
+
+////////////////////////////////////////////////////////////////
+//
+// CORE FUNCTIONS & MATH
+//
+////////////////////////////////////////////////////////////////
 
 //--------------------------------------------------------------
 void ofxGVF::spreadParticles(){
@@ -626,6 +652,45 @@ void ofxGVF::resampleAccordingToWeights()
 // a set of observation.
 void ofxGVF::infer(vector<float> & vect){
     particleFilter(vect);
+    updateEstimatedStatus();
+}
+
+void ofxGVF::updateEstimatedStatus(){
+    // get the number of gestures in the vocabulary
+	unsigned int ngestures = numTemplates+1;
+	//cout << "getEstimatedStatus():: ngestures= "<< numTemplates+1<< endl;
+    
+    //    vector< vector<float> > es;
+    setMat(S, 0.0f, ngestures, pdim+1);   // rows are gestures, cols are features + probabilities
+	//printMatf(es);
+    
+	// compute the estimated features by computing the expected values
+    // sum ( feature values * weights)
+	for(int n = 0; n < ns; n++){
+        int gi = g[n];
+        for(int m=0; m<pdim; m++){
+            S[gi][m] += X[n][m] * w[n];
+        }
+		S[gi][pdim] += w[n];
+    }
+	
+    // calculate most probable index during scaling...
+    float maxProbability = 0.0f;
+    mostProbableIndex = -1;
+    
+	for(int gi = 0; gi < ngestures; gi++){
+        for(int m=0; m<pdim; m++){
+            S[gi][m] /= S[gi][pdim];
+        }
+        if(S[gi][pdim] > maxProbability){
+            maxProbability = S[gi][pdim];
+            mostProbableIndex = gi;
+        }
+		//es.block(gi,0,1,pdim) /= es(gi,pdim);
+	}
+    
+    if(mostProbableIndex > -1) mostProbableStatus = S[mostProbableIndex];
+    
 }
 
 ////////////////////////////////////////////////////////////////
@@ -638,17 +703,45 @@ void ofxGVF::infer(vector<float> & vect){
 
 //--------------------------------------------------------------
 // Returns the index of the currently recognized gesture
+// NOW CACHED DURING 'infer' see updateEstimatedStatus()
 int ofxGVF::getMostProbableGestureIndex(){
-    vector< vector< float> > M = getEstimatedStatus();
-    float maxprob=0.0;
-    int   indexMaxprob=0;
-    for (int k=0; k<M.size(); k++){
-        if (M[k][M[0].size() - 1] > maxprob){
-            maxprob = M[k][M[0].size() - 1];
-            indexMaxprob = k;
-        }
-    }
-    return indexMaxprob;
+//    vector< vector< float> > M = getEstimatedStatus();
+//    float maxProbability = 0.0f;
+//    int indexMostProb = -1; // IMPORTANT: users need to check for negative index!!!
+//    for (int k=0; k<M.size(); k++){
+//        cout << M[k][M[0].size() - 1] << " > " << maxProbability << endl;
+//        if (M[k][M[0].size() - 1] > maxProbability){
+//            maxProbability = M[k][M[0].size() - 1];
+//            indexMostProb = k;
+//        }
+//    }
+//    return indexMostProb;
+    return mostProbableIndex;
+}
+
+//--------------------------------------------------------------
+// Returns the index of the currently recognized gesture
+vector<float> ofxGVF::getMostProbableGestureStatus(){
+    return mostProbableStatus;
+}
+
+//--------------------------------------------------------------
+// Returns the probability of the currently recognized gesture
+float ofxGVF::getMostProbableProbability(){
+    return mostProbableStatus[mostProbableStatus.size() - 1];
+}
+
+//--------------------------------------------------------------
+// Returns the estimates features. It calls status to refer to the status of the state
+// space which comprises the features to be adapted. If features are phase, speed, scale and angle,
+// the function will return these estimateed features for each gesture, plus their probabilities.
+// The returned matrix is nxm
+//   rows correspond to the gestures in the vocabulary
+//   cols correspond to the features (the last column is the [conditionnal] probability of each gesture)
+// The output matrix is an Eigen matrix
+// NOW CACHED DURING 'infer' see updateEstimatedStatus()
+vector< vector<float> > ofxGVF::getEstimatedStatus(){
+    return S;
 }
 
 //--------------------------------------------------------------
@@ -665,46 +758,6 @@ vector<float> ofxGVF::getGestureProbabilities()
 		gp[g[n]] += w[n];
     
 	return gp;
-}
-
-//--------------------------------------------------------------
-// Returns the estimates features. It calls status to refer to the status of the state
-// space which comprises the features to be adapted. If features are phase, speed, scale and angle,
-// the function will return these estimateed features for each gesture, plus their probabilities.
-// The returned matrix is nxm
-//   rows correspond to the gestures in the vocabulary
-//   cols correspond to the features (the last column is the [conditionnal] probability of each gesture)
-// The output matrix is an Eigen matrix
-vector< vector<float> > ofxGVF::getEstimatedStatus()
-{
-	
-    // get the number of gestures in the vocabulary
-	unsigned int ngestures = numTemplates+1;
-	//cout << "getEstimatedStatus():: ngestures= "<< numTemplates+1<< endl;
-    
-    vector< vector<float> > es;
-    setMat(es, 0.0f, ngestures, pdim+1);   // rows are gestures, cols are features + probabilities
-	//printMatf(es);
-    
-	// compute the estimated features by computing the expected values
-    // sum ( feature values * weights)
-	for(int n = 0; n < ns; n++)
-	{
-        int gi = g[n];
-        for(int m=0; m<pdim; m++)
-            es[gi][m] += X[n][m] * w[n];
-        
-		es[gi][pdim] += w[n];
-    }
-	
-	for(int gi = 0; gi < ngestures; gi++)
-	{
-        for(int m=0; m<pdim; m++)
-            es[gi][m] /= es[gi][pdim];
-		//es.block(gi,0,1,pdim) /= es(gi,pdim);
-	}
-    
-	return es;
 }
 
 //--------------------------------------------------------------
@@ -764,7 +817,7 @@ void ofxGVF::setNumberOfParticles(int numberOfParticles){
     initVec(g, numberOfParticles);               // Vector of gesture class
     initVec(w, numberOfParticles);               // Weights
     //    logW = VectorXf(newNs);
-    
+    spreadParticles();
 }
 
 //--------------------------------------------------------------

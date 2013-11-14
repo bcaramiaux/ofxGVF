@@ -113,8 +113,9 @@ public:
     void resampleAccordingToWeights();
 	
     // makes the inference by calling particleFilteringOptim
-	void infer(vector<float> & data);
-	
+	void infer(vector<float> & data);   // rename to update?
+	void updateEstimatedStatus();       // should be private?
+    
     //////////////////////////
     // Gestures & Templates //
 	//////////////////////////
@@ -122,9 +123,11 @@ public:
     // GESTURE PROBABILITIES + POSITIONS
     
     int getMostProbableGestureIndex();
-    vector<float> getGestureProbabilities();
-    
+    vector<float> getMostProbableGestureStatus();
+    float getMostProbableProbability();
     vector< vector<float> > getEstimatedStatus();
+    
+    vector<float> getGestureProbabilities();
     vector< vector<float> > getParticlesPositions();
     
     // TEMPLATES
@@ -206,6 +209,9 @@ private:
 	int     numTemplates;       // number of learned gestures (starts at 0)
     int     inputDim;           // Dimension of the input data
     
+    int mostProbableIndex;                      // cached most probable index
+    vector<float> mostProbableStatus;           // cached most probable status [phase, speed, scale[, rotation], probability]
+    vector< vector<float> > S;                  // cached estimated status for all templates
 	vector< vector<float> > X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]

@@ -26,14 +26,14 @@
 enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 // struct to hold information on how a learnt template is being recognised.
-typedef struct {
-    float likelihoods;
-    float probability;
-    float phase;
-    float speed;
-    float scale;
-    float rotation;
-}  recognitionInfo;
+//typedef struct {
+//    float likelihoods;
+//    float probability;
+//    float phase;
+//    float speed;
+//    float scale;
+//    float rotation;
+//}  recognitionInfo;
 
 class gvfhandler{
 public:
@@ -77,9 +77,9 @@ public:
 
     // vector containing one recognitionInfo struct for each template
     // these structs will contain real time information on how each template is being recognised
-    std::vector<recognitionInfo> recogInfo;
-    std::vector<recognitionInfo> getRecogInfo();
-    recognitionInfo getRecogInfoOfMostProbable();
+//    std::vector<recognitionInfo> recogInfo;
+//    std::vector<recognitionInfo> getRecogInfo();
+//    recognitionInfo getRecogInfoOfMostProbable();
     
     // gets all points based on a template index
     std::vector<std::vector<float> > get_template_data(int index);
@@ -104,6 +104,8 @@ public:
 
     vector<float> getVref();
     
+    ofxGVF *mygvf;
+    
 private:
 
     // will hold empty versions of the templates,
@@ -111,7 +113,7 @@ private:
     std::vector<gvfGesture> templates;
 
     // reference to the gvf object
-    ofxGVF *mygvf;
+    
     
     // variance coefficients
     float sigPosition, sigSpeed, sigScale, sigRotation;

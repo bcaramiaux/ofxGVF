@@ -183,32 +183,37 @@ void gvfhandler::gvf_data(int argc, float *argv)
         // ------- Fill template
         mygvf->infer(vect);
         // output recognition
-        vector< vector<float> > statu = mygvf->getEstimatedStatus();
-        //getGestureProbabilities();
-//        vector<float> glikelihoods = mygvf->getGestureLikelihoods();
-        vector<float> gprob = mygvf->getGestureProbabilities();
-
-        char temp[100];
-        int templates_count = gprob.size();
+//        vector< vector<float> > statu = mygvf->getEstimatedStatus();
+//        //getGestureProbabilities();
+////        vector<float> glikelihoods = mygvf->getGestureLikelihoods();
+//        vector<float> gprob = mygvf->getGestureProbabilities();
+//
+//        printMat(statu);
+//        printVec(gprob);
+//        
+//        char temp[100];
+//        int templates_count = gprob.size();
         
-        recogInfo.clear();
-        
-        for(int i = 0; i < templates_count; i++)
-        {
-            recognitionInfo info;
-//            info.likelihoods = glikelihoods(i, 0);
-            info.probability = gprob[i];
-            info.phase = statu[i][0];
-            info.speed = statu[i][1];
-            info.scale = statu[i][2];
-            info.rotation = statu[i][3];
-            recogInfo.push_back(info);
-        }
+//        recogInfo.clear();
+//        
+//        for(int i = 0; i < templates_count; i++)
+//        {
+//            recognitionInfo info;
+////            info.likelihoods = glikelihoods(i, 0);
+//            info.probability = gprob[i];
+//            info.phase = statu[i][0];
+//            info.speed = statu[i][1];
+//            info.scale = statu[i][2];
+//            info.rotation = statu[i][3];
+//            recogInfo.push_back(info);
+//        }
     }
 }
 
 string gvfhandler::gvf_get_status()
 {
+    vector< vector<float> > M = mygvf->getEstimatedStatus();
+    
     char temp[4][100];
     string status_string;
 
@@ -216,12 +221,12 @@ string gvfhandler::gvf_get_status()
     strcpy(temp[1],"Phase\n");
     strcpy(temp[2],"Speed\n");
     strcpy(temp[3],"Scale\n");
-    for(int i = 0; i < recogInfo.size(); i++)
+    for(int i = 0; i < M.size(); i++)
     {
-        sprintf(temp[0], "%s%5.2f ",temp[0], recogInfo[i].probability);
-        sprintf(temp[1], "%s%5.2f ",temp[1], recogInfo[i].phase);
-        sprintf(temp[2], "%s%5.2f ",temp[2], recogInfo[i].speed);
-        sprintf(temp[3], "%s%5.2f ",temp[3], recogInfo[i].scale);
+        sprintf(temp[0], "%s%5.2f ",temp[0], M[i][M[0].size() - 1]);
+        sprintf(temp[1], "%s%5.2f ",temp[1], M[i][0]);
+        sprintf(temp[2], "%s%5.2f ",temp[2], M[i][1]);
+        sprintf(temp[3], "%s%5.2f ",temp[3], M[i][2]);
     }
     for(int i = 0; i < 4; i++)
     {
@@ -272,7 +277,7 @@ void gvfhandler::gvf_adaptspeed(vector<float> varianceCoeficients)
 void gvfhandler::setNumberOfParticles(int newNs)
 {
     mygvf->setNumberOfParticles(newNs);
-    gvf_restart();
+//    gvf_restart();
 }
 
 int gvfhandler::getTemplateCount()
@@ -285,50 +290,58 @@ vector< vector<float> > gvfhandler::get_template_data(int index)
     return mygvf->getTemplateByIndex(index);
 }
 
-vector<recognitionInfo> gvfhandler::getRecogInfo()
-{
-    return recogInfo;
-}
+//vector<recognitionInfo> gvfhandler::getRecogInfo()
+//{
+//    return recogInfo;
+//}
 
-recognitionInfo gvfhandler::getRecogInfoOfMostProbable()
-{
-    return recogInfo[getIndexMostProbable()];
-}
+//recognitionInfo gvfhandler::getRecogInfoOfMostProbable()
+//{
+//    return recogInfo[getIndexMostProbable()];
+//}
 
 int gvfhandler::getIndexMostProbable()
 {
-    float mostProbable;
-    int indexMostProbable;
-    int templateCount = getTemplateCount();
-    if(recogInfo.size() > 0)
-    {
-        indexMostProbable = 0;
-        mostProbable = recogInfo[indexMostProbable].probability;
-        for(int i = 1; i < templateCount; i++)
-        {
-            if(recogInfo[i].probability > mostProbable)
-            {
-                indexMostProbable = i;
-                mostProbable = recogInfo[indexMostProbable].probability;
-            }
-        }
-        return indexMostProbable;
-    }
-    return -1;
+//    float mostProbable;
+//    int indexMostProbable;
+//    int templateCount = getTemplateCount();
+//    if(recogInfo.size() > 0)
+//    {
+//        indexMostProbable = 0;
+//        mostProbable = recogInfo[indexMostProbable].probability;
+//        for(int i = 1; i < templateCount; i++)
+//        {
+//            if(recogInfo[i].probability > mostProbable)
+//            {
+//                indexMostProbable = i;
+//                mostProbable = recogInfo[indexMostProbable].probability;
+//            }
+//        }
+//        return indexMostProbable;
+//    }
+//    return -1;
+    
+//    if(recogInfo.size() > 0){
+        return mygvf->getMostProbableGestureIndex();
+//    }else{
+//        return -1;
+//    }
+    
 }
 
 gvfGesture gvfhandler::getRecognisedGestureRepresentation()
 {
 
     int indexMostProbable = getIndexMostProbable();
-    
+
     // if there is a probable gesture...
     if(indexMostProbable > -1)
     {
         vector< vector<float> > templateData;
         vector< vector<float> > partialGestureData;
         vector<float> gesturePoint;
-        recognitionInfo info = recogInfo[indexMostProbable];
+        vector<float> M = mygvf->getMostProbableGestureStatus();
+//        recognitionInfo info = recogInfo[indexMostProbable];
     
         // a new gesture is created and by combining the template with the recognition info
         // and estimated gesture can be created.
@@ -339,11 +352,11 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
         int templateSize = templateData.size();
         
         // but only the amount proportinal to the estimated phase will be copied to the estimated gesture
-        int amountToBeCopied = templateSize * info.phase;
+        int amountToBeCopied = templateSize * M[0];//info.phase;
         
         // scale and rotation are also taken into account
-        float estimatedScale = info.scale;
-        float rotation = info.rotation;
+        float estimatedScale = M[2];//info.scale;
+        float rotation = M[3];//info.rotation;
                 
         for(int i = 0; i < amountToBeCopied; i++)
         {
@@ -353,7 +366,7 @@ gvfGesture gvfhandler::getRecognisedGestureRepresentation()
             vref[0][0] = templateData[i][0];
             vref[1][0] = templateData[i][1];
             
-            float alpha = info.rotation;
+            float alpha = rotation;//info.rotation;
             vector< vector<float> > rotmat;
             initMat(rotmat, 2, 2);
             
