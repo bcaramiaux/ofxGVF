@@ -806,7 +806,7 @@ void ofxGVF::setParameters(ofxGVFParameters _parameters){
     parameters = _parameters;
 }
 
-ofxGVF::ofxGVFParameters ofxGVF::getParameters(){
+ofxGVFParameters ofxGVF::getParameters(){
     return parameters;
 }
 
@@ -873,7 +873,7 @@ void ofxGVF::setVarianceCoefficents(ofxGVFVarianceCoefficents _coefficients){
 }
 
 //--------------------------------------------------------------
-ofxGVF::ofxGVFVarianceCoefficents ofxGVF::getVarianceCoefficents(){
+ofxGVFVarianceCoefficents ofxGVF::getVarianceCoefficents(){
     return coefficents;
 }
 
@@ -1043,4 +1043,25 @@ void ofxGVF::loadTemplates(string filename){
     }
     
     infile.close();
+}
+
+//--------------------------------------------------------------
+string ofxGVF::getStateAsString(ofxGVFState state){
+    switch(state){
+        case STATE_CLEAR:
+            return "STATE_CLEAR";
+            break;
+        case STATE_WAIT:
+            return "STATE_WAIT";
+            break;
+        case STATE_LEARNING:
+            return "STATE_LEARNING";
+            break;
+        case STATE_FOLLOWING:
+            return "STATE_FOLLOWING";
+            break;
+        default:
+            return "STATE_UNKNOWN";
+            break;
+    }
 }

@@ -1,18 +1,46 @@
 //
-//  ofxGVFMatrix.h
-//  ofxGVF-Example
+//  ofxGVFTypes.h
 //
 //  Created by gameover on 12/11/13.
 //
 //
 
-#ifndef __H_OFXGVFMATRIX
-#define __H_OFXGVFMATRIX
+#ifndef __H_OFXGVFTYPES
+#define __H_OFXGVFTYPES
 
+#include <map>
 #include <vector>
 #include <iostream>
+#include <tr1/random>
+#include <iostream>
+
+#define OPENFRAMEWORKS 1
+#define BOOSTLIB 0
+#define OPTIMISD 0
+#define VDSPOPTM 0
+#define GESTLEARNT 8
+
+#if BOOSTLIB
+#include <boost/random.hpp>
+#endif
 
 using namespace std;
+
+typedef struct{
+    int inputDimensions = -1;
+    int numberParticles = -1;
+    float tolerance = -1.0f;
+    int resamplingThreshold = -1;
+    float distribution = 0.0f;
+} ofxGVFParameters;
+
+typedef struct{
+    float phaseVariance = -1.0f;
+    float speedVariance = -1.0f;
+    float scaleVariance = -1.0f;
+    float rotationVariance = -1.0f;
+} ofxGVFVarianceCoefficents;
+
 
 // TODO: SEE BELOW FOR ofxGVFMatrix type/class...might also require ofxGVFVector...maybe over kill?
 // Anyway, skeleton is below for comparison with global, c style operations as per below...

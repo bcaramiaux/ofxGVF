@@ -21,20 +21,8 @@
 #ifndef _H_OFXGVF
 #define _H_OFXGVF
 
-#include "ofxGVFMatrix.h"
-
-#include <map>
-#include <tr1/random>
-#include <iostream>
-
-#define BOOSTLIB 0
-#define OPTIMISD 0
-#define VDSPOPTM 0
-#define GESTLEARNT 8
-
-#if BOOSTLIB
-#include <boost/random.hpp>
-#endif
+#include "ofxGVFTypes.h"
+#include "ofxGVFGesture.h"
 
 using namespace std;
 
@@ -60,24 +48,10 @@ public:
 	
     enum ofxGVFState{
         STATE_CLEAR = 0,
+        STATE_WAIT,
         STATE_LEARNING,
         STATE_FOLLOWING
     };
-    
-    typedef struct{
-        int inputDimensions = -1;
-        int numberParticles = -1;
-        float tolerance = -1.0f;
-        int resamplingThreshold = -1;
-        float distribution = 0.0f;
-    } ofxGVFParameters;
-    
-    typedef struct{
-        float phaseVariance = -1.0f;
-        float speedVariance = -1.0f;
-        float scaleVariance = -1.0f;
-        float rotationVariance = -1.0f;
-    } ofxGVFVarianceCoefficents;
     
 	// constructor of the gvf instance
 	ofxGVF(); // use defualt parameters
@@ -192,6 +166,8 @@ public:
     
 	void saveTemplates(string filename);
     void loadTemplates(string filename);
+    
+    string getStateAsString(ofxGVFState state);
 	
 private:
     
