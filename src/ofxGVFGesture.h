@@ -179,6 +179,14 @@ public:
             templatesNormal.resize(templatesNormal.size() + 1);
             
         }
+
+        if(templatesRaw[templateIndex].size() == 0){
+            templateInitialRaw = templateInitialNormal = observation;
+        }
+
+        for(int j = 0; j < observation.size(); j++){
+            observation[j] = observation[j] - templateInitialRaw[j];
+        }
         
         // store the raw observation
         templatesRaw[templateIndex].push_back(observation);
@@ -195,7 +203,6 @@ public:
 #ifdef OPENFRAMEWORKS
         
         // reserve space for raw and normal meshes
-        representationsRaw.resize(templatesRaw.size() + 1);
         representationsNormal.resize(templatesRaw.size() + 1);
         
         templatesNormal.resize(templatesRaw.size());
@@ -206,20 +213,12 @@ public:
                 
                 // for GEOMETRIC representations let's use a single mesh with n-Dimensions
                 
-                representationsRaw[t].resize(1);
-                representationsRaw[t][0].setMode(OF_PRIMITIVE_LINE_STRIP);
-                
                 representationsNormal[t].resize(1);
                 representationsNormal[t][0].setMode(OF_PRIMITIVE_LINE_STRIP);
                 
             }else{
                 
                 // for TEMPORAL representations let's use a mesh for EACH of the n-Dimensions
-                
-                representationsRaw[t].resize(inputDimensions);
-                for(int i = 0; i < inputDimensions; i++){
-                    representationsRaw[t][i].setMode(OF_PRIMITIVE_LINE_STRIP);
-                }
                 
                 representationsNormal[t].resize(inputDimensions);
                 for(int i = 0; i < inputDimensions; i++){
@@ -245,17 +244,18 @@ public:
                     //cout << d << " " << templatesNormal[t][o][d] << " " << templatesRaw[t][o][d] / ABS(observationRangeMax[d] - observationRangeMin[d]) << endl;
                     
                     templatesNormal[t][o][d] = templatesRaw[t][o][d] / (observationRangeMax[d] - observationRangeMin[d]);
+                    templateInitialNormal[d] = templateInitialRaw[d] / (observationRangeMax[d] - observationRangeMin[d]);
                     
 #ifdef OPENFRAMEWORKS
                     
                     if(type == GEOMETRIC){
                         
-                        pN[d] = templatesNormal[t][o][d];
+                        pN[d] = templatesNormal[t][o][d] + templateInitialNormal[d];
                         
                     }else{
                         
                         pN.x = o;
-                        pN.y = templatesNormal[t][o][d];
+                        pN.y = templatesNormal[t][o][d] + templateInitialNormal[d];
                         
                         representationsNormal[t][d].addVertex(pN);
                         representationsNormal[t][d].addColor(ofColor(255, 255, 255));
@@ -311,12 +311,20 @@ public:
         return templatesNormal[templateIndex][templatesNormal[templateIndex].size() - 1];
     }
     
-    vector< vector< vector<float> > > & getTemplatesRaw(){
+    vector< vector< vector<float> > >& getTemplatesRaw(){
         return templatesRaw;
     }
     
-    vector< vector< vector<float> > > & getTemplatesNormal(){
+    vector< vector< vector<float> > >& getTemplatesNormal(){
         return templatesNormal;
+    }
+    
+    vector<float>& getInitialObservationRaw(){
+        return templateInitialRaw;
+    }
+    
+    vector<float>& getInitialObservationNormal(){
+        return templateInitialNormal;
     }
     
     void deleteTemplate(int templateIndex = 0){
@@ -324,7 +332,6 @@ public:
         templatesRaw[templateIndex].clear();
         templatesNormal[templateIndex].clear();
 #ifdef OPENFRAMEWORKS
-        representationsRaw[templateIndex].clear();
         representationsNormal[templateIndex].clear();
 #endif
     }
@@ -333,7 +340,6 @@ public:
         templatesRaw.clear();
         templatesNormal.clear();
 #ifdef OPENFRAMEWORKS
-        representationsRaw.clear();
         representationsNormal.clear();
 #endif
         bIsRangeMinSet = false;
@@ -384,7 +390,7 @@ public:
 
         ofPushMatrix();
 
-        if(representationsRaw.size() > 0 && type == GEOMETRIC){
+        if(representationsNormal.size() > 0 && type == GEOMETRIC){
             
             float scaleX = observationRangeMax[0] - observationRangeMin[0];
             float scaleY = observationRangeMax[1] - observationRangeMin[1];
@@ -409,7 +415,7 @@ public:
             ofSetColor(255, 255, 255);
         }
         
-        if(representationsRaw.size() > 0 && type == TEMPORAL && representationsNormal[0].size() > 0){
+        if(representationsNormal.size() > 0 && representationsNormal[0].size() > 0 && type == TEMPORAL){
             
             float scaleM = -INFINITY;
             float maxY = -INFINITY;
@@ -464,11 +470,13 @@ protected:
     bool bIsRangeMinSet;
 //    int id;
     
+    vector<float> templateInitialRaw;
+    vector<float> templateInitialNormal;
+    
     vector< vector< vector<float> > > templatesRaw;
     vector< vector< vector<float> > > templatesNormal;
     
 #ifdef OPENFRAMEWORKS
-    vector< vector<ofMesh> > representationsRaw;
     vector< vector<ofMesh> > representationsNormal;
 #endif
     

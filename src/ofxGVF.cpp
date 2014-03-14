@@ -466,21 +466,21 @@ void ofxGVF::particleFilter(vector<float> & obs){
     // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
         
         
-//    if(obs.size() == 2){
-//        
-//        if(O_initial.size() == 0){ // then it's a new gesture observation - cleared in spreadParticles
-//        
-//            // store initial obs data
-//            O_initial = obs;
-//        
-//        }else{
-//            
-//            // 'center' data
-//            for(int i = 0; i < obs.size(); i++){
-//                obs[i] -= O_initial[i];
-//            }
-//        }
-//    }
+    if(obs.size() == 2){
+        
+        if(O_initial.size() == 0){ // then it's a new gesture observation - cleared in spreadParticles
+        
+            // store initial obs data
+            O_initial = obs;
+        
+        }else{
+            
+            // 'center' data
+            for(int i = 0; i < obs.size(); i++){
+                obs[i] -= O_initial[i];
+            }
+        }
+    }
     
 #if BOOSTLIB
 	boost::uniform_real<float> ur(0,1);
@@ -683,7 +683,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
     // around the active particles
 	if(neff<resamplingThreshold)
     {
-            //cout << "Resampling" << endl;
+        //cout << "Resampling" << endl;
         resampleAccordingToWeights();
         initweights();
     }
@@ -709,7 +709,7 @@ void ofxGVF::resampleAccordingToWeights()
 #endif
     
     vector< vector<float> > oldX;
-    setMat(oldX,X);
+    setMat(oldX, X);
     vector<int> oldG;
     setVec(oldG, g);
     vector<float> c(ns);
