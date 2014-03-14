@@ -31,7 +31,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    
+//    if(gvf.getState() == ofxGVF::STATE_FOLLOWING) gvf.infer(currentGesture.getLastRawObservation());
 }
 
 //--------------------------------------------------------------
@@ -73,8 +73,8 @@ void ofApp::draw(){
             ofPoint point(pp[i][0], pp[i][1]);
             
             // and then scaled and translated in order to be drawn
-            float x = (offset.x + point.x) * (currentGesture.getMaxRange()[0] - currentGesture.getMinRange()[0]);
-            float y = (offset.y + point.y) * (currentGesture.getMaxRange()[1] - currentGesture.getMinRange()[1]);
+            float x = ((point.x)) * (currentGesture.getMaxRange()[0] - currentGesture.getMinRange()[0]);
+            float y = ((point.y)) * (currentGesture.getMaxRange()[1] - currentGesture.getMinRange()[1]);
             
             // the weight of the particle is normalised
             // and then used as the radius of the circle representing the particle
@@ -84,6 +84,7 @@ void ofApp::draw(){
             c.setBrightness(198);
             ofSetColor(c);
             ofPushMatrix();
+            ofTranslate(currentGesture.getInitialObservationRaw()[0], currentGesture.getInitialObservationRaw()[1]);
             ofCircle(x, y, radius);
             ofPopMatrix();
             //cout << x << " " << y << " " << radius << endl;
@@ -168,6 +169,7 @@ void ofApp::mousePressed(int x, int y, int button){
         }
         case ofxGVF::STATE_FOLLOWING:
         {
+            gvf.spreadParticles();
             currentGesture.clear();
             currentGesture.setAutoAdjustRanges(false);
             currentGesture.setMin(0.0f, 0.0f);
