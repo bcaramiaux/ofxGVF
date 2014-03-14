@@ -15,16 +15,16 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-               BuildableName = "ofxGfPfVisualiserExample.app"
-               BlueprintName = "ofxGfPfVisualiserExample"
-               ReferencedContainer = "container:ofxGfPfVisualiser.xcodeproj">
+               BuildableName = "ofxGVF-Example.app"
+               BlueprintName = "ofxGVF-Example"
+               ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       buildConfiguration = "Debug">
       <Testables>
@@ -33,15 +33,15 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxGfPfVisualiserExample.app"
-            BlueprintName = "ofxGfPfVisualiserExample"
-            ReferencedContainer = "container:ofxGfPfVisualiser.xcodeproj">
+            BuildableName = "ofxGVF-Example.app"
+            BlueprintName = "ofxGVF-Example"
+            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
    <LaunchAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Debug"
@@ -52,9 +52,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxGfPfVisualiserExample.app"
-            BlueprintName = "ofxGfPfVisualiserExample"
-            ReferencedContainer = "container:ofxGfPfVisualiser.xcodeproj">
+            BuildableName = "ofxGVF-Example.app"
+            BlueprintName = "ofxGVF-Example"
+            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -64,15 +64,15 @@
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       debugDocumentVersioning = "YES">
       <BuildableProductRunnable>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxGfPfVisualiserExample.app"
-            BlueprintName = "ofxGfPfVisualiserExample"
-            ReferencedContainer = "container:ofxGfPfVisualiser.xcodeproj">
+            BuildableName = "ofxGVF-Example.app"
+            BlueprintName = "ofxGVF-Example"
+            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
@@ -80,7 +80,7 @@
       buildConfiguration = "Debug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

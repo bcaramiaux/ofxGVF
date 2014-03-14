@@ -15,36 +15,36 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-               BuildableName = "ofxLeapMotionExample.app"
-               BlueprintName = "ofxLeapMotionExample"
-               ReferencedContainer = "container:ofxLeapMotion.xcodeproj">
+               BuildableName = "ofxGVF-Example.app"
+               BlueprintName = "ofxGVF-Example"
+               ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
-      buildConfiguration = "Debug">
+      buildConfiguration = "Release">
       <Testables>
       </Testables>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxLeapMotionExample.app"
-            BlueprintName = "ofxLeapMotionExample"
-            ReferencedContainer = "container:ofxLeapMotion.xcodeproj">
+            BuildableName = "ofxGVF-Example.app"
+            BlueprintName = "ofxGVF-Example"
+            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
    <LaunchAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       allowLocationSimulation = "YES">
@@ -52,9 +52,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxLeapMotionExample.app"
-            BlueprintName = "ofxLeapMotionExample"
-            ReferencedContainer = "container:ofxLeapMotion.xcodeproj">
+            BuildableName = "ofxGVF-Example.app"
+            BlueprintName = "ofxGVF-Example"
+            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -70,14 +70,14 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxLeapMotionExample.app"
-            BlueprintName = "ofxLeapMotionExample"
-            ReferencedContainer = "container:ofxLeapMotion.xcodeproj">
+            BuildableName = "ofxGVF-Example.app"
+            BlueprintName = "ofxGVF-Example"
+            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "Debug">
+      buildConfiguration = "Release">
    </AnalyzeAction>
    <ArchiveAction
       buildConfiguration = "Release"
