@@ -26,6 +26,11 @@
 
 using namespace std;
 
+enum ofxGVFGestureType{
+    GEOMETRIC,
+    TEMPORAL
+};
+
 typedef struct{
     int inputDimensions = -1;
     int numberParticles = -1;
@@ -41,6 +46,33 @@ typedef struct{
     float rotationVariance = -1.0f;
 } ofxGVFVarianceCoefficents;
 
+#ifdef OPENFRAMEWORKS
+
+#include "ofMain.h"
+
+static vector<ofColor> kColors;
+
+ofColor ofxGVFGenerateRandomColor(){
+    
+    if(kColors.size() == 0){
+        kColors.push_back(ofColor::white);
+        kColors.push_back(ofColor::gray);
+        kColors.push_back(ofColor::blue);
+        kColors.push_back(ofColor::cyan);
+        kColors.push_back(ofColor::olive);
+        kColors.push_back(ofColor::gold);
+        kColors.push_back(ofColor::magenta);
+        kColors.push_back(ofColor::violet);
+    }
+    
+    int index = ofRandom(0, kColors.size() - 1);
+    
+    ofColor c = kColors[index];
+    kColors.erase(kColors.begin() + index);
+    
+    return c;
+}
+#endif
 
 // TODO: SEE BELOW FOR ofxGVFMatrix type/class...might also require ofxGVFVector...maybe over kill?
 // Anyway, skeleton is below for comparison with global, c style operations as per below...

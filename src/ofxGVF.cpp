@@ -75,6 +75,7 @@ void ofxGVF::setup(){
     defaultParameters.tolerance = 0.2f;
     defaultParameters.resamplingThreshold = 500;
     defaultParameters.distribution = 0.0f;
+//    defaultParameters.gestureType = GEOMETRIC;
     
     ofxGVFVarianceCoefficents defaultCoefficents;
     
@@ -118,8 +119,10 @@ void ofxGVF::setup(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coef
     tolerance = parameters.tolerance;                       // inverse of the global tolerance (variance)
     nu = parameters.distribution;                           // Set Student's distribution parameter Nu
     
-    numTemplates=-1;                        // Set num. of learned gesture to -1
-    gestureLengths = vector<int>();         // Vector of gesture lengths
+//    kGestureType = parameters.gestureType;
+    
+//    numTemplates=-1;                        // Set num. of learned gesture to -1
+//    gestureLengths = vector<int>();         // Vector of gesture lengths
     
 #if !BOOSTLIB
     normdist = new std::tr1::normal_distribution<float>();
@@ -151,6 +154,7 @@ ofxGVF::~ofxGVF(){
     // should we free here other variables such X, ...??
     //TODO(baptiste)
     
+    
     clear(); // not really necessary but it's polite ;)
     
 }
@@ -162,67 +166,153 @@ ofxGVF::~ofxGVF(){
 ////////////////////////////////////////////////////////////////
 
 //--------------------------------------------------------------
-// Add a template into the vocabulary. This method does not add the data but allocate
-// the memory and increases the number of learned gesture
-void ofxGVF::addTemplate(){
-	numTemplates++;                                         // increment the num. of learned gesture
-	R_single[numTemplates] = vector< vector<float> >();      // allocate the memory for the gesture's data
-    gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
-    abs_weights.resize(numTemplates+1);
-}
-
-void ofxGVF::addTemplate(vector<float> & data){
-	addTemplate();
-    fillTemplate(getNumberOfTemplates(), data);
-}
-
-//--------------------------------------------------------------
-// Fill the template given by the integer 'id' by appending the current data vector 'data'
-// This example fills the template 1 with the live gesture data (stored in liveGesture)
-// for (int k=0; k<SizeLiveGesture; k++)
-//    myGVF->fillTemplate(1, liveGesture[k]);
-void ofxGVF::fillTemplate(int id, vector<float> & data){
-	if (id <= numTemplates){
-        
-        // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
-        if(data.size() == 2){
-            
-            // store initial point
-            if(R_single[id].size() == 0){
-                R_initial[id] = data;
-            }
-            
-            // 'center' data
-            for(int i = 0; i < data.size(); i++){
-                data[i] -= R_initial[id][i];
-            }
-        }
-
-		R_single[id].push_back(data);
-		gestureLengths[id] = gestureLengths[id]+1;
-	}
-}
-
-//--------------------------------------------------------------
-// clear template given by id
-void ofxGVF::clearTemplate(int id){
-    if (id <= numTemplates){
-        R_single[id] = vector< vector<float> >();      // allocate the memory for the gesture's data
-        gestureLengths[id] = 0;                // add an element (0) in the gesture lengths table
+void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
+    
+    if(minRange.size() == 0){
+        minRange.resize(inputDim);
+        maxRange.resize(inputDim);
     }
+    
+    for(int j = 0; j < inputDim; j++){
+        minRange[j] = INFINITY;
+        maxRange[j] = -INFINITY;
+    }
+    
+    for(int i = 0; i < gestureTemplates.size(); i++){
+        ofxGVFGesture& tGestureTemplate = gestureTemplates[i];
+        vector<float>& tMinRange = tGestureTemplate.getMinRange();
+        vector<float>& tMaxRange = tGestureTemplate.getMaxRange();
+        for(int j = 0; j < inputDim; j++){
+            if(tMinRange[j] < minRange[j]) minRange[j] = tMinRange[j];
+            if(tMaxRange[j] > maxRange[j]) maxRange[j] = tMaxRange[j];
+        }
+    }
+    
+    for(int i = 0; i < gestureTemplates.size(); i++){
+        ofxGVFGesture& tGestureTemplate = gestureTemplates[i];
+        tGestureTemplate.setMinRange(minRange);
+        tGestureTemplate.setMaxRange(maxRange);
+    }
+    
+    gestureTemplates.push_back(gestureTemplate);
+    abs_weights.resize(gestureTemplates.size());
 }
+
+//--------------------------------------------------------------
+ofxGVFGesture & ofxGVF::getGestureTemplate(int index){
+    assert(index < gestureTemplates.size());
+    return gestureTemplates[index];
+}
+
+//--------------------------------------------------------------
+vector<ofxGVFGesture> & ofxGVF::getAllGestureTemplates(){
+    return gestureTemplates;
+}
+
+//--------------------------------------------------------------
+int ofxGVF::getNumGestureTemplates(){
+    return gestureTemplates.size();
+}
+
+//--------------------------------------------------------------
+void ofxGVF::removeGestureTemplate(int index){
+    assert(index < gestureTemplates.size());
+    gestureTemplates.erase(gestureTemplates.begin() + index);
+}
+
+//--------------------------------------------------------------
+void ofxGVF::removeAllGestureTemplates(){
+    gestureTemplates.clear();
+}
+
+////--------------------------------------------------------------
+//// Add a template into the vocabulary. This method does not add the data but allocate
+//// the memory and increases the number of learned gesture
+//void ofxGVF::addTemplate(){
+//	numTemplates++;                                         // increment the num. of learned gesture
+//	R_single[numTemplates] = vector< vector<float> >();      // allocate the memory for the gesture's data
+//    gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
+//    abs_weights.resize(numTemplates+1);
+//}
+//
+//void ofxGVF::addTemplate(vector<float> & data){
+//	addTemplate();
+//    fillTemplate(getNumberOfTemplates(), data);
+//}
+//
+////--------------------------------------------------------------
+//// Fill the template given by the integer 'id' by appending the current data vector 'data'
+//// This example fills the template 1 with the live gesture data (stored in liveGesture)
+//// for (int k=0; k<SizeLiveGesture; k++)
+////    myGVF->fillTemplate(1, liveGesture[k]);
+//void ofxGVF::fillTemplate(int id, vector<float> & data){
+//	if (id <= numTemplates){
+//        
+//        // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
+//        if(data.size() == 2){
+//            
+//            // store initial point
+//            if(R_single[id].size() == 0){
+//                R_initial[id] = data;
+//            }
+//            
+//            // 'center' data
+//            for(int i = 0; i < data.size(); i++){
+//                data[i] -= R_initial[id][i];
+//            }
+//        }
+//
+//		R_single[id].push_back(data);
+//		gestureLengths[id] = gestureLengths[id]+1;
+//	}
+//}
+//
+////--------------------------------------------------------------
+//// clear template given by id
+//void ofxGVF::clearTemplate(int id){
+//    if (id <= numTemplates){
+//        R_single[id] = vector< vector<float> >();      // allocate the memory for the gesture's data
+//        gestureLengths[id] = 0;                // add an element (0) in the gesture lengths table
+//    }
+//}
+//
+////--------------------------------------------------------------
+//// Return the number of templates in the vocabulary
+//int ofxGVF::getNumberOfTemplates(){
+//    return gestureLengths.size();
+//}
+//
+////--------------------------------------------------------------
+//// Return the template given by its index in the vocabulary
+//vector< vector<float> >& ofxGVF::getTemplateByIndex(int index){
+//	if (index < gestureLengths.size())
+//		return R_single[index];
+//	else
+//		return EmptyTemplate;
+//}
+//
+////--------------------------------------------------------------
+//// Return the length of a specific template given by its index
+//// in the vocabulary
+//int ofxGVF::getLengthOfTemplateByIndex(int index){
+//	if (index < gestureLengths.size())
+//		return gestureLengths[index];
+//	else
+//		return -1;
+//}
 
 //--------------------------------------------------------------
 // Clear the internal data (templates)
 void ofxGVF::clear(){
     state = STATE_CLEAR;
-	R_single.clear();
-    R_initial.clear();
+    gestureTemplates.clear();
+//	R_single.clear();
+//    R_initial.clear();
     O_initial.clear();
-	gestureLengths.clear();
+//	gestureLengths.clear();
     mostProbableIndex = -1;
     mostProbableStatus.clear();
-	numTemplates=-1;
+//	numTemplates=-1;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -317,7 +407,7 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
 	
-	unsigned int ngestures = numTemplates+1;
+//	unsigned int ngestures = numTemplates+1;
 	
     // Spread particles using a uniform distribution
 	for(int i = 0; i < pdim; i++)
@@ -330,7 +420,7 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
 	
     // Spread uniformly the gesture class among the particles
 	for(int n = 0; n < ns; n++){
-		g[n] = n % ngestures;
+		g[n] = n % getNumGestureTemplates();
     
         // offsets are set to 0
         for (int k=0; k<inputDim; k++)
@@ -376,21 +466,21 @@ void ofxGVF::particleFilter(vector<float> & obs){
     // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
         
         
-    if(obs.size() == 2){
-        
-        if(O_initial.size() == 0){ // then it's a new gesture observation - cleared in spreadParticles
-        
-            // store initial obs data
-            O_initial = obs;
-        
-        }else{
-            
-            // 'center' data
-            for(int i = 0; i < obs.size(); i++){
-                obs[i] -= O_initial[i];
-            }
-        }
-    }
+//    if(obs.size() == 2){
+//        
+//        if(O_initial.size() == 0){ // then it's a new gesture observation - cleared in spreadParticles
+//        
+//            // store initial obs data
+//            O_initial = obs;
+//        
+//        }else{
+//            
+//            // 'center' data
+//            for(int i = 0; i < obs.size(); i++){
+//                obs[i] -= O_initial[i];
+//            }
+//        }
+//    }
     
 #if BOOSTLIB
 	boost::uniform_real<float> ur(0,1);
@@ -406,7 +496,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
     int numParticlesPhaseGt1 = 0;
     
     // zero abs weights
-    for(int i = 0 ; i < getNumberOfTemplates(); i++){
+    for(int i = 0 ; i < getNumGestureTemplates(); i++){
         abs_weights[i] = 0.0;
     }
     
@@ -423,7 +513,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
         // Move the particle
         // Position respects a first order dynamic: p = p + v/L
 		//X(n,0) = X(n,0) + (*rndnorm)() * featVariances(0) + X(n,1)/gestureLengths[g(n)];
-        X[n][0] += (*rndnorm)() * featVariances[0] + X[n][1]/gestureLengths[g[n]];
+        X[n][0] += (*rndnorm)() * featVariances[0] + X[n][1]/gestureTemplates[g[n]].getTemplateLength(); //gestureLengths[g[n]];
 
         //post("n=%i g(n)=%i length=%i | %f %f",n,g[n],gestureLengths[g[n]],(*rndnorm)() * featVariances[0], X[n][1]/gestureLengths[g[n]]);
 		// Move the other state elements according a gaussian noise
@@ -441,7 +531,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
             // Spread particles using a uniform distribution
             for(int i = 0; i < pdim; i++)
                 x_n[i] = (rnduni() - 0.5) * rangesCopy[i] + meansCopy[i];
-            g[n] = n % gestureLengths.size();
+            g[n] = n % getNumGestureTemplates(); //gestureLengths.size();
             particlesPhaseLt0.push_back(n);
             numParticlesPhaseLt0 += 1;
             
@@ -456,7 +546,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
             // Spread particles using a uniform distribution
             for(int i = 0; i < pdim; i++)
                 x_n[i] = (rnduni() - 0.5) * rangesCopy[i] + meansCopy[i];
-            g[n] = n % gestureLengths.size();
+            g[n] = n % getNumGestureTemplates(); //gestureLengths.size();
             particlesPhaseGt1.push_back(n);
             numParticlesPhaseGt1 += 1;
             for (int k=0;k<inputDim;k++)
@@ -470,14 +560,15 @@ void ofxGVF::particleFilter(vector<float> & obs){
             
             // given the phase between 0 and 1 (first value of the particle x),
             // return the index of the corresponding gesture, given by g(n)
-            int frameindex = min((int)(gestureLengths[pgi]-1),(int)(floor(x_n[0] * gestureLengths[pgi])));
+            int frameindex = min((int)(gestureTemplates[pgi].getTemplateLength() - 1),(int)(floor(x_n[0] * gestureTemplates[pgi].getTemplateLength() ) ) ); //min((int)(gestureLengths[pgi]-1),(int)(floor(x_n[0] * gestureLengths[pgi])));
             
             // given the index, return the gesture template value at this index
             vector<float> vref(inputDim);
-            setVec(vref,R_single[pgi][frameindex]);
+            setVec(vref, gestureTemplates[pgi].getTemplateNormal()[frameindex]);
+            //setVec(vref, R_single[pgi][frameindex]);
 
             vector<float> vobs(inputDim);
-            setVec(vobs,obs);
+            setVec(vobs, obs);
         
             // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
             if (inputDim == 2){
@@ -651,18 +742,23 @@ void ofxGVF::resampleAccordingToWeights()
 // Step function is the function called outside for inference. It
 // has been originally created to be able to infer on a new observation or
 // a set of observation.
-void ofxGVF::infer(vector<float> & vect){
+void ofxGVF::infer(vector<float> vect){
+    
+    for(int j = 0; j < inputDim; j++){
+        vect[j] = vect[j] / (maxRange[j] - minRange[j]);
+    }
+    
     particleFilter(vect);
     updateEstimatedStatus();
 }
 
 void ofxGVF::updateEstimatedStatus(){
     // get the number of gestures in the vocabulary
-	unsigned int ngestures = numTemplates+1;
+//	unsigned int ngestures = numTemplates+1;
 	//cout << "getEstimatedStatus():: ngestures= "<< numTemplates+1<< endl;
     
     //    vector< vector<float> > es;
-    setMat(S, 0.0f, ngestures, pdim+1);   // rows are gestures, cols are features + probabilities
+    setMat(S, 0.0f, getNumGestureTemplates(), pdim+1);   // rows are gestures, cols are features + probabilities
 	//printMatf(es);
     
 	// compute the estimated features by computing the expected values
@@ -679,7 +775,7 @@ void ofxGVF::updateEstimatedStatus(){
     float maxProbability = 0.0f;
     mostProbableIndex = -1;
     
-	for(int gi = 0; gi < ngestures; gi++){
+	for(int gi = 0; gi < getNumGestureTemplates(); gi++){
         for(int m=0; m<pdim; m++){
             S[gi][m] /= S[gi][pdim];
         }
@@ -751,9 +847,9 @@ vector< vector<float> > ofxGVF::getEstimatedStatus(){
 // probability to be in gesture A knowing that we have gesture A, B, C, ... in the vocabulary
 vector<float> ofxGVF::getGestureProbabilities()
 {
-	unsigned int ngestures = numTemplates+1;
+//	unsigned int ngestures = numTemplates+1;
     
-	vector<float> gp(ngestures);
+	vector<float> gp(getNumGestureTemplates());
     setVec(gp, 0.0f);
 	for(int n = 0; n < ns; n++)
 		gp[g[n]] += w[n];
@@ -764,33 +860,6 @@ vector<float> ofxGVF::getGestureProbabilities()
 //--------------------------------------------------------------
 vector< vector<float> > ofxGVF::getParticlesPositions(){
     return particlesPositions;
-}
-
-// TEMPLATES
-
-//--------------------------------------------------------------
-// Return the number of templates in the vocabulary
-int ofxGVF::getNumberOfTemplates(){
-    return gestureLengths.size();
-}
-
-//--------------------------------------------------------------
-// Return the template given by its index in the vocabulary
-vector< vector<float> >& ofxGVF::getTemplateByIndex(int index){
-	if (index < gestureLengths.size())
-		return R_single[index];
-	else
-		return EmptyTemplate;
-}
-
-//--------------------------------------------------------------
-// Return the length of a specific template given by its index
-// in the vocabulary
-int ofxGVF::getLengthOfTemplateByIndex(int index){
-	if (index < gestureLengths.size())
-		return gestureLengths[index];
-	else
-		return -1;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -864,6 +933,17 @@ void ofxGVF::setDistribution(float _distribution){
 float ofxGVF::getDistribution(){
     return nu;
 }
+
+////--------------------------------------------------------------
+//void ofxGVF::setGestureType(ofxGVFGestureType type){
+//    parameters.gestureType = type;
+//    kGestureType = parameters.gestureType;
+//}
+//
+////--------------------------------------------------------------
+//ofxGVFGestureType ofxGVF::getGestureType(){
+//    return kGestureType;
+//}
 
 // COEFFICIENTS
 
@@ -957,92 +1037,92 @@ vector<float> ofxGVF::getW(){
 // Save function. This function is used by applications to save the
 // vocabulary in a text file given by filename (filename is also the complete path + filename)
 void ofxGVF::saveTemplates(string filename){
-    std::string directory = filename;
-    
-    std::ofstream file_write(directory.c_str());
-    for(int i=0; i<R_single.size(); i++){
-        file_write << "template " << i << " " << inputDim << endl;
-        for(int j=0; j<R_single[i].size(); j++)
-        {
-            for(int k=0; k<inputDim; k++)
-                file_write << R_single[i][j][k] << " ";
-            file_write << endl;
-        }
-    }
-    file_write.close();
+//    std::string directory = filename;
+//    
+//    std::ofstream file_write(directory.c_str());
+//    for(int i=0; i<R_single.size(); i++){
+//        file_write << "template " << i << " " << inputDim << endl;
+//        for(int j=0; j<R_single[i].size(); j++)
+//        {
+//            for(int k=0; k<inputDim; k++)
+//                file_write << R_single[i][j][k] << " ";
+//            file_write << endl;
+//        }
+//    }
+//    file_write.close();
 }
 
 //--------------------------------------------------------------
 // Load function. This function is used by applications to load a vocabulary
 // given by filename (filename is also the complete path + filename)
 void ofxGVF::loadTemplates(string filename){
-    clear();
-    
-    ifstream infile;
-    stringstream doung;
-    
-    infile.open (filename.c_str(), ifstream::in);
-    
-    string line;
-    vector<string> list;
-    int cl=-1;
-    while(!infile.eof())
-    {
-        cl++;
-        infile >> line;
-        //post("%i %s",cl,line.c_str());
-        list.push_back(line);
-    }
-    
-    int k=0;
-    int template_starting_point = 1;
-    int template_id=-1;
-    int template_dim = 0;
-    float* vect_0_l;
-    //post("list size %i",list.size());
-    
-    while (k < (list.size()-1) ){ // TODO to be changed if dim>2
-        if (!strcmp(list[k].c_str(),"template"))
-        {
-            template_id = atoi(list[k+1].c_str());
-            template_dim = atoi(list[k+2].c_str());
-            k=k+3;
-            //post("add template %i with size %i (k=%i)", template_id, template_dim,k);
-            addTemplate();
-            template_starting_point = 1;
-        }
-        
-        if (template_dim<=0){
-            //post("bug dim = -1");
-        }
-        else{
-            
-            vector<float> vect(template_dim);
-            if (template_starting_point==1)
-            {
-                // keep track of the first point
-                for (int kk=0; kk<template_dim; kk++)
-                {
-                    vect[kk] = (float)atof(list[k+kk].c_str());
-                    vect_0_l[kk] = vect[kk];
-                }
-                template_starting_point=0;
-            }
-            // store the incoming list as a vector of float
-            for (int kk=0; kk<template_dim; kk++)
-            {
-                vect[kk] = (float)atof(list[k+kk].c_str());
-                vect[kk] = vect[kk]-vect_0_l[kk];
-            }
-            //post("fill %i with %f %f",numTemplates,vect[0],vect[1]);
-            fillTemplate(numTemplates,vect);
-        }
-        
-        k+=template_dim;
-        
-    }
-    
-    infile.close();
+//    clear();
+//    
+//    ifstream infile;
+//    stringstream doung;
+//    
+//    infile.open (filename.c_str(), ifstream::in);
+//    
+//    string line;
+//    vector<string> list;
+//    int cl=-1;
+//    while(!infile.eof())
+//    {
+//        cl++;
+//        infile >> line;
+//        //post("%i %s",cl,line.c_str());
+//        list.push_back(line);
+//    }
+//    
+//    int k=0;
+//    int template_starting_point = 1;
+//    int template_id=-1;
+//    int template_dim = 0;
+//    float* vect_0_l;
+//    //post("list size %i",list.size());
+//    
+//    while (k < (list.size()-1) ){ // TODO to be changed if dim>2
+//        if (!strcmp(list[k].c_str(),"template"))
+//        {
+//            template_id = atoi(list[k+1].c_str());
+//            template_dim = atoi(list[k+2].c_str());
+//            k=k+3;
+//            //post("add template %i with size %i (k=%i)", template_id, template_dim,k);
+//            addTemplate();
+//            template_starting_point = 1;
+//        }
+//        
+//        if (template_dim<=0){
+//            //post("bug dim = -1");
+//        }
+//        else{
+//            
+//            vector<float> vect(template_dim);
+//            if (template_starting_point==1)
+//            {
+//                // keep track of the first point
+//                for (int kk=0; kk<template_dim; kk++)
+//                {
+//                    vect[kk] = (float)atof(list[k+kk].c_str());
+//                    vect_0_l[kk] = vect[kk];
+//                }
+//                template_starting_point=0;
+//            }
+//            // store the incoming list as a vector of float
+//            for (int kk=0; kk<template_dim; kk++)
+//            {
+//                vect[kk] = (float)atof(list[k+kk].c_str());
+//                vect[kk] = vect[kk]-vect_0_l[kk];
+//            }
+//            //post("fill %i with %f %f",numTemplates,vect[0],vect[1]);
+//            fillTemplate(numTemplates,vect);
+//        }
+//        
+//        k+=template_dim;
+//        
+//    }
+//    
+//    infile.close();
 }
 
 //--------------------------------------------------------------

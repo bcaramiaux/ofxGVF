@@ -63,19 +63,6 @@ public:
     void setup();
     void setup(ofxGVFParameters parameters, ofxGVFVarianceCoefficents coefficents);
     
-	// add template to the vocabulary
-	void addTemplate();
-	void addTemplate(vector<float> & data);
-    
-	// fill template given by id with data vector
-	void fillTemplate(int id, vector<float> & data);
-
-    // clear template given by id
-    void clearTemplate(int id);
-    
-	// clear the templates
-	void clear();
-    
 	// spread particles
 	void spreadParticles();         // use default parameter values
 	void spreadParticles(vector<float> & means, vector<float> & ranges);
@@ -87,7 +74,7 @@ public:
     void resampleAccordingToWeights();
 	
     // makes the inference by calling particleFilteringOptim
-	void infer(vector<float> & data);   // rename to update?
+	void infer(vector<float> data);   // rename to update?
 	void updateEstimatedStatus();       // should be private?
     
     //////////////////////////
@@ -106,9 +93,31 @@ public:
     
     // TEMPLATES
     
-    int getNumberOfTemplates();
-    vector< vector<float> >& getTemplateByIndex(int index);
-    int getLengthOfTemplateByIndex(int index);
+    void addGestureTemplate(ofxGVFGesture & gestureTemplate);
+    ofxGVFGesture & getGestureTemplate(int index);
+    vector<ofxGVFGesture> & getAllGestureTemplates();
+    int getNumGestureTemplates();
+    
+    void removeGestureTemplate(int index);
+    void removeAllGestureTemplates();
+    
+//    // add template to the vocabulary
+//	void addTemplate();
+//	void addTemplate(vector<float> & data);
+//    
+//	// fill template given by id with data vector
+//	void fillTemplate(int id, vector<float> & data);
+//    
+//    // clear template given by id
+//    void clearTemplate(int id);
+//    
+	// reset ofxGVF
+	void clear();
+//
+//    // template utilities
+//    int getNumberOfTemplates();
+//    vector< vector<float> >& getTemplateByIndex(int index);
+//    int getLengthOfTemplateByIndex(int index);
     
     ///////////////////////
     // Getters & Setters //
@@ -136,6 +145,9 @@ public:
     
     void setDistribution(float distribution);
     float getDistribution();
+    
+//    void setGestureType(ofxGVFGestureType type);
+//    ofxGVFGestureType getGestureType();
     
     // VARIANCE COEFFICENTS
     
@@ -182,7 +194,6 @@ private:
 	int     resamplingThreshold;// resampling threshol
     int     ns;
 	int     pdim;               // number of state dimension
-	int     numTemplates;       // number of learned gestures (starts at 0)
     int     inputDim;           // Dimension of the input data
     
     int mostProbableIndex;                      // cached most probable index
@@ -197,20 +208,26 @@ private:
 	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
     
     // gesture 'history'
-	map<int, vector< vector<float> > > R_single;   // gesture references (1 example)
-    map<int, vector<float> > R_initial;  // gesture initial data
-    vector<float> O_initial;  // observed initial data
-    vector<int>    gestureLengths;             // length of each reference gesture
-    vector<float>  particlesPhaseLt0;          // store particles whose phase is < 0 (outside of the gesture)
-    vector<float>  particlesPhaseGt1;          // store particles whose phase is > 1 (outside of the gesture)
+//	map<int, vector< vector<float> > > R_single;    // gesture references (1 example)
+//    map<int, vector<float> > R_initial;             // gesture initial data
+//    vector<int> gestureLengths;                     // length of each reference gesture
+//    vector< vector<float> > EmptyTemplate;      // dummy empty template for passing as ref
+//    int     numTemplates;       // number of learned gestures (starts at 0)
+    
+    vector<float> maxRange;
+    vector<float> minRange;
+    
+    vector<ofxGVFGesture> gestureTemplates;
+    
+    vector<float> O_initial;                    // observed initial data
+    vector<float>  particlesPhaseLt0;           // store particles whose phase is < 0 (outside of the gesture)
+    vector<float>  particlesPhaseGt1;           // store particles whose phase is > 1 (outside of the gesture)
     
     //in order to output particles
     vector< vector<float> > particlesPositions;
     
     ofxGVFState state;                          // store current state of the gesture follower
-    
-    vector< vector<float> > EmptyTemplate;      // dummy empty template for passing as ref
-	
+
     // random number generator
 #if BOOSTLIB
 	boost::variate_generator<boost::mt19937&, boost::normal_distribution<float> > *rndnorm(rng, normdist);

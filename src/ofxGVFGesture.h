@@ -27,7 +27,7 @@ public:
     ofxGVFGesture(){
         inputDimensions = 2; // default to 2D
         type = GEOMETRIC; // default to a geometric shape
-        bAutoAdjustNormalRange = true;
+        bAutoAdjustNormalRange = false;
         clear();
     }
     
@@ -55,6 +55,11 @@ public:
     void setNumberDimensions(int dimensions){
         assert(dimensions > 0);
         inputDimensions = dimensions;
+    }
+    
+    void setAutoAdjustRanges(bool b){
+        if(b) bIsRangeMinSet = bIsRangeMaxSet = false;
+        bAutoAdjustNormalRange = b;
     }
     
 #ifdef OPENFRAMEWORKS
@@ -119,10 +124,22 @@ public:
     
     void setMaxRange(vector<float> observationRangeMax){
         this->observationRangeMax = observationRangeMax;
+        bIsRangeMaxSet = true;
+        normalise();
     }
     
     void setMinRange(vector<float> observationRangeMin){
         this->observationRangeMin = observationRangeMin;
+        bIsRangeMinSet = true;
+        normalise();
+    }
+    
+    vector<float>& getMaxRange(){
+        return observationRangeMax;
+    }
+    
+    vector<float>& getMinRange(){
+        return observationRangeMin;
     }
     
     void autoAdjustMinMax(vector<float> & observation){
@@ -134,6 +151,43 @@ public:
             observationRangeMax[i] = MAX(observationRangeMax[i], observation[i]);
             observationRangeMin[i] = MIN(observationRangeMin[i], observation[i]);
         }
+    }
+    
+#ifdef OPENFRAMEWORKS
+    void addObservationRaw(ofPoint observation, int templateIndex = 0){
+        assert(inputDimensions <= 3);
+        vector<float> obs(inputDimensions);
+        for(int i = 0; i < inputDimensions; i++){
+            obs[i] = observation[i];
+        }
+        addObservationRaw(obs, templateIndex);
+    }
+#endif
+    
+    void addObservationRaw(vector<float> observation, int templateIndex = 0){
+        
+        // check we have a valid templateIndex and correct number of input dimensions
+        assert(templateIndex <= templatesRaw.size());
+        assert(observation.size() == inputDimensions);
+        assert(bAutoAdjustNormalRange || (bIsRangeMaxSet && bIsRangeMinSet));
+        
+        // if the template index is same as the number of temlates make a new template
+        if(templateIndex == templatesRaw.size()){ // make a new template
+            
+            // reserve space in raw and normal template storage
+            templatesRaw.resize(templatesRaw.size() + 1);
+            templatesNormal.resize(templatesNormal.size() + 1);
+            
+        }
+        
+        // store the raw observation
+        templatesRaw[templateIndex].push_back(observation);
+        
+        // if set let's auto size the range for normalising
+        if(bAutoAdjustNormalRange) autoAdjustMinMax(observation);
+        
+        normalise();
+        
     }
     
     void normalise(){
@@ -172,12 +226,12 @@ public:
                     representationsNormal[t][i].setMode(OF_PRIMITIVE_LINE_STRIP);
                 }
             }
-#endif
             
             for(int m = 0; m < representationsNormal[t].size(); m++){
                 representationsNormal[t][m].clear();
             }
-
+#endif
+            
             templatesNormal[t].resize(templatesRaw[t].size());
             
             for(int o = 0; o < templatesRaw[t].size(); o++){
@@ -187,9 +241,13 @@ public:
                 templatesNormal[t][o].resize(inputDimensions);
                 
                 for(int d = 0; d < inputDimensions; d++){
-                    cout << templatesNormal[t][o][d] << " " << templatesRaw[t][o][d] / ABS(observationRangeMax[d] - observationRangeMin[d]) << endl;
+                    
+                    //cout << d << " " << templatesNormal[t][o][d] << " " << templatesRaw[t][o][d] / ABS(observationRangeMax[d] - observationRangeMin[d]) << endl;
+                    
                     templatesNormal[t][o][d] = templatesRaw[t][o][d] / (observationRangeMax[d] - observationRangeMin[d]);
+                    
 #ifdef OPENFRAMEWORKS
+                    
                     if(type == GEOMETRIC){
                         
                         pN[d] = templatesNormal[t][o][d];
@@ -210,145 +268,17 @@ public:
                     
                     representationsNormal[t][0].addVertex(pN);
                     representationsNormal[t][0].addColor(ofColor(255, 255, 255));
+                    
                 }
-#else
-                }
+
 #endif
             }
         }
-    
-    bIsRangeMinSet = bIsRangeMaxSet = true;
-    
-    }
-    
-#ifdef OPENFRAMEWORKS
-    void addObservationRaw(ofPoint observation, int templateIndex = 0){
-        assert(inputDimensions <= 3);
-        vector<float> obs(inputDimensions);
-        for(int i = 0; i < inputDimensions; i++){
-            obs[i] = observation[i];
-        }
-        addObservationRaw(obs, templateIndex);
-    }
-#endif
-    
-    void addObservationRaw(vector<float> observation, int templateIndex = 0){
         
-        // check we have a valid templateIndex and correct number of input dimensions
-        assert(templateIndex <= templatesRaw.size());
-        assert(observation.size() == inputDimensions);
-        
-        // if the template index is same as the number of temlates make a new template
-        if(templateIndex == templatesRaw.size()){ // make a new template
-            
-            // reserve space in raw and normal template storage
-            templatesRaw.resize(templatesRaw.size() + 1);
-            templatesNormal.resize(templatesNormal.size() + 1);
-            
-//#ifdef OPENFRAMEWORKS
-//            
-//            // reserve space for raw and normal meshes
-//            representationsRaw.resize(templatesRaw.size() + 1);
-//            representationsNormal.resize(templatesRaw.size() + 1);
-//
-//            if(type == GEOMETRIC){
-//                
-//                // for GEOMETRIC representations let's use a single mesh with n-Dimensions
-//                
-//                representationsRaw[templateIndex].resize(1);
-//                representationsRaw[templateIndex][0].setMode(OF_PRIMITIVE_LINE_STRIP);
-//                
-//                representationsNormal[templateIndex].resize(1);
-//                representationsNormal[templateIndex][0].setMode(OF_PRIMITIVE_LINE_STRIP);
-//                
-//            }else{
-//                
-//                // for TEMPORAL representations let's use a mesh for EACH of the n-Dimensions
-//                
-//                representationsRaw[templateIndex].resize(inputDimensions);
-//                for(int i = 0; i < inputDimensions; i++){
-//                    representationsRaw[templateIndex][i].setMode(OF_PRIMITIVE_LINE_STRIP);
-//                }
-//                
-//                representationsNormal[templateIndex].resize(inputDimensions);
-//                for(int i = 0; i < inputDimensions; i++){
-//                    representationsNormal[templateIndex][i].setMode(OF_PRIMITIVE_LINE_STRIP);
-//                }
-//            }
-//#endif
-        }
-        
-        // store the raw observation
-        templatesRaw[templateIndex].push_back(observation);
-        
-        // if set let's auto size the range for normalising
-        if(bAutoAdjustNormalRange) autoAdjustMinMax(observation);
-        
-        normalise();
-        
-//        vector<float> observationNormal(inputDimensions);
-//        
-//        // check to see if ranges have been set manually
-//        if(bIsRangeMinSet && bIsRangeMaxSet){
-//            
-//            // normalise the raw value
-//            
-//            // calculate the normal on the fly
-//            // NOTE: this will have errors if the
-//            // normal range changes...so call
-//            // normalise() at the end of learning
-//            // to re-normalise all the values
-//            for(int d = 0; d < inputDimensions; d++){
-//                observationNormal[d] = observation[d] / (observationRangeMax[d] - observationRangeMin[d]);
-//            }
-//            
-//            // store the normalised observation
-//            templatesNormal[templateIndex].push_back(observationNormal);
-//        }
- 
-//#ifdef OPENFRAMEWORKS
-//        if(type == GEOMETRIC){
-//            
-//            ofPoint pR, pN;
-//            
-//            for(int i = 0; i < inputDimensions; i++){
-//                pR[i] = observation[i];
-//                if(bIsRangeMinSet && bIsRangeMaxSet) pN[i] = observationNormal[i];
-//            }
-//            
-//            representationsRaw[templateIndex][0].addVertex(pR);
-//            representationsRaw[templateIndex][0].addColor(ofColor(255, 255, 255));
-//            
-//            if(bIsRangeMinSet && bIsRangeMaxSet){
-//                representationsNormal[templateIndex][0].addVertex(pN);
-//                representationsNormal[templateIndex][0].addColor(ofColor(255, 255, 255));
-//            }
-//            
-//        }else{
-//            
-//            for(int d = 0; d < inputDimensions; d++){
-//                
-//                ofPoint pR;
-//                
-//                pR.x = templatesRaw[templateIndex].size();
-//                pR.y = observation[d];
-//                
-//                representationsRaw[templateIndex][d].addVertex(pR);
-//                representationsRaw[templateIndex][d].addColor(ofColor(255, 255, 255));
-//                
-//                if(bIsRangeMinSet && bIsRangeMaxSet){
-//                    ofPoint pN;
-//                    pN.x = templatesRaw[templateIndex].size();
-//                    pN.y = observationNormal[d];
-//                    representationsNormal[templateIndex][d].addVertex(pN);
-//                    representationsNormal[templateIndex][d].addColor(ofColor(255, 255, 255));
-//                }
-//            }
-//        }
-//#endif
+        bIsRangeMinSet = bIsRangeMaxSet = true;
         
     }
-    
+
     void setTemplateRaw(vector< vector<float> > & observations, int templateIndex = 0){
         for(int i = 0; i < observations.size(); i++){
             addObservationRaw(observations[i], templateIndex);
@@ -367,6 +297,18 @@ public:
     
     int getNumberOfTemplates(){
         return templatesRaw.size();
+    }
+    
+    int getTemplateLength(int templateIndex = 0){
+        return templatesRaw[templateIndex].size();
+    }
+    
+    vector<float>& getLastRawObservation(int templateIndex = 0){
+        return templatesRaw[templateIndex][templatesRaw[templateIndex].size() - 1];
+    }
+    
+    vector<float>& getLastNormalObservation(int templateIndex = 0){
+        return templatesNormal[templateIndex][templatesNormal[templateIndex].size() - 1];
     }
     
     vector< vector< vector<float> > > & getTemplatesRaw(){
@@ -406,9 +348,24 @@ public:
         
         float x = 0.0f;
         float y = 0.0f;
+        float w = 1.0f;
+        float h = 1.0f;
         
-        float w = observationRangeMax[0] - observationRangeMin[0];
-        float h = observationRangeMax[1] - observationRangeMin[1];
+        if(representationsNormal.size() > 0 && type == GEOMETRIC){
+            x = observationRangeMin[0];
+            y = observationRangeMin[1];
+            w = observationRangeMax[0] - observationRangeMin[0];
+            h = observationRangeMax[1] - observationRangeMin[1];
+        }
+        
+        if(representationsNormal.size() > 0 && type == TEMPORAL){
+            if(representationsNormal[0].size() > 0){
+                w = representationsNormal[0][0].getNumVertices();
+                for(int d = 0; d < inputDimensions; d++){
+                    if(observationRangeMax[d] > h) h = observationRangeMax[d];
+                }
+            }
+        }
 
         draw(x, y, w, h);
         
@@ -424,25 +381,24 @@ public:
     }
 
     void draw(float x, float y, float w, float h){
-        
-        float scaleX = observationRangeMax[0] - observationRangeMin[0];
-        float scaleY = observationRangeMax[1] - observationRangeMin[1];
-        //float scaleZ = observationRangeMax[2] - observationRangeMin[2];
 
         ofPushMatrix();
 
-        ofTranslate(x, y);
-        ofScale(w / scaleX, h / scaleY);
-
         if(representationsRaw.size() > 0 && type == GEOMETRIC){
             
+            float scaleX = observationRangeMax[0] - observationRangeMin[0];
+            float scaleY = observationRangeMax[1] - observationRangeMin[1];
+            //float scaleZ = observationRangeMax[2] - observationRangeMin[2];
+            
+            ofTranslate(x, y);
+            ofScale(w / scaleX, h / scaleY);
+            ofTranslate(-observationRangeMin[0], -observationRangeMin[1]);
+            
             ofPushMatrix();
-            if(bIsRangeMinSet && bIsRangeMaxSet){
-                ofScale(scaleX, scaleY);
-                representationsNormal[0][0].draw();
-            }else{
-                representationsRaw[0][0].draw();
-            }
+            
+            ofScale(scaleX, scaleY);
+            representationsNormal[0][0].draw();
+
             ofPopMatrix();
             
             ofNoFill();
@@ -452,22 +408,39 @@ public:
             ofRect(ofRectangle(min, max));
             ofSetColor(255, 255, 255);
         }
-        if(representationsRaw.size() > 0 && type == TEMPORAL){
+        
+        if(representationsRaw.size() > 0 && type == TEMPORAL && representationsNormal[0].size() > 0){
+            
+            float scaleM = -INFINITY;
+            float maxY = -INFINITY;
+            
             for(int d = 0; d < inputDimensions; d++){
-                ofPushMatrix();
-                if(bIsRangeMinSet && bIsRangeMaxSet){
-                    ofScale(1.0f, scaleY);
-                    representationsNormal[0][d].draw();
-                }else{
-                    representationsRaw[0][d].draw();
+                if(observationRangeMax[d] - observationRangeMin[d] > scaleM){
+                    scaleM = observationRangeMax[d] - observationRangeMin[d];
                 }
+                if(observationRangeMax[d] > maxY){
+                    maxY = observationRangeMax[d];
+                }
+            }
+            
+            ofTranslate(x, y);
+            ofScale(w / representationsNormal[0][0].getNumVertices(), h / maxY);
+            
+            for(int d = 0; d < inputDimensions; d++){
+                
+                ofPushMatrix();
+                ofScale(1.0f, observationRangeMax[d] - observationRangeMin[d]);
+            
+                representationsNormal[0][d].draw();
+            
                 ofPopMatrix();
                 
             }
+
             ofNoFill();
             ofSetColor(255, 0, 0);
-            ofPoint min = ofPoint(observationRangeMin[0], observationRangeMin[1], 0);
-            ofPoint max = ofPoint(observationRangeMax[0], observationRangeMax[1], 0);
+            ofPoint min = ofPoint(0, 0, 0);
+            ofPoint max = ofPoint(representationsNormal[0][0].getNumVertices(), maxY, 0);
             ofRect(ofRectangle(min, max));
             ofSetColor(255, 255, 255);
         }
@@ -477,7 +450,8 @@ public:
     }
 
 #endif
-
+    
+    
 protected:
 
     string name;
@@ -489,8 +463,6 @@ protected:
     bool bIsRangeMaxSet;
     bool bIsRangeMinSet;
 //    int id;
-    
-    ofxGVFVarianceCoefficents coefficients;
     
     vector< vector< vector<float> > > templatesRaw;
     vector< vector< vector<float> > > templatesNormal;
