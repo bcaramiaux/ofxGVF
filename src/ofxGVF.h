@@ -66,7 +66,7 @@ public:
 	// spread particles
 	void spreadParticles();         // use default parameter values
 	void spreadParticles(vector<float> & means, vector<float> & ranges);
-    
+    void spreadParticles(ofxGVFInitialSpreadingParameters _spreadingParameters);
 	// inference
     void particleFilter(vector<float> & obs);
 	
@@ -187,6 +187,7 @@ private:
     
     ofxGVFParameters parameters;
     ofxGVFVarianceCoefficents coefficents;
+    ofxGVFInitialSpreadingParameters spreadingParameters;
     
     float   tolerance;          // standard deviation of the observation distribution
 	float   nu;                 // degree of freedom for the t-distribution; if 0, use a gaussian

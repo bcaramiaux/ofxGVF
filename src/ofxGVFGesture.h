@@ -182,11 +182,13 @@ public:
 
         if(templatesRaw[templateIndex].size() == 0){
             templateInitialRaw = templateInitialNormal = observation;
+        //    cout << "INIT " << observation[0] << " " << observation[1] << endl;
         }
 
         for(int j = 0; j < observation.size(); j++){
             observation[j] = observation[j] - templateInitialRaw[j];
         }
+        //            cout << "THEN " << observation.size() << " | " << observation[0] << " " << observation[1] << " " << templateInitialRaw[0] << " " << templateInitialRaw[1] << endl;
         
         // store the raw observation
         templatesRaw[templateIndex].push_back(observation);

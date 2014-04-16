@@ -17,10 +17,10 @@ void ofApp::setup(){
     
     ofxGVFVarianceCoefficents coefficents;
     
-    coefficents.phaseVariance = 0.00001;
-    coefficents.speedVariance = 0.00001;
+    coefficents.phaseVariance = 0.000005;
+    coefficents.speedVariance = 0.0001;
     coefficents.scaleVariance = 0.00001;
-    coefficents.rotationVariance = 0.00001;
+    coefficents.rotationVariance = 0.00000001;
     
     gvf.setup(parameters, coefficents);
 //    gvf.setup();
@@ -76,6 +76,7 @@ void ofApp::draw(){
             // and then scaled and translated in order to be drawn
             float x = ((point.x)) * (currentGesture.getMaxRange()[0] - currentGesture.getMinRange()[0]);
             float y = ((point.y)) * (currentGesture.getMaxRange()[1] - currentGesture.getMinRange()[1]);
+            //cout << point.x << " " << point.y << " " << currentGesture.getMaxRange()[0] << " " << currentGesture.getMinRange()[0] << endl;
             
             // the weight of the particle is normalised
             // and then used as the radius of the circle representing the particle
@@ -86,21 +87,27 @@ void ofApp::draw(){
             ofSetColor(c);
             ofPushMatrix();
             ofTranslate(currentGesture.getInitialObservationRaw()[0], currentGesture.getInitialObservationRaw()[1]);
-            ofCircle(x, y, radius);
+            //ofCircle(x, y, radius);
+            ofCircle(x, y, 1); // MATT something wrong with radius above
             ofPopMatrix();
-            //cout << x << " " << y << " " << radius << endl;
             
         }
     }
     
     ofSetColor(255, 255, 255);
     
+    
     ostringstream os;
     os << "FPS: " << ofGetFrameRate() << endl;
     os << "GVFState: " << gvf.getStateAsString() << endl;
-    os << "Most probable index: " << gvf.getMostProbableGestureIndex() << endl;
+    os << "Most probable index: " << gvf.getMostProbableGestureIndex()+1 << endl;
     
-    // PERFORM INFERENCE HERE (in order to take into account when the mouse is still, not dragged)
+    
+    float phase = 0.0f;
+    float speed = 0.0f;
+    float size = 0.0f;
+    float angle = 0.0f;
+    
     switch(gvf.getState())
     {
         case ofxGVF::STATE_FOLLOWING:
@@ -109,19 +116,30 @@ void ofApp::draw(){
             {
                 gvf.infer(currentGesture.getLastRawObservation());
                 vector<vector<float> > gvfEstimates = gvf.getEstimatedStatus();
-                if (gvfEstimates.size()>0)
-                if (gvfEstimates[0].size()>0)
-                    os << "Estimated phase in Temp  " << gvf.getMostProbableGestureIndex()+1 << ": " << gvfEstimates[gvf.getMostProbableGestureIndex()][0] << endl;
+
+                if (gvf.getMostProbableGestureIndex() >= 0){
+                    
+                     phase = gvfEstimates[gvf.getMostProbableGestureIndex()][0];
+                     speed = gvfEstimates[gvf.getMostProbableGestureIndex()][1];
+                     size = gvfEstimates[gvf.getMostProbableGestureIndex()][2];
+                     angle = gvfEstimates[gvf.getMostProbableGestureIndex()][3];
+                     
+                    //cout << phase << " " << speed << " " << size << " " << angle << endl;
+                }
             }
             break;
         }
         default:
             break;
     }
+    
 
+    os << "Cursor: " << phase << " | Speed: " << speed << " | Size: " << size << " | Angle: " << angle << endl;
+    
     ofDrawBitmapString(os.str(), 20, 20);
     
 }
+
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){

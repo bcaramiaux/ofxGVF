@@ -13,6 +13,7 @@
 #include <iostream>
 #include <tr1/random>
 #include <iostream>
+#include <math.h>
 
 #define OPENFRAMEWORKS 1
 #define BOOSTLIB 0
@@ -243,6 +244,21 @@ inline vector< vector<T> > multiplyMatf(vector< vector<T> > & M1, vector< vector
 
 //--------------------------------------------------------------
 template <typename T>
+inline vector<T> multiplyMat(vector< vector<T> > & M1, vector< T> & Vect){
+    assert(Vect.size() == M1[0].size()); // columns in M1 == rows in Vect
+    vector<T> multiply;
+    initVec(multiply, Vect.size());
+    for (int i=0; i<M1.size(); i++){
+        multiply[i] = 0.0f;
+        for (int j=0; j<M1[i].size(); j++){
+            multiply[i] += M1[i][j] * Vect[j];
+        }
+    }
+    return multiply;
+}
+
+//--------------------------------------------------------------
+template <typename T>
 inline float getMeanVec(vector<T>& V){
     float tSum = 0.0f;
     for (int n=0; n<V.size(); n++){
@@ -250,6 +266,10 @@ inline float getMeanVec(vector<T>& V){
     }
     return tSum / (float)V.size();
 }
+
+
+
+
 
 //template<typename T>
 //class ofxGVFMatrix{
