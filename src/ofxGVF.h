@@ -62,7 +62,7 @@ public:
 	
     void setup();
     void setup(ofxGVFParameters parameters, ofxGVFVarianceCoefficents coefficents);
-    
+    void learn();
 	// spread particles
 	void spreadParticles();         // use default parameter values
 	void spreadParticles(vector<float> & means, vector<float> & ranges);

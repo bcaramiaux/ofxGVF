@@ -37,6 +37,8 @@ typedef struct{
     float tolerance = -1.0f;
     int resamplingThreshold = -1;
     float distribution = 0.0f;
+    bool translate;
+    bool allowSegmentation;
 } ofxGVFParameters;
 
 typedef struct{
@@ -45,6 +47,13 @@ typedef struct{
     float scaleVariance = -1.0f;
     float rotationVariance = -1.0f;
 } ofxGVFVarianceCoefficents;
+
+typedef struct{
+    float phaseInitialSpreading;
+    float speedInitialSpreading;
+    vector<float> scaleInitialSpreading;
+    vector<float> rotationInitialSpreading;
+} ofxGVFInitialSpreadingParameters;
 
 #ifdef OPENFRAMEWORKS
 

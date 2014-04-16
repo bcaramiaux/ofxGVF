@@ -23,4 +23,6 @@ class ofApp : public ofBaseApp{
         ofxGVF gvf;
         ofxGVFGesture currentGesture;
         float initX, initY;
+
+        bool performingFollowing = false;
 };

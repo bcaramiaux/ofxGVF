@@ -26,6 +26,7 @@ void ofApp::setup(){
 //    gvf.setup();
     
     ofBackground(0, 0, 0);
+    performingFollowing = false;
     
 }
 
@@ -99,6 +100,25 @@ void ofApp::draw(){
     os << "GVFState: " << gvf.getStateAsString() << endl;
     os << "Most probable index: " << gvf.getMostProbableGestureIndex() << endl;
     
+    // PERFORM INFERENCE HERE (in order to take into account when the mouse is still, not dragged)
+    switch(gvf.getState())
+    {
+        case ofxGVF::STATE_FOLLOWING:
+        {
+            if (performingFollowing)
+            {
+                gvf.infer(currentGesture.getLastRawObservation());
+                vector<vector<float> > gvfEstimates = gvf.getEstimatedStatus();
+                if (gvfEstimates.size()>0)
+                if (gvfEstimates[0].size()>0)
+                    os << "Estimated phase in Temp  " << gvf.getMostProbableGestureIndex()+1 << ": " << gvfEstimates[gvf.getMostProbableGestureIndex()][0] << endl;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+
     ofDrawBitmapString(os.str(), 20, 20);
     
 }
@@ -175,6 +195,8 @@ void ofApp::mousePressed(int x, int y, int button){
             currentGesture.setMin(0.0f, 0.0f);
             currentGesture.setMax(ofGetWidth(), ofGetHeight());
             currentGesture.addObservationRaw(ofPoint(x, y, 0));
+            performingFollowing = true;
+
             break;
         }
             
@@ -186,6 +208,7 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+    performingFollowing = false;
     switch(gvf.getState()){
         case ofxGVF::STATE_LEARNING:
         {

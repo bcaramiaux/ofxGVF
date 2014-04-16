@@ -75,6 +75,8 @@ void ofxGVF::setup(){
     defaultParameters.tolerance = 0.2f;
     defaultParameters.resamplingThreshold = 500;
     defaultParameters.distribution = 0.0f;
+    defaultParameters.translate = true;
+    defaultParameters.allowSegmentation = true;
 //    defaultParameters.gestureType = GEOMETRIC;
     
     ofxGVFVarianceCoefficents defaultCoefficents;
@@ -92,16 +94,37 @@ void ofxGVF::setup(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coef
     
     clear(); // just in case
     
+    
+    // Set parameters:
+    //    input dimensions
+    //    num of particles
+    //    tolerance
+    //    resampling threshold
+    //    distribution (nu value of the Student's T distribution [default=0])
+    //    translate flag
+    //    translate flag
     parameters = _parameters;
+    
+    
+    // Set variances for variation tracking:
+    //    phase
+    //    speed
+    //    scale
+    //    rotation
     coefficents = _coefficents;
     
     inputDim = parameters.inputDimensions;
     ns = parameters.numberParticles;
     
+    /*
     if(inputDim > 2 && coefficents.rotationVariance != 0.0){
         cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
         coefficents.rotationVariance = 0.0f;
-    }
+    }*/
+    
+    
+    //MATT: everything below about variance coefficients, matrix inits will be moved to GVF::learn()
+    //  the function is created but empty
     
     if(coefficents.phaseVariance != -1.0f) featVariances.push_back(sqrt(coefficents.phaseVariance));
     if(coefficents.speedVariance != -1.0f) featVariances.push_back(sqrt(coefficents.speedVariance));
@@ -141,6 +164,19 @@ void ofxGVF::setup(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coef
     probThresh = 0.02*ns;               // thresholds on the absolute weights for segmentation
     probThreshMin = 0.1*ns;
 }
+
+
+//----------------------------------------------
+//
+// Learn Internal Configuration
+//
+void ofxGVF::learn(){
+    
+    //TODO (Baptiste)
+    
+}
+
+
 
 // Destructor of the class
 ofxGVF::~ofxGVF(){
