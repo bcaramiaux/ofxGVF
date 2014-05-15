@@ -1130,6 +1130,47 @@ vector< vector<float> > ofxGVF::getEstimatedStatus(){
     return S;
 }
 
+
+ofxGVFVariations ofxGVF::getVariations() {
+    
+    
+    // number of scaling coefficients
+    int scalingCoefficients  = spreadingParameters.scaleInitialSpreading.size();
+
+    // number of rotation angles
+    int numberRotationAngles = spreadingParameters.rotationInitialSpreading.size();
+    
+    // variations
+    ofxGVFVariations variations;
+    
+    // get the estimations
+    //////////////////////
+    // phase
+    variations.estimatedPhase = mostProbableStatus[0];
+    // speed
+    variations.estimatedSpeed = mostProbableStatus[1];
+    // scale
+    variations.estimatedScale = vector<float> (scalingCoefficients);
+    for (int nn=0; nn<scalingCoefficients; nn++)
+        variations.estimatedScale[nn] = mostProbableStatus[2+nn];
+    // rotation
+    variations.estimatedRotation = vector<float> (numberRotationAngles);
+    for (int nn=0; nn<numberRotationAngles; nn++)
+        variations.estimatedRotation[nn] = mostProbableStatus[2+scalingCoefficients+nn];
+    
+    
+    
+    return variations;
+    
+}
+
+ofxGVFVariations ofxGVF::getVariations(int gestureIndex) {
+    
+    // TODO
+    
+}
+
+
 //--------------------------------------------------------------
 // Returns the probabilities of each gesture. This probability is conditionnal
 // because it depends on the other gestures in the vocabulary:

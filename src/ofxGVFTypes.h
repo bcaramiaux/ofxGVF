@@ -32,6 +32,8 @@ enum ofxGVFGestureType{
     TEMPORAL
 };
 
+// ofxGVFParameters
+//  comprises global parameters of the algorithm
 typedef struct{
     int inputDimensions = -1;
     int numberParticles = -1;
@@ -42,6 +44,8 @@ typedef struct{
     bool allowSegmentation;
 } ofxGVFParameters;
 
+// ofxGVFVarianceCoefficents
+//  variances of the probability distributions
 typedef struct{
     float phaseVariance = -1.0f;
     float speedVariance = -1.0f;
@@ -49,12 +53,23 @@ typedef struct{
     float rotationVariance = -1.0f;
 } ofxGVFVarianceCoefficents;
 
+// ofxGVFInitialSpreadingParameters
 typedef struct{
     float phaseInitialSpreading;
     float speedInitialSpreading;
     vector<float> scaleInitialSpreading;
     vector<float> rotationInitialSpreading;
 } ofxGVFInitialSpreadingParameters;
+
+// ofxGVFVariations
+typedef struct{
+    float estimatedPhase;
+    float estimatedSpeed;
+    vector<float> estimatedScale;
+    vector<float> estimatedRotation;
+} ofxGVFVariations;
+
+
 
 #ifdef OPENFRAMEWORKS
 

@@ -115,6 +115,7 @@ void ofApp::draw(){
             if (performingFollowing)
             {
                 gvf.infer(currentGesture.getLastRawObservation());
+                /*
                 vector<vector<float> > gvfEstimates = gvf.getEstimatedStatus();
 
                 if (gvf.getMostProbableGestureIndex() >= 0){
@@ -124,6 +125,19 @@ void ofApp::draw(){
                      size = gvfEstimates[gvf.getMostProbableGestureIndex()][2];
                      angle = gvfEstimates[gvf.getMostProbableGestureIndex()][3];
                      
+                    //cout << phase << " " << speed << " " << size << " " << angle << endl;
+                }
+                 */
+                
+                ofxGVFVariations variations = gvf.getVariations();
+                
+                if (gvf.getMostProbableGestureIndex() >= 0){
+                    
+                    phase = variations.estimatedPhase;
+                    speed = variations.estimatedSpeed;
+                    size  = variations.estimatedScale[0]; // only 1 scale coefficient
+                    angle = variations.estimatedRotation[0]; // only 1 angle or rotation
+                    
                     //cout << phase << " " << speed << " " << size << " " << angle << endl;
                 }
             }

@@ -86,6 +86,10 @@ public:
     int getMostProbableGestureIndex();
     vector<float> getMostProbableGestureStatus();
     float getMostProbableProbability(); // this is horrible - maybe probability should be at index 0 OR we should use a struct rather than a vector??
+    
+    ofxGVFVariations getVariations();
+    ofxGVFVariations getVariations(int gestureIndex);
+    
     vector< vector<float> > getEstimatedStatus();
     
     vector<float> getGestureProbabilities();
