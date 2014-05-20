@@ -27,6 +27,12 @@ gvf.setup(parameters, coefficents);
             – rotationVariance
 
 
+gvf.setup();
+
+    this creates GVF with default values.
+    !!! the values might not be appropriate for each configuration (data range, noise level, etc.)
+
+
 //==================================
 // SWITCHING MODES: LEARNING, FOLLOWING, CLEAR
 //==================================
@@ -48,16 +54,20 @@ currentGesture.clear();
 
     clear only for the first point of the gesture
 
-currentGesture.setAutoAdjustRanges(false);
-currentGesture.setMin(0.0f, 0.0f);
-currentGesture.setMax(ofGetWidth(), ofGetHeight());
-
-    define auto normalization for drawing purposes only at the starting point of the gesture
+IF USING OPENFRAMEWORKS
 
 currentGesture.addObservationRaw(ofPoint(x, y, 0));
 
     where x, y are 2-dimensional gesture coordinate (e.g. from the mouse). this is called for
     each new point to put in the gesture
+
+OTHERWISE
+
+currentGesture.addObservationRaw(observation);
+
+    where observation is a vector<float> such as observation[0]=x and observation[1]=y
+    in case of a 2-dimenionsal shape
+
 
 gvf.addGestureTemplate(currentGesture);
 
@@ -80,6 +90,16 @@ gvf.infer();
 //==================================
 
 vector<vector<float> > gvfEstimates = gvf.getEstimatedStatus();
+
+    DEPRECATED
+
+ofxGVFVariations variations = gvf.getVariations();
+
+    where ofxGVFVariations is a structure comprising:
+        - estimatedPhase 
+        – estimatedSpeed 
+        – estimatedScale (vector<float>)
+        – estimatedRotation (vector<float>)
 
 
 
