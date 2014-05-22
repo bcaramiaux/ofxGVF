@@ -4,26 +4,23 @@
 void ofApp::setup(){
     
     ofSetLogLevel(OF_LOG_VERBOSE);
-//    ofSetVerticalSync(true);
-//    ofSetFrameRate(60);
     
-    ofxGVFParameters parameters;
     
-    parameters.inputDimensions = 2;
+    // CONFIGURATION of the GVF
+    config.inputDimensions = 2;
+    
+    // PARAMETERS of the GVF
     parameters.numberParticles = 2000;
     parameters.tolerance = 0.2f;
     parameters.resamplingThreshold = 500;
     parameters.distribution = 0.0f;
-    
-    ofxGVFVarianceCoefficents coefficents;
-    
-    coefficents.phaseVariance = 0.000005;
-    coefficents.speedVariance = 0.0001;
-    coefficents.scaleVariance = 0.00001;
-    coefficents.rotationVariance = 0.00000001;
-    
-    gvf.setup(parameters, coefficents);
-//    gvf.setup();
+    parameters.phaseVariance = 0.000005;
+    parameters.speedVariance = 0.0001;
+    parameters.scaleVariance = 0.00001;
+    parameters.rotationVariance = 0.00000001;
+
+    // CREATE the corresponding GVF
+    gvf.setup(config, parameters);
     
     ofBackground(0, 0, 0);
     performingFollowing = false;
@@ -32,7 +29,7 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-//    if(gvf.getState() == ofxGVF::STATE_FOLLOWING) gvf.infer(currentGesture.getLastRawObservation());
+    //if(gvf.getState() == ofxGVF::STATE_FOLLOWING) gvf.infer(currentGesture.getLastRawObservation());
 }
 
 //--------------------------------------------------------------
@@ -76,7 +73,7 @@ void ofApp::draw(){
             // and then scaled and translated in order to be drawn
             float x = ((point.x)) * (currentGesture.getMaxRange()[0] - currentGesture.getMinRange()[0]);
             float y = ((point.y)) * (currentGesture.getMaxRange()[1] - currentGesture.getMinRange()[1]);
-            //cout << point.x << " " << point.y << " " << currentGesture.getMaxRange()[0] << " " << currentGesture.getMinRange()[0] << endl;
+
             
             // the weight of the particle is normalised
             // and then used as the radius of the circle representing the particle
@@ -115,28 +112,15 @@ void ofApp::draw(){
             if (performingFollowing)
             {
                 gvf.infer(currentGesture.getLastRawObservation());
-                /*
-                vector<vector<float> > gvfEstimates = gvf.getEstimatedStatus();
-
-                if (gvf.getMostProbableGestureIndex() >= 0){
-                    
-                     phase = gvfEstimates[gvf.getMostProbableGestureIndex()][0];
-                     speed = gvfEstimates[gvf.getMostProbableGestureIndex()][1];
-                     size = gvfEstimates[gvf.getMostProbableGestureIndex()][2];
-                     angle = gvfEstimates[gvf.getMostProbableGestureIndex()][3];
-                     
-                    //cout << phase << " " << speed << " " << size << " " << angle << endl;
-                }
-                 */
                 
-                ofxGVFVariations variations = gvf.getVariations();
+                outcomes = gvf.getOutcomes();
                 
                 if (gvf.getMostProbableGestureIndex() >= 0){
                     
-                    phase = variations.estimatedPhase;
-                    speed = variations.estimatedSpeed;
-                    size  = variations.estimatedScale[0]; // only 1 scale coefficient
-                    angle = variations.estimatedRotation[0]; // only 1 angle or rotation
+                    phase = outcomes.estimatedPhase;
+                    speed = outcomes.estimatedSpeed;
+                    size  = outcomes.estimatedScale[0]; // only 1 scale coefficient
+                    angle = outcomes.estimatedRotation[0]; // only 1 angle or rotation
                     
                     //cout << phase << " " << speed << " " << size << " " << angle << endl;
                 }
@@ -197,7 +181,7 @@ void ofApp::mouseDragged(int x, int y, int button){
         case ofxGVF::STATE_FOLLOWING:
         {
             currentGesture.addObservationRaw(ofPoint(x, y, 0));
-            gvf.infer(currentGesture.getLastRawObservation());
+            //gvf.infer(currentGesture.getLastRawObservation());
             break;
         }
             

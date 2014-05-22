@@ -21,7 +21,11 @@ class ofApp : public ofBaseApp{
 		void gotMessage(ofMessage msg);
 		
         ofxGVF gvf;
-        ofxGVFGesture currentGesture;
+        ofxGVFGesture       currentGesture;
+        ofxGVFConfig        config;
+        ofxGVFParameters    parameters;
+        ofxGVFOutcomes      outcomes;
+    
         float initX, initY;
 
         bool performingFollowing = false;
