@@ -13,11 +13,11 @@
 
 
 #include "maxcpp6.h"
-#include "GestureVariationFollower.h"
+#include "ofxGVF.h"
+#include "ofxGVFGesture.h"
 #include <string>
 #include <map>
 #include <vector>
-#include <Eigen/Core>
 #include <unistd.h>
 
 using namespace std;
@@ -27,29 +27,36 @@ enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 int restarted_l;
 int restarted_d;
-pair<float,float> xy0_l;
-pair<float,float> xy0_d;
+
 vector<float> vect_0_l;
 vector<float> vect_0_d;
 
 
 
-
 class gvf : public MaxCpp6<gvf> {
+
 private:
-	GestureVariationFollower *bubi;
+
+	ofxGVF *bubi;
+    ofxGVFGesture               currentGesture;     // storing template and live gesture
+    ofxGVFParameters            parameters;         // GVF parameters
+    ofxGVFVarianceCoefficents   coefficents;
+    ofxGVFVariations            variations;         // GVF outcomes
+
 	int state;
 	int lastreferencelearned, currentToBeLearned;
-	map<int,vector<pair<float,float> > > refmap;
+	
+    map<int,vector<pair<float,float> > > refmap;
 	int Nspg, Rtpg;
 	float sp, sv, sr, ss, so; // pos,vel,rot,scal,observation
 	int pdim;
-	Eigen::VectorXf mpvrs;
-	Eigen::VectorXf rpvrs;
+//	Eigen::VectorXf mpvrs;
+//	Eigen::VectorXf rpvrs;
     float value_mmax;
     bool offline_recognition;
     int toBeTranslated;
     
+
 public:
     
 
@@ -59,42 +66,24 @@ public:
         post("gvf - realtime adaptive gesture recognition (version: 09-2013)");
         post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
         
-		// default values
-		Nspg = 2000; int ns = Nspg; //!!
-		Rtpg = 500; int rt = Rtpg; //!!
-        
-        
-		sp = 0.0001;
-		sv = 0.001;
-		ss = 0.0001;
-		sr = 0.000000;
-		
-		
-		so = 0.2;
-		
-		pdim = 4;
-		Eigen::VectorXf sigs(pdim);
-		sigs << sp, sv, ss, sr;
-		
-		bubi = new GestureVariationFollower(ns, sigs, 1./(so * so), rt, 0.);
-		
-		
-		mpvrs = Eigen::VectorXf(pdim);
-		rpvrs = Eigen::VectorXf(pdim);
-		mpvrs << 0.05, 1.0, 1.0, 0.0;
-		rpvrs << 0.1,  0.4, 0.3, 0.0;
-		
-		restarted_l=1;
-		restarted_d=1;
+	    parameters.inputDimensions = 2;
+        parameters.numberParticles = 2000;
+        parameters.tolerance = 0.2f;
+        parameters.resamplingThreshold = 500;
+        parameters.distribution = 0.0f;
+    
+        coefficents.phaseVariance = 0.000005;
+        coefficents.speedVariance = 0.0001;
+        coefficents.scaleVariance = 0.00001;
+        coefficents.rotationVariance = 0.00000001;
+    
+        bubi->setup(parameters, coefficents);
         
 		state = STATE_CLEAR;
         
         lastreferencelearned = -1;
         currentToBeLearned = -1;
         value_mmax = -INFINITY;
-        
-        toBeTranslated = 1;
-        offline_recognition = false;
 		
     }
     
@@ -126,7 +115,7 @@ public:
     //====================== LEARN
     ///////////////////////////////////////////////////////////
 	void learn(long inlet, t_symbol * s, long ac, t_atom * av) {
-        
+        /*
         if(ac != 1)
         {
             post("wrong number of argument (must be 1)");
@@ -156,7 +145,10 @@ public:
         }
         
         state = STATE_LEARNING;
+        */
         
+        bubi->setState(ofxGVF::STATE_LEARNING);
+
         restarted_l=1;
         
     }
@@ -168,6 +160,7 @@ public:
     ///////////////////////////////////////////////////////////
     void follow(long inlet, t_symbol * s, long ac, t_atom * av) {
         
+        /*
         if(lastreferencelearned >= 0)
         {
             //post("I'm about to follow!");
@@ -185,6 +178,8 @@ public:
             post("no reference has been learned");
             return;
         }
+        */
+        bubi->setState(ofxGVF::STATE_FOLLOWING);
     }
     
     
@@ -208,6 +203,10 @@ public:
             return;
         }
         
+
+
+
+        /*
         // INCOMING DATA - LEARNING MODE
         // -----------------------------
         else if(state == STATE_LEARNING)
@@ -337,6 +336,33 @@ public:
             outlet_anything(m_outlets[2], gensym("offset"), (*offs).size(), outAtoms);
             delete[] outAtoms;
             
+        }*/
+        switch(bubi->getState()){
+            case ofxGVF::STATE_LEARNING:
+            {
+                vector<float> observation_vector(ac);
+                for (int k=0; k<ac; k++)
+                    observation_vector[k] = atom_getfloat(&av[k]);
+                
+                currentGesture.addObservationRaw(observation_vector);
+                break;
+            }
+            case ofxGVF::STATE_FOLLOWING:
+            {
+                vector<float> observation_vector(ac);
+                for (int k=0; k<ac; k++)
+                    observation_vector[k] = atom_getfloat(&av[k]);
+                
+                currentGesture.addObservationRaw(observation_vector);
+
+                gvf.infer(currentGesture.getLastRawObservation());
+                
+                break;
+            }
+            
+            default:
+                // nothing
+                break;
         }
     }
     
@@ -432,7 +458,8 @@ public:
         if(state == STATE_FOLLOWING)
         {
             
-            bubi->spreadParticles(mpvrs,rpvrs);
+            //bubi->spreadParticles(mpvrs,rpvrs);
+            bubi->restart();
             
             restarted_l=1;
             restarted_d=1;

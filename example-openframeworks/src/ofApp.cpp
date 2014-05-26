@@ -4,20 +4,20 @@
 void ofApp::setup(){
     
     ofSetLogLevel(OF_LOG_VERBOSE);
-    
+
     
     // CONFIGURATION of the GVF
     config.inputDimensions = 2;
     
     // PARAMETERS of the GVF
-    parameters.numberParticles = 2000;
-    parameters.tolerance = 0.2f;
-    parameters.resamplingThreshold = 500;
-    parameters.distribution = 0.0f;
-    parameters.phaseVariance = 0.000005;
-    parameters.speedVariance = 0.0001;
-    parameters.scaleVariance = 0.00001;
-    parameters.rotationVariance = 0.00000001;
+    parameters.numberParticles      = 2000;
+    parameters.tolerance            = 0.2f;
+    parameters.resamplingThreshold  = 500;
+    parameters.distribution         = 0.0f;
+    parameters.phaseVariance        = 0.000001;
+    parameters.speedVariance        = 0.001;
+    parameters.scaleVariance        = 0.0001;
+    parameters.rotationVariance     = 0.000001;
 
     // CREATE the corresponding GVF
     gvf.setup(config, parameters);
@@ -30,6 +30,27 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     //if(gvf.getState() == ofxGVF::STATE_FOLLOWING) gvf.infer(currentGesture.getLastRawObservation());
+        switch(gvf.getState()){
+            case ofxGVF::STATE_LEARNING:
+            {
+                if (performingLearning)
+                    currentGesture.addObservationRaw(ofPoint(inputX, inputY, 0));
+                break;
+            }
+            case ofxGVF::STATE_FOLLOWING:
+            {
+                if (performingFollowing){
+                    currentGesture.addObservationRaw(ofPoint(inputX, inputY, 0));
+                    gvf.infer(currentGesture.getLastRawObservation());
+                }
+                break;
+            }
+    
+            default:
+                // nothing
+                break;
+        }
+
 }
 
 //--------------------------------------------------------------
@@ -38,6 +59,7 @@ void ofApp::draw(){
     ofPushMatrix();
     currentGesture.draw();
     ofPopMatrix();
+    
     
     for(int i = 0; i < gvf.getNumGestureTemplates(); i++){
         
@@ -48,6 +70,7 @@ void ofApp::draw(){
         ofPopMatrix();
         
     }
+    
     
     vector< vector<float> > pp = gvf.getParticlesPositions();
     int ppSize = pp.size();
@@ -95,9 +118,10 @@ void ofApp::draw(){
     
     
     ostringstream os;
+    os << "GESTURE VARIATION FOLLOWER 2D Example " << endl;
     os << "FPS: " << ofGetFrameRate() << endl;
-    os << "GVFState: " << gvf.getStateAsString() << endl;
-    os << "Most probable index: " << gvf.getMostProbableGestureIndex()+1 << endl;
+    os << "GVFState: " << gvf.getStateAsString() << " ('l': learning, 'f': following, 'c': Clear)" << endl;
+    os << "Gesture Recognized: " << gvf.getMostProbableGestureIndex()+1 << endl;
     
     
     float phase = 0.0f;
@@ -105,33 +129,21 @@ void ofApp::draw(){
     float size = 0.0f;
     float angle = 0.0f;
     
-    switch(gvf.getState())
-    {
-        case ofxGVF::STATE_FOLLOWING:
-        {
-            if (performingFollowing)
-            {
-                gvf.infer(currentGesture.getLastRawObservation());
-                
-                outcomes = gvf.getOutcomes();
-                
-                if (gvf.getMostProbableGestureIndex() >= 0){
-                    
-                    phase = outcomes.estimatedPhase;
-                    speed = outcomes.estimatedSpeed;
-                    size  = outcomes.estimatedScale[0]; // only 1 scale coefficient
-                    angle = outcomes.estimatedRotation[0]; // only 1 angle or rotation
-                    
-                    //cout << phase << " " << speed << " " << size << " " << angle << endl;
-                }
-            }
-            break;
-        }
-        default:
-            break;
-    }
-    
 
+    // if performing gesture in following mode, display estimated variations
+    if (performingFollowing)
+    {
+        // get outcomes: estimations of how the gesture is performed
+        outcomes = gvf.getOutcomes();
+        
+        if (gvf.getMostProbableGestureIndex() >= 0){
+            phase = outcomes.estimatedPhase;
+            speed = outcomes.estimatedSpeed;
+            size  = outcomes.estimatedScale[0]; // only 1 scale coefficient
+            angle = outcomes.estimatedRotation[0]; // only 1 angle or rotation
+        }
+    }
+  
     os << "Cursor: " << phase << " | Speed: " << speed << " | Size: " << size << " | Angle: " << angle << endl;
     
     ofDrawBitmapString(os.str(), 20, 20);
@@ -148,6 +160,12 @@ void ofApp::keyPressed(int key){
             break;
         case 'f':
             gvf.setState(ofxGVF::STATE_FOLLOWING);
+            break;
+        case 'c':
+            gvf.setState(ofxGVF::STATE_CLEAR);
+            break;
+        case 's':
+            gvf.saveTemplates("/Users/caramiaux/test.txt");
             break;
         case 'g':
             currentGesture.setType(ofxGVFGesture::GEOMETRIC);
@@ -172,23 +190,26 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    switch(gvf.getState()){
-        case ofxGVF::STATE_LEARNING:
-        {
-            currentGesture.addObservationRaw(ofPoint(x, y, 0));
-            break;
-        }
-        case ofxGVF::STATE_FOLLOWING:
-        {
-            currentGesture.addObservationRaw(ofPoint(x, y, 0));
-            //gvf.infer(currentGesture.getLastRawObservation());
-            break;
-        }
-            
-        default:
-            // nothing
-            break;
-    }
+    
+    inputX = x;
+    inputY = y;
+//    switch(gvf.getState()){
+//        case ofxGVF::STATE_LEARNING:
+//        {
+//            currentGesture.addObservationRaw(ofPoint(x, y, 0));
+//            break;
+//        }
+//        case ofxGVF::STATE_FOLLOWING:
+//        {
+//            currentGesture.addObservationRaw(ofPoint(x, y, 0));
+//            gvf.infer(currentGesture.getLastRawObservation());
+//            break;
+//        }
+//            
+//        default:
+//            // nothing
+//            break;
+//    }
 }
 
 //--------------------------------------------------------------
@@ -201,6 +222,12 @@ void ofApp::mousePressed(int x, int y, int button){
             currentGesture.setMin(0.0f, 0.0f);
             currentGesture.setMax(ofGetWidth(), ofGetHeight());
             currentGesture.addObservationRaw(ofPoint(x, y, 0));
+            
+            inputX = x; inputY = y;
+            
+            performingFollowing = false;
+            performingLearning = true;
+            
             break;
         }
         case ofxGVF::STATE_FOLLOWING:
@@ -211,8 +238,12 @@ void ofApp::mousePressed(int x, int y, int button){
             currentGesture.setMin(0.0f, 0.0f);
             currentGesture.setMax(ofGetWidth(), ofGetHeight());
             currentGesture.addObservationRaw(ofPoint(x, y, 0));
+            
+            inputX = x; inputY = y;
+            
+            performingLearning = false;
             performingFollowing = true;
-
+            
             break;
         }
             
@@ -224,7 +255,10 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+    
+    performingLearning = false;
     performingFollowing = false;
+    
     switch(gvf.getState()){
         case ofxGVF::STATE_LEARNING:
         {

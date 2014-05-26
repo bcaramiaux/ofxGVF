@@ -60,8 +60,9 @@ ofxGVF::ofxGVF(){
 }
 
 //--------------------------------------------------------------
-ofxGVF::ofxGVF(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coefficents){
-    setup(parameters, _coefficents);
+//ofxGVF::ofxGVF(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coefficents){
+ofxGVF::ofxGVF(ofxGVFConfig _config, ofxGVFParameters _parameters){
+    setup(_config, _parameters);
 }
 
 //--------------------------------------------------------------
@@ -70,69 +71,70 @@ void ofxGVF::setup(){
     // use defualt parameters
     // EXPERIMENTAL!!!
     
+    ofxGVFConfig defaultConfig;
+    
+    defaultConfig.inputDimensions = 2;
+    defaultConfig.translate = true;
+    defaultConfig.allowSegmentation = true;
+
+    
     ofxGVFParameters defaultParameters;
     
-    defaultParameters.inputDimensions = 2;
     defaultParameters.numberParticles = 2000;
     defaultParameters.tolerance = 0.1f;
     defaultParameters.resamplingThreshold = 500;
     defaultParameters.distribution = 0.0f;
-    defaultParameters.translate = true;
-    defaultParameters.allowSegmentation = true;
-    //    defaultParameters.gestureType = GEOMETRIC;
+    defaultParameters.phaseVariance = 0.00001;
+    defaultParameters.speedVariance = 0.00001;
+    defaultParameters.scaleVariance = 0.00001;
+    defaultParameters.rotationVariance = 0.00001;
     
-    ofxGVFVarianceCoefficents defaultCoefficents;
-    
-    defaultCoefficents.phaseVariance = 0.00001;
-    defaultCoefficents.speedVariance = 0.00001;
-    defaultCoefficents.scaleVariance = 0.00001;
-    defaultCoefficents.rotationVariance = 0.00001;
-    
-    setup(defaultParameters, defaultCoefficents);
+    setup(defaultConfig, defaultParameters);
 }
 
 //--------------------------------------------------------------
-void ofxGVF::setup(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coefficents){
+//void ofxGVF::setup(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coefficents){
+void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     
     clear(); // just in case
     
     
     // Set parameters:
     //    input dimensions
+    //    translate flag
+    //    translate flag
+    config = _config;
+    
+    
+    // Set variances for variation tracking:
     //    num of particles
     //    tolerance
     //    resampling threshold
     //    distribution (nu value of the Student's T distribution [default=0])
-    //    translate flag
-    //    translate flag
-    parameters = _parameters;
-    
-    
-    // Set variances for variation tracking:
     //    phase
     //    speed
     //    scale
     //    rotation
-    coefficents = _coefficents;
+    parameters = _parameters;
     
     // IMPORTANT that inputDim = -1, though can be managed in ofxGVFGesture directly
     inputDim = -1;
     ns = parameters.numberParticles;
     
     /*
-     if(inputDim > 2 && coefficents.rotationVariance != 0.0){
+     if(inputDim > 2 && parameters.rotationVariance != 0.0){
      cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
-     coefficents.rotationVariance = 0.0f;
+     parameters.rotationVariance = 0.0f;
      }*/
     /*
      
      //MATT: everything below about variance coefficients, matrix inits will be moved to GVF::learn()
      //  the function is created but empty
      
-     if(coefficents.phaseVariance != -1.0f) featVariances.push_back(sqrt(coefficents.phaseVariance));
-     if(coefficents.speedVariance != -1.0f) featVariances.push_back(sqrt(coefficents.speedVariance));
-     if(coefficents.scaleVariance != -1.0f) featVariances.push_back(sqrt(coefficents.scaleVariance));
-     if(coefficents.rotationVariance != -1.0f) featVariances.push_back(sqrt(coefficents.rotationVariance));
+     if(parameters.phaseVariance != -1.0f) featVariances.push_back(sqrt(parameters.phaseVariance));
+     if(parameters.speedVariance != -1.0f) featVariances.push_back(sqrt(parameters.speedVariance));
+     if(parameters.scaleVariance != -1.0f) featVariances.push_back(sqrt(parameters.scaleVariance));
+     if(parameters.rotationVariance != -1.0f) featVariances.push_back(sqrt(parameters.rotationVariance));
      
      pdim = featVariances.size();
      
@@ -184,14 +186,14 @@ void ofxGVF::learn(){
         
         featVariances.clear();
         
-        //parameters.inputDimensions = R_single[0][0].size();
-        parameters.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
-        inputDim = parameters.inputDimensions;
+        //config.inputDimensions = R_single[0][0].size();
+        config.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
+        inputDim = config.inputDimensions;
         
         int scaleDim;
         int rotationDim;
         
-        if (parameters.inputDimensions == 2){
+        if (config.inputDimensions == 2){
             
             //post(" dim 2 -> pdim 4");
             
@@ -205,55 +207,46 @@ void ofxGVF::learn(){
             
             featVariances = vector<float> (pdim);
             
-            featVariances[0]=sqrt(coefficents.phaseVariance);
-            featVariances[1]=sqrt(coefficents.speedVariance);
-            //            featVariances[2]=sqrt(coefficents.scaleVariance);
-            //            featVariances[3]=sqrt(coefficents.rotationVariance);
-            for (int k=0;k<scaleDim;k++) featVariances[2+k]=sqrt(coefficents.scaleVariance);
-            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k]=sqrt(coefficents.rotationVariance);
+            featVariances[0]=sqrt(parameters.phaseVariance);
+            featVariances[1]=sqrt(parameters.speedVariance);
+            for (int k=0;k<scaleDim;k++)    featVariances[2+k]=sqrt(parameters.scaleVariance);
+            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k]=sqrt(parameters.rotationVariance);
             
             
             
             // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
-            spreadingParameters.phaseInitialSpreading = 0.15;
-            spreadingParameters.speedInitialSpreading = 1.0;
-            //            spreadingParameters.scaleInitialSpreading.push_back(1.0f);
-            //            spreadingParameters.rotationInitialSpreading.push_back(0.0f);
-            spreadingParameters.scaleInitialSpreading = vector<float> (scaleDim);
-            spreadingParameters.rotationInitialSpreading = vector<float> (rotationDim);
-            for (int k=0;k<scaleDim;k++) spreadingParameters.scaleInitialSpreading[k]=1.0f;
-            for (int k=0;k<rotationDim;k++) spreadingParameters.rotationInitialSpreading[k]=0.0f;
+            parameters.phaseInitialSpreading = 0.1;
+            parameters.speedInitialSpreading = 1.0;
+            parameters.scaleInitialSpreading = vector<float> (scaleDim);
+            parameters.rotationInitialSpreading = vector<float> (rotationDim);
+            for (int k=0;k<scaleDim;k++)    parameters.scaleInitialSpreading[k]=1.0f;
+            for (int k=0;k<rotationDim;k++) parameters.rotationInitialSpreading[k]=0.0f;
             
-            /*cout << spreadingParameters.phaseInitialSpreading
-                 << " " << spreadingParameters.speedInitialSpreading
-                 << " " << spreadingParameters.scaleInitialSpreading.size()
-                 << " and inputDim=" << inputDim << endl;
-            */
         }
-        else if (parameters.inputDimensions == 3){
+        else if (config.inputDimensions == 3){
             
             // state space dimension = 8
             // phase, speed, scale (1d), rotation (3d)
             
             scaleDim = 3;
-            rotationDim = parameters.inputDimensions;
+            rotationDim = config.inputDimensions;
             
             pdim = 2 + scaleDim + rotationDim;
             
             featVariances = vector<float> (pdim);
             
-            featVariances[0]=sqrt(coefficents.phaseVariance);
-            featVariances[1]=sqrt(coefficents.speedVariance);
-            for (int k=0;k<scaleDim;k++) featVariances[2+k]=sqrt(coefficents.scaleVariance);
-            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k]=sqrt(coefficents.rotationVariance);
+            featVariances[0]=sqrt(parameters.phaseVariance);
+            featVariances[1]=sqrt(parameters.speedVariance);
+            for (int k=0;k<scaleDim;k++) featVariances[2+k]=sqrt(parameters.scaleVariance);
+            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k]=sqrt(parameters.rotationVariance);
             
             
-            spreadingParameters.phaseInitialSpreading = 0.15;
-            spreadingParameters.speedInitialSpreading = 1.0;
-            spreadingParameters.scaleInitialSpreading = vector<float> (scaleDim);
-            spreadingParameters.rotationInitialSpreading = vector<float> (rotationDim);
-            for (int k=0;k<scaleDim;k++) spreadingParameters.scaleInitialSpreading[k]=1.0f;
-            for (int k=0;k<rotationDim;k++) spreadingParameters.rotationInitialSpreading[k]=0.0f;
+            parameters.phaseInitialSpreading = 0.15;
+            parameters.speedInitialSpreading = 1.0;
+            parameters.scaleInitialSpreading = vector<float> (scaleDim);
+            parameters.rotationInitialSpreading = vector<float> (rotationDim);
+            for (int k=0;k<scaleDim;k++) parameters.scaleInitialSpreading[k]=1.0f;
+            for (int k=0;k<rotationDim;k++) parameters.rotationInitialSpreading[k]=0.0f;
             
         }
         else {
@@ -265,17 +258,17 @@ void ofxGVF::learn(){
             
             featVariances = vector<float> (pdim);
             
-            featVariances[0]=sqrt(coefficents.phaseVariance);
-            featVariances[1]=sqrt(coefficents.speedVariance);
-            featVariances[2]=sqrt(coefficents.scaleVariance);
+            featVariances[0]=sqrt(parameters.phaseVariance);
+            featVariances[1]=sqrt(parameters.speedVariance);
+            featVariances[2]=sqrt(parameters.scaleVariance);
             
             // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
-            spreadingParameters.phaseInitialSpreading = 0.15;
-            spreadingParameters.speedInitialSpreading = 1.0;
-            spreadingParameters.scaleInitialSpreading = vector<float> (scaleDim);
-            //            spreadingParameters.rotationInitialSpreading = vector<float> (rotationDim);
-            for (int k=0;k<scaleDim;k++) spreadingParameters.scaleInitialSpreading[k]=1.0f;
-            //            for (int k=0;k<rotationDim;k++) spreadingParameters.rotationInitialSpreading[k]=0.0f;
+            parameters.phaseInitialSpreading = 0.15;
+            parameters.speedInitialSpreading = 1.0;
+            parameters.scaleInitialSpreading = vector<float> (scaleDim);
+            //            parameters.rotationInitialSpreading = vector<float> (rotationDim);
+            for (int k=0;k<scaleDim;k++) parameters.scaleInitialSpreading[k]=1.0f;
+            //            for (int k=0;k<rotationDim;k++) parameters.rotationInitialSpreading[k]=0.0f;
         }
         
         
@@ -536,27 +529,9 @@ string ofxGVF::getStateAsString(){
 //--------------------------------------------------------------
 void ofxGVF::spreadParticles(){
     
-    // use default means and ranges - taken from gvfhandler
-    // BAPTISTE: what are these magic numbers ? ;)
-    /*
-     vector<float> mpvrs = vector<float>(pdim);
-     vector<float> rpvrs = vector<float>(pdim);
-     
-     mpvrs[0] = 0.05;
-     mpvrs[1] = 1.0;
-     mpvrs[2] = 1.0;
-     mpvrs[3] = 0.0;
-     
-     rpvrs[0] = 0.1;
-     rpvrs[1] = 0.4;
-     rpvrs[2] = 0.3;
-     rpvrs[3] = 0.0;
-     
-     spreadParticles(mpvrs, rpvrs);
-     */
-    
+    // use default means and ranges - taken from gvfhandler    
     if (inputDim!=-1)
-        spreadParticles(spreadingParameters);
+        spreadParticles(parameters);
     
 }
 
@@ -564,7 +539,7 @@ void ofxGVF::spreadParticles(){
 // Spread the particles by sampling values from intervals given my their means and ranges.
 // Note that the current implemented distribution for sampling the particles is the uniform distribution
 //void GVF::spreadParticles(vector<float> & means, vector<float> & ranges){
-void ofxGVF::spreadParticles(ofxGVFInitialSpreadingParameters _spreadingParameters){
+void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
     
     
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
@@ -581,8 +556,8 @@ void ofxGVF::spreadParticles(ofxGVFInitialSpreadingParameters _spreadingParamete
     
     float spreadRangePhase = 0.3;
     float spreadRange = 0.1;
-    int scalingCoefficients  = _spreadingParameters.scaleInitialSpreading.size();
-    int numberRotationAngles = _spreadingParameters.rotationInitialSpreading.size();
+    int scalingCoefficients  = _parameters.scaleInitialSpreading.size();
+    int numberRotationAngles = _parameters.rotationInitialSpreading.size();
     
     //post("scale %i rotation %i", scalingCoefficients, numberRotationAngles);
     
@@ -590,14 +565,14 @@ void ofxGVF::spreadParticles(ofxGVFInitialSpreadingParameters _spreadingParamete
     // Spread particles using a uniform distribution
 	//for(int i = 0; i < pdim; i++)
     for(int n = 0; n < ns; n++){
-        X[n][0] = (rnduni() - 0.5) * spreadRangePhase + _spreadingParameters.phaseInitialSpreading;
-        X[n][1] = (rnduni() - 0.5) * spreadRange + _spreadingParameters.speedInitialSpreading;
+        X[n][0] = (rnduni() - 0.5) * spreadRangePhase + _parameters.phaseInitialSpreading;
+        X[n][1] = (rnduni() - 0.5) * spreadRange + _parameters.speedInitialSpreading;
         for (int nn=0; nn<scalingCoefficients; nn++)
             X[n][2+nn] = (rnduni() - 0.5) * spreadRange
-            + _spreadingParameters.scaleInitialSpreading[nn];
+            + _parameters.scaleInitialSpreading[nn];
         for (int nn=0; nn<numberRotationAngles; nn++)
             X[n][2+scalingCoefficients+nn] = (rnduni() - 0.5) * 0.0 //spreadRange/2
-            + _spreadingParameters.rotationInitialSpreading[nn];
+            + _parameters.rotationInitialSpreading[nn];
     }
     
     
@@ -694,7 +669,7 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 void ofxGVF::particleFilter(vector<float> & obs){
     
 
-    if(parameters.translate)
+    if(config.translate)
     {
         if(O_initial.size() == 0)
             // store initial obs data
@@ -737,13 +712,14 @@ void ofxGVF::particleFilter(vector<float> & obs){
         
         // Move the particle
         // Position respects a first order dynamic: p = p + v/L
+        //cout << X[n][0] << " " << featVariances[0] << " " << X[n][1] << " " << featVariances[1] << " " << g[n] << " " << gestureTemplates[g[n]].getTemplateLength() << endl;
         X[n][0] += (*rndnorm)() * featVariances[0] + X[n][1]/gestureTemplates[g[n]].getTemplateLength(); //gestureLengths[g[n]];
-
+        
 
         
 		// Move the other state elements according a gaussian noise
         // featVariances vector of variances
-        for(int l = pdim-1; l>=1 ; --l)
+        for(int l= 1; l<X[n].size(); l++)
 			X[n][l] += (*rndnorm)() * featVariances[l];
 		vector<float> x_n = X[n];
         
@@ -854,7 +830,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
             else if (inputDim == 3){
                 
                 // Scale template sample according to the estimated scaling coefficients
-                int numberScaleCoefficients = spreadingParameters.scaleInitialSpreading.size();
+                int numberScaleCoefficients = parameters.scaleInitialSpreading.size();
                 for (int k=0;k<numberScaleCoefficients;k++)
                     vref[k] *= x_n[2+k];
                 
@@ -1131,40 +1107,39 @@ vector< vector<float> > ofxGVF::getEstimatedStatus(){
 }
 
 
-ofxGVFVariations ofxGVF::getVariations() {
+ofxGVFOutcomes ofxGVF::getOutcomes() {
     
     
     // number of scaling coefficients
-    int scalingCoefficients  = spreadingParameters.scaleInitialSpreading.size();
+    int scalingCoefficients  = parameters.scaleInitialSpreading.size();
 
     // number of rotation angles
-    int numberRotationAngles = spreadingParameters.rotationInitialSpreading.size();
+    int numberRotationAngles = parameters.rotationInitialSpreading.size();
     
-    // variations
-    ofxGVFVariations variations;
+
     
     // get the estimations
     //////////////////////
     // phase
-    variations.estimatedPhase = mostProbableStatus[0];
+    outcomes.estimatedPhase = mostProbableStatus[0];
     // speed
-    variations.estimatedSpeed = mostProbableStatus[1];
+    outcomes.estimatedSpeed = mostProbableStatus[1];
     // scale
-    variations.estimatedScale = vector<float> (scalingCoefficients);
+    outcomes.estimatedScale = vector<float> (scalingCoefficients);
     for (int nn=0; nn<scalingCoefficients; nn++)
-        variations.estimatedScale[nn] = mostProbableStatus[2+nn];
+        outcomes.estimatedScale[nn] = mostProbableStatus[2+nn];
     // rotation
-    variations.estimatedRotation = vector<float> (numberRotationAngles);
+    outcomes.estimatedRotation = vector<float> (numberRotationAngles);
     for (int nn=0; nn<numberRotationAngles; nn++)
-        variations.estimatedRotation[nn] = mostProbableStatus[2+scalingCoefficients+nn];
+        outcomes.estimatedRotation[nn] = mostProbableStatus[2+scalingCoefficients+nn];
     
     
     
-    return variations;
+    return outcomes;
     
 }
 
-ofxGVFVariations ofxGVF::getVariations(int gestureIndex) {
+ofxGVFOutcomes ofxGVF::getOutcomes(int gestureIndex) {
     
     // TODO
     
@@ -1276,49 +1251,39 @@ float ofxGVF::getDistribution(){
 //    return kGestureType;
 //}
 
-// COEFFICIENTS
-
-//--------------------------------------------------------------
-void ofxGVF::setVarianceCoefficents(ofxGVFVarianceCoefficents _coefficients){
-    coefficents = _coefficients;
-}
-
-//--------------------------------------------------------------
-ofxGVFVarianceCoefficents ofxGVF::getVarianceCoefficents(){
-    return coefficents;
-}
+// VARIANCE COEFFICIENTS
 
 //--------------------------------------------------------------
 void ofxGVF::setPhaseVariance(float phaseVariance){
-    coefficents.phaseVariance = phaseVariance;
+    parameters.phaseVariance = phaseVariance;
     featVariances[0] = phaseVariance;
 }
 
 //--------------------------------------------------------------
 float ofxGVF::getPhaseVariance(){
-    return coefficents.phaseVariance;
+    return parameters.phaseVariance;
 }
 
 //--------------------------------------------------------------
 void ofxGVF::setSpeedVariance(float speedVariance){
-    coefficents.speedVariance = speedVariance;
+    parameters.speedVariance = speedVariance;
     featVariances[1] = speedVariance;
 }
 
 //--------------------------------------------------------------
 float ofxGVF::getSpeedVariance(){
-    return coefficents.speedVariance;
+    return parameters.speedVariance;
 }
 
 //--------------------------------------------------------------
 void ofxGVF::setScaleVariance(float scaleVariance){
-    coefficents.scaleVariance = scaleVariance;
+    parameters.scaleVariance = scaleVariance;
     featVariances[2] = scaleVariance;
 }
 
 //--------------------------------------------------------------
 float ofxGVF::getScaleVariance(){
-    return coefficents.scaleVariance;
+    return parameters.scaleVariance;
 }
 
 //--------------------------------------------------------------
@@ -1327,13 +1292,13 @@ void ofxGVF::setRotationVariance(float rotationVariance){
         cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
         rotationVariance = 0.0f;
     }
-    coefficents.rotationVariance = rotationVariance;
+    parameters.rotationVariance = rotationVariance;
     featVariances[3] = rotationVariance;
 }
 
 //--------------------------------------------------------------
 float ofxGVF::getRotationVariance(){
-    return coefficents.rotationVariance;
+    return parameters.rotationVariance;
 }
 
 // MATHS
@@ -1368,6 +1333,23 @@ vector<float> ofxGVF::getW(){
 // Save function. This function is used by applications to save the
 // vocabulary in a text file given by filename (filename is also the complete path + filename)
 void ofxGVF::saveTemplates(string filename){
+       std::string directory = filename;
+    
+        std::ofstream file_write(directory.c_str());
+
+        for(int i=0; i<gestureTemplates.size(); i++) // Number of gesture templates
+        {
+            file_write << "template " << i << " " << config.inputDimensions << endl;
+            vector<vector<float> > templateTmp = gestureTemplates[i].getTemplateNormal();
+            for(int j=0; j<templateTmp.size(); j++)
+            {
+                for(int k=0; k<config.inputDimensions; k++)
+                    file_write << templateTmp[j][k] << " ";
+                file_write << endl;
+            }
+        }
+        file_write.close();
+
     //    std::string directory = filename;
     //
     //    std::ofstream file_write(directory.c_str());

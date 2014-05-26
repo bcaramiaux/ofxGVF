@@ -28,5 +28,7 @@ class ofApp : public ofBaseApp{
     
         float initX, initY;
 
-        bool performingFollowing = false;
+    float inputX, inputY;
+    bool performingLearning = false;
+    bool performingFollowing = false;
 };

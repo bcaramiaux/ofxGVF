@@ -55,18 +55,18 @@ public:
     
 	// constructor of the gvf instance
 	ofxGVF(); // use defualt parameters
-	ofxGVF(ofxGVFParameters parameters, ofxGVFVarianceCoefficents coefficents);
+	ofxGVF(ofxGVFConfig _config, ofxGVFParameters _parameters);
     
 	// destructor
     ~ofxGVF();
 	
     void setup();
-    void setup(ofxGVFParameters parameters, ofxGVFVarianceCoefficents coefficents);
+    void setup(ofxGVFConfig _config, ofxGVFParameters _parameters);
     void learn();
 	// spread particles
 	void spreadParticles();         // use default parameter values
 	void spreadParticles(vector<float> & means, vector<float> & ranges);
-    void spreadParticles(ofxGVFInitialSpreadingParameters _spreadingParameters);
+    void spreadParticles(ofxGVFParameters _parameters);
 	// inference
     void particleFilter(vector<float> & obs);
 	
@@ -87,8 +87,8 @@ public:
     vector<float> getMostProbableGestureStatus();
     float getMostProbableProbability(); // this is horrible - maybe probability should be at index 0 OR we should use a struct rather than a vector??
     
-    ofxGVFVariations getVariations();
-    ofxGVFVariations getVariations(int gestureIndex);
+    ofxGVFOutcomes getOutcomes();
+    ofxGVFOutcomes getOutcomes(int gestureIndex);
     
     vector< vector<float> > getEstimatedStatus();
     
@@ -150,13 +150,8 @@ public:
     void setDistribution(float distribution);
     float getDistribution();
     
-//    void setGestureType(ofxGVFGestureType type);
-//    ofxGVFGestureType getGestureType();
     
-    // VARIANCE COEFFICENTS
-    
-    void setVarianceCoefficents(ofxGVFVarianceCoefficents coefficients);
-    ofxGVFVarianceCoefficents getVarianceCoefficents();
+    // VARIANCE COEFFICENTS (in PARAMETERS)
     
     void setPhaseVariance(float phaseVariance);
     float getPhaseVariance();
@@ -188,10 +183,13 @@ public:
 private:
     
     // private variables
-    
+
+    ofxGVFConfig config;
     ofxGVFParameters parameters;
-    ofxGVFVarianceCoefficents coefficents;
-    ofxGVFInitialSpreadingParameters spreadingParameters;
+
+    ofxGVFOutcomes outcomes;
+//    ofxGVFVarianceCoefficents coefficents;
+//    ofxGVFInitialSpreadingParameters spreadingParameters;
     
     float   tolerance;          // standard deviation of the observation distribution
 	float   nu;                 // degree of freedom for the t-distribution; if 0, use a gaussian

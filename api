@@ -101,5 +101,7 @@ ofxGVFVariations variations = gvf.getVariations();
         – estimatedScale (vector<float>)
         – estimatedRotation (vector<float>)
 
+        
+
 
 

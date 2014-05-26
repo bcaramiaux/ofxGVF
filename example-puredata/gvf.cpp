@@ -4,25 +4,19 @@
 //  GVF - Gesture Variation Follower PureData Object
 //
 //
-//  Copyright (C) 2013 Baptiste Caramiaux, Goldsmiths College, University of London
+//  Copyright (C) 2014 Baptiste Caramiaux, Goldsmiths College, University of London
 //
 //  The GVF library is under the GNU Lesser General Public License (LGPL v3)
-//  version: 09-2013
-//
-//  The interfacing in Pure Data has been realized by Thomas Rushmore
-//
+//  version: 05-2014
 //
 ///////////////////////////////////////////////////////////////////////
 
 
 //#include <boost/random.hpp>
-#include <Eigen/Core>
 #include <vector>
-
 #include "m_pd.h"
-#include "GestureVariationFollower.h"
-#include "globalutilities.h"
-
+#include "ofxGVF.h"
+#include "ofxGesture.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -30,22 +24,36 @@
 static t_class *gvf_class;
 
 
+// Building Structure GVF
+// ----------------------
 typedef struct _gvf {
+    
     t_object  x_obj;
-    GestureVariationFollower *bubi;
-	t_int state;
+    ofxGVF *bubi;
+	
+    t_int state;
 	t_int lastreferencelearned;
     t_int currentToBeLearned;
+    
     std::map<int,std::vector<std::pair<float,float> > > *refmap;
-	t_int Nspg, Rtpg;
+	
+    ofxGVFParameters parameters;
+    ofxGVFVarianceCoefficents coefficents;
+    t_int Nspg, Rtpg;
 	t_float sp, sv, sr, ss, so; // pos,vel,rot,scal,observation
 	t_int pdim;
-	Eigen::VectorXf mpvrs;
-	Eigen::VectorXf rpvrs;
+	
     int translate;
+    
     // outlets
     t_outlet *Position,*Vitesse,*Scaling,*Rotation,*Recognition,*Likelihoods,*Number_templates;
+
 } t_gvf;
+
+
+
+// MESSAGES THAT CAN BE RECEIVED FROM PURE DATA
+// =============================================
 
 static void gvf_learn      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
 static void gvf_follow     (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
@@ -61,48 +69,42 @@ static void gvf_adaptspeed (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 
 static void gvf_auto(t_gvf *x);
 
+
+// restart flags (learning and decoding [ie following])
 t_int restarted_l;
 t_int restarted_d;
-std::pair<t_float,t_float> xy0_l;
-std::pair<t_float,t_float> xy0_d;
+
+// vectors of initial points (learning and decoding [ie following])
 std::vector<t_float> vect_0_l;
 std::vector<t_float> vect_0_d;
+
+// states
 enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 
+
+// BUILDING THE OBJECT
+// ===================
+
 static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
 {
-    post("\ngvf - realtime adaptive gesture recognition (version: 30-09-2013)");
+    post("\ngvf - realtime adaptive gesture recognition (version: 20-05-2014)");
     post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
     
     t_gvf *x = (t_gvf *)pd_new(gvf_class);
     
-    x->Nspg = 2000;
-    t_int ns = x->Nspg; //!!
-    x->Rtpg = 500;
-    t_int rt = x->Rtpg; //!!
+    x->parameters.inputDimensions = 2;
+    x->parameters.numberParticles = 2000;
+    x->parameters.tolerance = 0.2f;
+    x->parameters.resamplingThreshold = 500;
+    x->parameters.distribution = 0.0f;
     
-    x->sp = 0.00001;
-    x->sv = 0.0001;
-    x->ss = 0.0001;
-    x->sr = 0.0000001;
-    x->so = 0.15;
-    x->pdim = 4;
+    x->coefficents.phaseVariance = 0.000005;
+    x->coefficents.speedVariance = 0.0001;
+    x->coefficents.scaleVariance = 0.00001;
+    x->coefficents.rotationVariance = 0.00000001;
     
-    
-    Eigen::VectorXf sigs(x->pdim);
-    sigs << x->sp, x->sv, x->ss, x->sr;
-    
-    x->refmap = new std::map<int,std::vector<std::pair<float,float> > >;
-    //x->refmap.clear();
-
-    int num_particles = 2000;
-
-    x->bubi = new GestureVariationFollower(num_particles, sigs, 1./(x->so * x->so), rt, 0.);
-    x->mpvrs = Eigen::VectorXf(x->pdim);
-    x->rpvrs = Eigen::VectorXf(x->pdim);
-    x->mpvrs << 0.05, 1.0, 1.0, 0.0;
-    x->rpvrs << 0.1,  0.4, 0.3, 0.0;
+    x->gvf.setup(x->parameters, x->coefficents);
     
     restarted_l=1;
     restarted_d=1;
@@ -111,11 +113,13 @@ static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
     x->lastreferencelearned = -1;
     x->currentToBeLearned = -1;
    
+   /*
     if (argc > 0)
         x->Nspg = getint(argv);
     if (argc > 1)
         x->Rtpg = getint(argv + 1);
-    
+    */
+
     x->Position     = outlet_new(&x->x_obj, &s_list);
     x->Vitesse      = outlet_new(&x->x_obj, &s_list);
     x->Rotation     = outlet_new(&x->x_obj, &s_list);
@@ -123,9 +127,7 @@ static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
     x->Recognition  = outlet_new(&x->x_obj, &s_list);
     x->Likelihoods  = outlet_new(&x->x_obj, &s_list);
     x->Number_templates= outlet_new(&x->x_obj, &s_list);
-//    x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
-    
-    x->translate = 1;
+    //    x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
     
     return (void *)x;
 }
@@ -156,6 +158,7 @@ static void gvf_learn(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
     int refI = getint(argv);
     refI=refI-1; // starts at 1 in the patch but 0 in C++
     x->currentToBeLearned=refI;
+    
     if(refI > x->lastreferencelearned+1)
     {
         post("you need to learn reference %d first",x->lastreferencelearned+1);

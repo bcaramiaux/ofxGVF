@@ -15,7 +15,7 @@
 #include <iostream>
 #include <math.h>
 
-#define OPENFRAMEWORKS 1
+#define OPENFRAMEWORKS 0
 #define BOOSTLIB 0
 #define OPTIMISD 0
 #define VDSPOPTM 0
@@ -32,34 +32,50 @@ enum ofxGVFGestureType{
     TEMPORAL
 };
 
-// ofxGVFParameters
-//  comprises global parameters of the algorithm
+
+// ofxGVFConfig
+//  configuration of the GVF
 typedef struct{
-    int inputDimensions = -1;
-    int numberParticles = -1;
-    float tolerance = -1.0f;
-    int resamplingThreshold = -1;
-    float distribution = 0.0f;
-    bool translate;
-    bool allowSegmentation;
+    int     inputDimensions;
+    bool    translate;
+    bool    allowSegmentation;
+} ofxGVFConfig;
+
+// ofxGVFParameters
+//  comprises parameters of the algorithm
+typedef struct{
+    int     numberParticles;
+    float   tolerance;
+    int     resamplingThreshold;
+    float   distribution;
+    float   phaseVariance;
+    float   speedVariance;
+    float   scaleVariance;
+    float   rotationVariance;
+    float   phaseInitialSpreading;
+    float   speedInitialSpreading;
+    vector<float> scaleInitialSpreading;
+    vector<float> rotationInitialSpreading;
 } ofxGVFParameters;
 
 // ofxGVFVarianceCoefficents
 //  variances of the probability distributions
-typedef struct{
-    float phaseVariance = -1.0f;
-    float speedVariance = -1.0f;
-    float scaleVariance = -1.0f;
-    float rotationVariance = -1.0f;
+/*typedef struct{
+    float phaseVariance;
+    float speedVariance;
+    float scaleVariance;
+    float rotationVariance;
 } ofxGVFVarianceCoefficents;
+ */
 
 // ofxGVFInitialSpreadingParameters
-typedef struct{
+/*typedef struct{
     float phaseInitialSpreading;
     float speedInitialSpreading;
     vector<float> scaleInitialSpreading;
     vector<float> rotationInitialSpreading;
 } ofxGVFInitialSpreadingParameters;
+*/
 
 // ofxGVFVariations
 typedef struct{
@@ -67,7 +83,7 @@ typedef struct{
     float estimatedSpeed;
     vector<float> estimatedScale;
     vector<float> estimatedRotation;
-} ofxGVFVariations;
+} ofxGVFOutcomes;
 
 
 
