@@ -9,12 +9,15 @@ Installation
 
 Compiling the openFrameworks version: make sure that in ofxGVFTypes.h you set
 
+```
 #define OPENFRAMEWORKS 1
+```
 
 Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you set
 
+```
 #define OPENFRAMEWORKS 0
-
+```
 
 
 
