@@ -16,7 +16,7 @@
 #include <vector>
 #include "m_pd.h"
 #include "ofxGVF.h"
-#include "ofxGesture.h"
+#include "ofxGVFGesture.h"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -27,26 +27,19 @@ static t_class *gvf_class;
 // Building Structure GVF
 // ----------------------
 typedef struct _gvf {
-    
+
+    // object 
     t_object  x_obj;
-    ofxGVF *bubi;
-	
-    t_int state;
-	t_int lastreferencelearned;
-    t_int currentToBeLearned;
     
-    std::map<int,std::vector<std::pair<float,float> > > *refmap;
-	
-    ofxGVFParameters parameters;
-    ofxGVFVarianceCoefficents coefficents;
-    t_int Nspg, Rtpg;
-	t_float sp, sv, sr, ss, so; // pos,vel,rot,scal,observation
-	t_int pdim;
-	
-    int translate;
-    
+    // GVF related variables
+    ofxGVF              *bubi;
+	ofxGVFGesture       *currentGesture;
+    ofxGVFConfig        config;
+    ofxGVFParameters    parameters;
+    ofxGVFOutcomes      outcomes;
+
     // outlets
-    t_outlet *Position,*Vitesse,*Scaling,*Rotation,*Recognition,*Likelihoods,*Number_templates;
+    t_outlet *Position,*Vitesse,*Scaling,*Rotation,*Likelihoods;
 
 } t_gvf;
 
@@ -55,31 +48,27 @@ typedef struct _gvf {
 // MESSAGES THAT CAN BE RECEIVED FROM PURE DATA
 // =============================================
 
-static void gvf_learn      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_follow     (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_clear      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_data       (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_printme    (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_restart    (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_std        (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_rt         (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_means      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_ranges     (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_adaptspeed (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_learn           (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_follow          (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_clear           (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_data            (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_printme         (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_restart         (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_std             (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_rt              (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_means           (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_ranges          (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_adaptspeed      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_savetemplates   (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_loadtemplates   (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_gestureOn       (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_gestureOff      (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_translate       (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_segmentation    (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
 
 static void gvf_auto(t_gvf *x);
 
 
-// restart flags (learning and decoding [ie following])
-t_int restarted_l;
-t_int restarted_d;
-
-// vectors of initial points (learning and decoding [ie following])
-std::vector<t_float> vect_0_l;
-std::vector<t_float> vect_0_d;
-
-// states
-enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 
 
@@ -88,46 +77,41 @@ enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
 
 static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
 {
-    post("\ngvf - realtime adaptive gesture recognition (version: 20-05-2014)");
+    post("\ngvf - realtime adaptive gesture recognition (version: 06-2014)");
     post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
-    
-    t_gvf *x = (t_gvf *)pd_new(gvf_class);
-    
-    x->parameters.inputDimensions = 2;
-    x->parameters.numberParticles = 2000;
-    x->parameters.tolerance = 0.2f;
-    x->parameters.resamplingThreshold = 500;
-    x->parameters.distribution = 0.0f;
-    
-    x->coefficents.phaseVariance = 0.000005;
-    x->coefficents.speedVariance = 0.0001;
-    x->coefficents.scaleVariance = 0.00001;
-    x->coefficents.rotationVariance = 0.00000001;
-    
-    x->gvf.setup(x->parameters, x->coefficents);
-    
-    restarted_l=1;
-    restarted_d=1;
-    
-    x->state = STATE_CLEAR;
-    x->lastreferencelearned = -1;
-    x->currentToBeLearned = -1;
-   
-   /*
-    if (argc > 0)
-        x->Nspg = getint(argv);
-    if (argc > 1)
-        x->Rtpg = getint(argv + 1);
-    */
 
+    t_gvf *x = (t_gvf *)pd_new(gvf_class);
+
+
+        
+    // CONFIGURATION of the GVF
+    x->config.inputDimensions  = 2;   
+    x->config.translate        = true;
+    x->config.segmentation     = true;
+        
+    // PARAMETERS of the GVF
+    x->parameters.numberParticles      = 2000;
+    x->parameters.tolerance            = 0.2f;
+    x->parameters.resamplingThreshold  = 500;
+    x->parameters.distribution         = 0.0f;
+    x->parameters.phaseVariance        = 0.000001;
+    x->parameters.speedVariance        = 0.001;
+    x->parameters.scaleVariance        = 0.0001;
+    x->parameters.rotationVariance     = 0.000001;
+        
+    // CREATE the corresponding GVF
+    x->bubi = new ofxGVF(x->config, x->parameters);
+
+    // CREATE THE GESTURE
+    x->currentGesture = new ofxGVFGesture();
+
+
+    // OUTLETS
     x->Position     = outlet_new(&x->x_obj, &s_list);
     x->Vitesse      = outlet_new(&x->x_obj, &s_list);
-    x->Rotation     = outlet_new(&x->x_obj, &s_list);
     x->Scaling      = outlet_new(&x->x_obj, &s_list);
-    x->Recognition  = outlet_new(&x->x_obj, &s_list);
+    x->Rotation     = outlet_new(&x->x_obj, &s_list);
     x->Likelihoods  = outlet_new(&x->x_obj, &s_list);
-    x->Number_templates= outlet_new(&x->x_obj, &s_list);
-    //    x->TotalActiveGesture = outlet_new(&x->x_obj, &s_list);
     
     return (void *)x;
 }
@@ -137,9 +121,6 @@ static void gvf_destructor(t_gvf *x)
     //post("gvf destructor...");
     if(x->bubi != NULL)
         delete x->bubi;
-    if(x->refmap != NULL)
-        delete x->refmap;
-    //post("destructor complete");
 }
 
 
@@ -150,50 +131,9 @@ static void gvf_destructor(t_gvf *x)
 ///////////////////////////////////////////////////////////
 static void gvf_learn(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    if(argc != 1)
-    {
-        post("need another argument");
-        return;
-    }
-    int refI = getint(argv);
-    refI=refI-1; // starts at 1 in the patch but 0 in C++
-    x->currentToBeLearned=refI;
-    
-    if(refI > x->lastreferencelearned+1)
-    {
-        post("you need to learn reference %d first",x->lastreferencelearned+1);
-        return;
-    }
-    else{
-        if(refI == x->lastreferencelearned+1)
-            {
-                x->lastreferencelearned++;
-                //refmap[refI] = vector<pair<float, float> >();
-                post("learning reference %d", refI+1);
-                x->bubi->addTemplate();
-            }
-            else{
-                //refmap[refI] = vector<pair<float, float> >();
-                post("modifying reference %d", refI+1);
-                x->bubi->clearTemplate(refI);
-            }
-        }
-    //x->lastreferencelearned++;
-    //x->refmap[refI];// = std::vector<std::pair<float, float> >();
-    //(*x->refmap)[refI] = std::vector<std::pair<float, float> >();
-    //post("learning reference %d", refI+1);
-    //x->bubi->addTemplate();
-    
-    x->state = STATE_LEARNING;
-    
-    restarted_l=1;
-    
-    
-    // output number of templates
-    t_atom *outAtoms = new t_atom[1];
-    SETFLOAT(&outAtoms[0],x->lastreferencelearned+1);
-    outlet_list(x->Number_templates, &s_list, 1, outAtoms);
-    delete[] outAtoms;
+        x->bubi->setState(ofxGVF::STATE_LEARNING);
+        x->currentGesture->clear();
+        post("Learn one gesture...");
 }
 
 
@@ -202,182 +142,123 @@ static void gvf_learn(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 static void gvf_follow(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    if(x->lastreferencelearned >= 0)
-    {
-        x->bubi->spreadParticles(x->mpvrs,x->rpvrs);
-        x->state = STATE_FOLLOWING;
-    }
-    else
-    {
-        post("no reference has been learned");
-        return;
-    }
+        x->bubi->setState(ofxGVF::STATE_FOLLOWING);
+        post("Follow gesture...");
 }
 
+
+static void gvf_gestureOn(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
+{
+        // nothing
+}
+    
+    
+static void gvf_gestureOff(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
+{
+        // add the current gesture to the template if in learning mode and
+        // the current gesture not empty!
+    
+        if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
+            x->bubi->addGestureTemplate(*(x->currentGesture));
+            
+}
 
 ///////////////////////////////////////////////////////////
 //====================== DATA
 ///////////////////////////////////////////////////////////
 static void gvf_data(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    if(x->state == STATE_CLEAR)
-    {
-        post("what am I supposed to do ... I'm in standby!");
-        return;
-    }
+
     if(argc == 0)
     {
         post("invalid format, points have at least 1 coordinate");
         return;
     }
-    if(x->state == STATE_LEARNING)
+    if(x->bubi->getState() == ofxGVF::STATE_CLEAR)
     {
-        std::vector<float> vect(argc);
-                
-	if (x->translate){
-            if (restarted_l==1)
-            {
-                // store the incoming list as a vector of float
-                for (int k=0; k<argc; k++){
-                    //vect[k] = GetFloat(argv[k]);
-                    //may not be correct..
-                    vect[k] = getfloat(argv + k);
-                }
-                // keep track of the first point
-                vect_0_l = vect;
-                restarted_l=0;
-            }
-            for (int k=0; k<argc; k++){
-                // repeat of above, could remove
-                vect[k] = getfloat(argv + k);
-                vect[k] = vect[k]-vect_0_l[k];
-            }
-        }
-        else {
-            for (int k=0; k<argc; k++)
-                vect[k] = getfloat(argv + k);
-        }
-        
-        //				pair<float,float> xy;
-        //				xy.first  = x -xy0_l.first;
-        //				xy.second = y -xy0_l.second;
-        
-        // Fill template
-        //x->bubi->fillTemplate(x->lastreferencelearned,vect);
-        x->bubi->fillTemplate(x->currentToBeLearned,vect);
-        
+        post("I'm in a standby (must learn something beforehand)");
+        return;
     }
-    else if(x->state == STATE_FOLLOWING)
-    {
-        std::vector<float> vect(argc);
 
-        if (x->translate){
-            if (restarted_d==1)
+    switch (x->bubi->getState()) {
+         case ofxGVF::STATE_LEARNING:
             {
-                // store the incoming list as a vector of float
-                for (int k=0; k<argc; k++){
-                    vect[k] = getfloat(argv + k);
-                }
-                // keep track of the first point
-                vect_0_d = vect;
-                restarted_d=0;
+                vector<float> observation_vector(argc);
+                for (int k=0; k<argc; k++)
+                    observation_vector[k] = atom_getfloat(&argv[k]);
+
+                x->currentGesture->addObservation(observation_vector);
+                //post("IN: %f %f", observation_vector[0], observation_vector[1]);
+
+                break;
             }
-            for (int k=0; k<argc; k++){
-                //?
-                vect[k] = vect[k] = getfloat(argv + k);
-                vect[k] = vect[k] - vect_0_d[k];
+        case ofxGVF::STATE_FOLLOWING:
+            {
+                vector<float> observation_vector(argc);
+                for (int k=0; k<argc; k++)
+                    observation_vector[k] = atom_getfloat(&argv[k]);
+                
+                x->currentGesture->addObservation(observation_vector);
+                
+                // inference on the last observation
+                x->bubi->infer(x->currentGesture->getLastObservation());
+
+                
+                // output recognition
+                x->outcomes = x->bubi->getOutcomes();
+                
+                t_atom *outAtoms = new t_atom[x->outcomes.allPhases.size()];
+                
+                for(int j = 0; j < x->outcomes.allPhases.size(); j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.allPhases[j]);
+                outlet_list(x->Position, &s_list, x->outcomes.allPhases.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[x->outcomes.allSpeeds.size()];
+                for(int j = 0; j < x->outcomes.allSpeeds.size(); j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.allSpeeds[j]);
+                outlet_list(x->Vitesse, &s_list, x->outcomes.allSpeeds.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[x->outcomes.allScales.size()];
+                for(int j = 0; j < x->outcomes.allScales.size(); j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.allScales[j]);
+                outlet_list(x->Scaling, &s_list, x->outcomes.allScales.size(), outAtoms);
+                delete[] outAtoms;
+
+                outAtoms = new t_atom[x->outcomes.allRotations.size()];
+                for(int j = 0; j < x->outcomes.allRotations.size(); j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.allRotations[j]);
+                outlet_list(x->Rotation, &s_list, x->outcomes.allRotations.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[x->outcomes.allProbabilities.size()];
+                for(int j = 0; j < x->outcomes.allProbabilities.size(); j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.allProbabilities[j]);
+                outlet_list(x->Likelihoods, &s_list, x->outcomes.allProbabilities.size(), outAtoms);
+                delete[] outAtoms;
+                 
+                break;
             }
+            
+            default:
+                // nothing
+                break;
         }
-        else{
-            for (int k=0; k<argc; k++)
-                vect[k] = vect[k] = getfloat(argv + k);
-        }
-        
-        
-        //post("%f %f",xy(0,0),xy(0,1));
-        // ------- Fill template
-        x->bubi->infer(vect);
-        // output recognition
-        Eigen::MatrixXf statu = x->bubi->getEstimatedStatus();
-        //getGestureProbabilities();
-        
-        t_atom *outAtoms = new t_atom[statu.rows()];
-        // de-refed. may be wrong.
-        for(int j = 0; j < statu.rows(); j++)
-            SETFLOAT(&outAtoms[j],statu(j,0));
-        outlet_list(x->Position, &s_list, statu.rows(), outAtoms);
-        delete[] outAtoms;
-        
-        outAtoms = new t_atom[statu.rows()];
-        for(int j = 0; j < statu.rows(); j++)
-            SETFLOAT(&outAtoms[j],statu(j,1));
-        outlet_list(x->Vitesse, &s_list, statu.rows(), outAtoms);
-        delete[] outAtoms;
-        
-        outAtoms = new t_atom[statu.rows()];
-        for(int j = 0; j < statu.rows(); j++)
-            SETFLOAT(&outAtoms[j],statu(j,2));
-        outlet_list(x->Rotation, &s_list, statu.rows(), outAtoms);
-        delete[] outAtoms;
-        
-        outAtoms = new t_atom[statu.rows()];
-        for(int j = 0; j < statu.rows(); j++)
-            SETFLOAT(&outAtoms[j],statu(j,3));
-        outlet_list(x->Scaling, &s_list, statu.rows(), outAtoms);
-        delete[] outAtoms;
-        
-        
-        
-        Eigen::VectorXf gprob = x->bubi->getGestureConditionnalProbabilities();
-        float probmaxsofar=-1;
-        int probmaxsofarindex=-1;
-        for (int k=0; k<gprob.size(); k++){
-            if (gprob(k)>probmaxsofar){
-                probmaxsofar=gprob(k);
-                probmaxsofarindex=k+1;
-            }
-        }
-        
-        outAtoms = new t_atom[1];
-        SETFLOAT(&outAtoms[0],probmaxsofarindex);
-        outlet_list(x->Recognition, &s_list, probmaxsofarindex, outAtoms);
-        delete[] outAtoms;
-        
-        
-        outAtoms = new t_atom[gprob.size()];
-        for(int j = 0; j < gprob.size(); j++)
-            SETFLOAT(&outAtoms[j],gprob(j,0));
-        outlet_list(x->Likelihoods, &s_list, gprob.size(), outAtoms);
-        delete[] outAtoms;
-        
-//        gprob = x->bubi->getGestureLikelihoods();
-//        outAtoms = new t_atom[gprob.size()];
-//        for(int j = 0; j < gprob.size(); j++)
-//            SETFLOAT(&outAtoms[j],gprob(j,0));
-//        outlet_list(x->Likelihoods, &s_list, gprob.size(), outAtoms);
-//        delete[] outAtoms;
-        
-        
-        
-    }
+
 }
 
 
 ///////////////////////////////////////////////////////////
 //====================== SAVE_VOCABULARY
 ///////////////////////////////////////////////////////////
-static void gvf_save_vocabulary(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_savetemplates(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    unsigned int bufsize = 200;
-    char * mpath;
-    mpath = (char*)malloc(bufsize*sizeof(bufsize));
-    atom_string(argv, mpath, bufsize);
-    int i=0;
-    while ( *(mpath+i)!='/' )
-        i++;
-    mpath = mpath+i;
-    std::string filename(mpath);
-    x->bubi->saveTemplates(filename);
+    /*
+        char* mpath = atom_getsymbol(argv);
+        string filename(mpath);
+        x->bubi->saveTemplates(filename);
+    */
 }
 
 
@@ -385,27 +266,17 @@ static void gvf_save_vocabulary(t_gvf *x,const t_symbol *sss,int argc, t_atom *a
 ///////////////////////////////////////////////////////////
 //====================== LOAD_VOCABULARY
 ///////////////////////////////////////////////////////////
-void gvf_load_vocabulary(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_loadtemplates(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    unsigned int bufsize = 200;
-    char * mpath;
-    mpath = (char*)malloc(bufsize*sizeof(bufsize));
-    atom_string(argv, mpath, bufsize);
-    int i=0;
-    while ( *(mpath+i)!='/' )
-        i++;
-    mpath = mpath+i;
-    std::string filename(mpath);
-    //std::string filename = "/Users/caramiaux/gotest.txt";
-    x->bubi->loadTemplates(filename);
-    x->lastreferencelearned=x->bubi->getNbOfTemplates()-1;
-/*
-    t_atom* outAtoms = new t_atom[1];
-    SETFLOAT(&outAtoms[0], x->bubi->getNbOfTemplates());
-    outlet_list(x->Likelihoods, &s_list, 1, outAtoms);
-    delete[] outAtoms;
- */
-    
+    /*
+        char* mpath = atom_string(argv);
+        int i=0;
+        while ( *(mpath+i)!='/' )
+            i++;
+        mpath = mpath+i;
+        string filename(mpath);
+        x->bubi->loadTemplates(filename);
+    */
 }
 
 
@@ -414,11 +285,8 @@ void gvf_load_vocabulary(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 static void gvf_clear(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    x->lastreferencelearned = -1;
     x->bubi->clear();
-    restarted_l=1;
-    restarted_d=1;
-    x->state = STATE_CLEAR;
+    post("Clear!");
 }
 
 
@@ -426,20 +294,21 @@ static void gvf_clear(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 //====================== PRINTME
 ///////////////////////////////////////////////////////////
 static void gvf_printme(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
-{
-    post("\nN. particles %d: ", x->bubi->getNbOfParticles());
-    post("Resampling Th. %d: ", x->bubi->getResamplingThreshold());
-    post("Means %.3f %.3f %.3f %.3f: ", x->mpvrs[0], x->mpvrs[1], x->mpvrs[2], x->mpvrs[3]);
-    post("Ranges %.3f %.3f %.3f %.3f: ", x->rpvrs[0], x->rpvrs[1], x->rpvrs[2], x->rpvrs[3]);
-    for(int i = 0; i < x->bubi->getNbOfTemplates(); i++)
-    {
-        post("reference %d: ", i);
-        std::vector<std::vector<float> > tplt = x->bubi->getTemplateByInd(i);
-        for(int j = 0; j < tplt.size(); j++)
+{  
+        post("Number of particles %d", x->bubi->getNumberOfParticles());
+        post("Resampling Threshold %d", x->bubi->getResamplingThreshold());
+        post("Tolerance %.2f", x->bubi->getParameters().tolerance);
+        for(int i = 0; i < x->bubi->getNumberOfGestureTemplates(); i++)
         {
-            post("%02.4f  %02.4f", tplt[j][0], tplt[j][1]);
+            post("reference %d: ", i);
+            
+            vector<vector<float> > tplt = x->bubi->getGestureTemplate(i).getTemplate();
+            
+            for(int j = 0; j < tplt.size(); j++)
+            {
+                post("%02.4f  %02.4f", tplt[j][0], tplt[j][1]);
+            }
         }
-    }
 }
 
 
@@ -448,14 +317,12 @@ static void gvf_printme(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 static void gvf_restart(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    restarted_l=1;
-    if(x->state == STATE_FOLLOWING)
-    {
-        x->bubi->spreadParticles(x->mpvrs,x->rpvrs);
-        restarted_l=1;
-        restarted_d=1;
-    }
-
+    
+        x->currentGesture->clear();
+        
+        if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
+            x->bubi->spreadParticles();
+            
 }
 
 
@@ -464,10 +331,12 @@ static void gvf_restart(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 static void gvf_tolerance(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    float stdnew = getfloat(argv);
-    if (stdnew == 0.0)
-        stdnew = 0.1;
-    x->bubi->setIcovSingleValue(1/(stdnew*stdnew));
+        float stdnew = atom_getfloat(argv);
+        if (stdnew == 0.0)
+            stdnew = 0.1;
+        x->parameters=x->bubi->getParameters();
+        x->parameters.tolerance=stdnew;
+        x->bubi->setParameters(x->parameters);
 }
 
 
@@ -476,11 +345,13 @@ static void gvf_tolerance(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 static void gvf_resampling_threshold(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    int rtnew = getint(argv);
-    int cNS = x->bubi->getNbOfParticles();
-    if (rtnew >= cNS)
-        rtnew = floor(cNS/2);
-    x->bubi->setResamplingThreshold(rtnew);
+        int rtnew = atom_getint(&argv[0]);
+        int cNS = x->bubi->getNumberOfParticles();
+        if (rtnew >= cNS)
+            rtnew = floor(cNS/2);
+        x->parameters=x->bubi->getParameters();
+        x->parameters.resamplingThreshold  = rtnew;
+        x->bubi->setParameters(x->parameters);
 }
 
 
@@ -489,8 +360,7 @@ static void gvf_resampling_threshold(t_gvf *x,const t_symbol *sss,int argc, t_at
 ///////////////////////////////////////////////////////////
 static void gvf_spreading_means(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    x->mpvrs = Eigen::VectorXf(x->pdim);
-    x->mpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
+        // do something
 }
 
 
@@ -499,8 +369,7 @@ static void gvf_spreading_means(t_gvf *x,const t_symbol *sss,int argc, t_atom *a
 ///////////////////////////////////////////////////////////
 static void gvf_spreading_ranges(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    x->rpvrs = Eigen::VectorXf(x->pdim);
-    x->rpvrs << getfloat(argv), getfloat(argv + 1), getfloat(argv + 2), getfloat(argv + 3);
+        // do something
 }
 
 
@@ -509,12 +378,13 @@ static void gvf_spreading_ranges(t_gvf *x,const t_symbol *sss,int argc, t_atom *
 ///////////////////////////////////////////////////////////
 static void gvf_adaptation_speed(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    std::vector<float> as;
+    /*std::vector<float> as;
     as.push_back(getfloat(argv));
     as.push_back(getfloat(argv + 1));
     as.push_back(getfloat(argv + 2));
     as.push_back(getfloat(argv + 3));
-    x->bubi->setAdaptSpeed(as);
+    */
+    // do something
 }
 
 ///////////////////////////////////////////////////////////
@@ -522,9 +392,21 @@ static void gvf_adaptation_speed(t_gvf *x,const t_symbol *sss,int argc, t_atom *
 ///////////////////////////////////////////////////////////
 static void gvf_translate(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
-    post("transalte %i", getint(argv));
-    x->translate = getint(argv);
+        x->config = x->bubi->getConfig();
+        x->config.translate = (atom_getint(&argv[0])==0)? false : true;
+        x->bubi->setConfig(x->config);
 }
+    
+///////////////////////////////////////////////////////////
+//====================== translate
+///////////////////////////////////////////////////////////
+static void gvf_segmentation(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
+{
+        x->config = x->bubi->getConfig();
+        x->config.segmentation = (atom_getint(&argv[0])==0)? false : true;
+        x->bubi->setConfig(x->config);
+}
+
 
 extern "C"
 {
@@ -543,8 +425,13 @@ extern "C"
         class_addmethod(gvf_class,(t_method)gvf_spreading_means,gensym("spreading_means"),A_GIMME,0);
         class_addmethod(gvf_class,(t_method)gvf_spreading_ranges,gensym("spreading_ranges"),A_GIMME,0);
         class_addmethod(gvf_class,(t_method)gvf_adaptation_speed,gensym("adaptation_speed"),A_GIMME,0);
-        class_addmethod(gvf_class,(t_method)gvf_save_vocabulary,gensym("save_vocabulary"),A_GIMME,0);
-        class_addmethod(gvf_class,(t_method)gvf_load_vocabulary,gensym("load_vocabulary"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_gestureOn,gensym("gestureOn"),A_GIMME,0);
+        
+        class_addmethod(gvf_class,(t_method)gvf_savetemplates,gensym("savetemplates"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_loadtemplates,gensym("loadtemplates"),A_GIMME,0);
         class_addmethod(gvf_class,(t_method)gvf_translate,gensym("translate"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_segmentation,gensym("segmentation"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_gestureOn,gensym("gestureOn"),A_GIMME,0);
+        class_addmethod(gvf_class,(t_method)gvf_gestureOff,gensym("gestureOff"),A_GIMME,0);
     }
 }

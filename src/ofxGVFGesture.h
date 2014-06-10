@@ -10,8 +10,19 @@
 #define _H_OFXGVF_GESTURE
 
 #include "ofxGVFTypes.h"
+#include <assert.h>
 
-#ifdef OPENFRAMEWORKS
+/* Macros for min/max. */
+#ifndef MIN
+#define	MIN(a,b) (((a)<(b))?(a):(b))
+#endif /* MIN */
+#ifndef MAX
+#define	MAX(a,b) (((a)>(b))?(a):(b))
+#endif	/* MAX */
+
+
+
+#if OPENFRAMEWORKS
 #include "ofMain.h"
 #endif
 
@@ -27,10 +38,21 @@ public:
     ofxGVFGesture(){
         inputDimensions = 2; // default to 2D
         type = GEOMETRIC; // default to a geometric shape
-        bAutoAdjustNormalRange = false;
+    
+//        bAutoAdjustNormalRange = true;
+//        bIsRangeMinSet = false;
+//        bIsRangeMaxSet = false;
+
+        setAutoAdjustRanges(true);
+
+        
+        //added
+        templatesRaw    = vector<vector<vector<float > > >();
+        templatesNormal = vector<vector<vector<float > > >();
+        
         clear();
     }
-    
+
     ~ofxGVFGesture(){
         clear();
     }
@@ -62,7 +84,7 @@ public:
         bAutoAdjustNormalRange = b;
     }
     
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
     
     void setMax(ofPoint max){
         assert(inputDimensions <= 2);
@@ -153,7 +175,7 @@ public:
         }
     }
     
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
     void addObservationRaw(ofPoint observation, int templateIndex = 0){
         assert(inputDimensions <= 3);
         vector<float> obs(inputDimensions);
@@ -164,12 +186,17 @@ public:
     }
 #endif
     
+    void addObservation(vector<float> observation, int templateIndex = 0){
+        addObservationRaw(observation);
+    }
+    
+    
     void addObservationRaw(vector<float> observation, int templateIndex = 0){
         
         // check we have a valid templateIndex and correct number of input dimensions
         assert(templateIndex <= templatesRaw.size());
         assert(observation.size() == inputDimensions);
-        assert(bAutoAdjustNormalRange || (bIsRangeMaxSet && bIsRangeMinSet));
+        //assert(bAutoAdjustNormalRange || (bIsRangeMaxSet && bIsRangeMinSet));
         
         // if the template index is same as the number of temlates make a new template
         if(templateIndex == templatesRaw.size()){ // make a new template
@@ -180,18 +207,18 @@ public:
             
         }
 
-        if(templatesRaw[templateIndex].size() == 0){
+        if(templatesRaw[templateIndex].size() == 0)
             templateInitialRaw = templateInitialNormal = observation;
-        //    cout << "INIT " << observation[0] << " " << observation[1] << endl;
-        }
 
-        for(int j = 0; j < observation.size(); j++){
+        for(int j = 0; j < observation.size(); j++)
             observation[j] = observation[j] - templateInitialRaw[j];
-        }
+
         //            cout << "THEN " << observation.size() << " | " << observation[0] << " " << observation[1] << " " << templateInitialRaw[0] << " " << templateInitialRaw[1] << endl;
         
         // store the raw observation
         templatesRaw[templateIndex].push_back(observation);
+        
+        //post("SIZE RAW %i",templatesRaw[0].size());
         
         // if set let's auto size the range for normalising
         if(bAutoAdjustNormalRange) autoAdjustMinMax(observation);
@@ -200,17 +227,20 @@ public:
         
     }
     
+
+    
     void normalise(){
         
-#ifdef OPENFRAMEWORKS
-        
+
+#if OPENFRAMEWORKS
         // reserve space for raw and normal meshes
         representationsNormal.resize(templatesRaw.size() + 1);
+#endif 
         
         templatesNormal.resize(templatesRaw.size());
         
         for(int t = 0; t < templatesRaw.size(); t++){
-            
+#if OPENFRAMEWORKS         
             if(type == GEOMETRIC){
                 
                 // for GEOMETRIC representations let's use a single mesh with n-Dimensions
@@ -227,18 +257,18 @@ public:
                     representationsNormal[t][i].setMode(OF_PRIMITIVE_LINE_STRIP);
                 }
             }
-            
+      
             for(int m = 0; m < representationsNormal[t].size(); m++){
                 representationsNormal[t][m].clear();
             }
-#endif
+#endif  
             
             templatesNormal[t].resize(templatesRaw[t].size());
             
             for(int o = 0; o < templatesRaw[t].size(); o++){
-                
+#if OPENFRAMEWORKS
                 ofPoint pN;
-                
+#endif
                 templatesNormal[t][o].resize(inputDimensions);
                 
                 for(int d = 0; d < inputDimensions; d++){
@@ -248,7 +278,7 @@ public:
                     templatesNormal[t][o][d] = templatesRaw[t][o][d] / (observationRangeMax[d] - observationRangeMin[d]);
                     templateInitialNormal[d] = templateInitialRaw[d] / (observationRangeMax[d] - observationRangeMin[d]);
                     
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
                     
                     if(type == GEOMETRIC){
                         
@@ -263,16 +293,17 @@ public:
                         representationsNormal[t][d].addColor(ofColor(255, 255, 255));
                         
                     }
+#endif
                     
                 }
-                
+
+#if OPENFRAMEWORKS
                 if(type == GEOMETRIC){
                     
                     representationsNormal[t][0].addVertex(pN);
                     representationsNormal[t][0].addColor(ofColor(255, 255, 255));
                     
                 }
-
 #endif
             }
         }
@@ -281,10 +312,22 @@ public:
         
     }
 
+    void setTemplate(vector< vector<float> > & observations, int templateIndex = 0){
+        for(int i = 0; i < observations.size(); i++){
+            addObservation(observations[i], templateIndex);
+        }
+    }
+
     void setTemplateRaw(vector< vector<float> > & observations, int templateIndex = 0){
         for(int i = 0; i < observations.size(); i++){
             addObservationRaw(observations[i], templateIndex);
         }
+    }
+
+    
+    vector< vector<float> > & getTemplate(int templateIndex = 0){
+        assert(templateIndex < templatesRaw.size());
+        return templatesRaw[templateIndex];
     }
     
     vector< vector<float> > & getTemplateRaw(int templateIndex = 0){
@@ -301,8 +344,16 @@ public:
         return templatesRaw.size();
     }
     
+    int getNumberDimensions(){
+        return inputDimensions;
+    }
+    
     int getTemplateLength(int templateIndex = 0){
         return templatesRaw[templateIndex].size();
+    }
+
+    vector<float>& getLastObservation(int templateIndex = 0){
+        return templatesRaw[templateIndex][templatesRaw[templateIndex].size() - 1];
     }
     
     vector<float>& getLastRawObservation(int templateIndex = 0){
@@ -312,6 +363,10 @@ public:
     vector<float>& getLastNormalObservation(int templateIndex = 0){
         return templatesNormal[templateIndex][templatesNormal[templateIndex].size() - 1];
     }
+   
+    vector< vector< vector<float> > >& getTemplates(){
+        return templatesRaw;
+    }
     
     vector< vector< vector<float> > >& getTemplatesRaw(){
         return templatesRaw;
@@ -319,6 +374,10 @@ public:
     
     vector< vector< vector<float> > >& getTemplatesNormal(){
         return templatesNormal;
+    }
+    
+    vector<float>& getInitialObservation(){
+        return templateInitialRaw;
     }
     
     vector<float>& getInitialObservationRaw(){
@@ -333,7 +392,7 @@ public:
         assert(templateIndex < templatesRaw.size());
         templatesRaw[templateIndex].clear();
         templatesNormal[templateIndex].clear();
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
         representationsNormal[templateIndex].clear();
 #endif
     }
@@ -341,7 +400,7 @@ public:
     void clear(){
         templatesRaw.clear();
         templatesNormal.clear();
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
         representationsNormal.clear();
 #endif
         bIsRangeMinSet = false;
@@ -350,7 +409,7 @@ public:
         observationRangeMin.assign(inputDimensions,  INFINITY);
     }
 
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
 
     void draw(){
         
@@ -478,7 +537,7 @@ protected:
     vector< vector< vector<float> > > templatesRaw;
     vector< vector< vector<float> > > templatesNormal;
     
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
     vector< vector<ofMesh> > representationsNormal;
 #endif
     

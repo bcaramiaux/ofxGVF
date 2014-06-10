@@ -35,7 +35,7 @@ UNITTESTS =
 #
 #------------------------------------------------------------------------------#
 
-ALL_CFLAGS = -I"$(PD_INCLUDE)" -I"../src" -I"../Eigen"
+ALL_CFLAGS = -I"$(PD_INCLUDE)" -I"../src"
 ALL_LDFLAGS =  
 SHARED_LDFLAGS =
 ALL_LIBS = 
@@ -49,7 +49,7 @@ CC = g++
 #------------------------------------------------------------------------------#
 
 # these can be set from outside without (usually) breaking the build
-CFLAGS = -Wall -W -g
+CFLAGS = -g
 LDFLAGS =
 LIBS =
 
@@ -263,12 +263,12 @@ all: gvf.$(EXTENSION) $(SHARED_LIB)
 %.o: %.cpp
 	$(CC) $(ALL_CFLAGS) -o "$*.o" -c "$*.cpp"
 
-../src/GestureVariationFollower.o: ../src/GestureVariationFollower.cpp
-	$(CC) $(ALL_CFLAGS) -o "../src/GestureVariationFollower.o" -c "../src/GestureVariationFollower.cpp"
+../src/ofxGVF.o: ../src/ofxGVF.cpp
+	$(CC) $(ALL_CFLAGS) -o "../src/ofxGVF.o" -c "../src/ofxGVF.cpp"
 
-%.$(EXTENSION): %.o ../src/GestureVariationFollower.o $(SHARED_LIB)
-	$(CC) $(ALL_LDFLAGS) -o "$*.$(EXTENSION)" "$*.o" "../src/GestureVariationFollower.o" $(ALL_LIBS) $(SHARED_LIB)
-	rm ../src/GestureVariationFollower.o
+%.$(EXTENSION): %.o ../src/ofxGVF.o $(SHARED_LIB)
+	$(CC) $(ALL_LDFLAGS) -o "$*.$(EXTENSION)" "$*.o" "../src/ofxGVF.o" $(ALL_LIBS) $(SHARED_LIB)
+	rm ../src/ofxGVF.o
 	rm -f -- $(SOURCES:.cpp=.o) $(SOURCES_LIB:.cpp=.o) $(SHARED_SOURCE:.c=.o)
 	mkdir -p Build/$(UNAME)/
 	mv gvf.$(EXTENSION) Build/$(UNAME)/

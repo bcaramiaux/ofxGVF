@@ -27,6 +27,8 @@
 #include <tr1/memory>
 #include <unistd.h>
 
+
+
 using namespace std;
 
 vector<vector<float> > return_RotationMatrix_3d(float phi, float theta, float psi);
@@ -73,9 +75,9 @@ void ofxGVF::setup(){
     
     ofxGVFConfig defaultConfig;
     
-    defaultConfig.inputDimensions = 2;
-    defaultConfig.translate = true;
-    defaultConfig.allowSegmentation = true;
+    defaultConfig.inputDimensions   = 2;
+    defaultConfig.translate         = true;
+    defaultConfig.segmentation      = true;
 
     
     ofxGVFParameters defaultParameters;
@@ -159,16 +161,19 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
 #endif
     
-    // Variables used for segmentation -- experimental (research in progress)
-    // TODO(baptiste)
-    abs_weights = vector<float>();      // absolute weights used for segmentation
-    //    currentGest = 0;
-    //    new_gest = false;
-    //    offset = new std::vector<float>(2); // offset that has to be updated
-    //    compa = false;
-    //    old_max = 0;
-    //    probThresh = 0.02*ns;               // thresholds on the absolute weights for segmentation
-    //    probThreshMin = 0.1*ns;
+    // absolute weights
+    abs_weights = vector<float>();
+
+    // Offset for segmentation
+    offS=vector<vector<float> >(ns);
+    for (int k=0; k<ns; k++)
+    {
+        offS[k]=vector<float>(config.inputDimensions);
+    
+        for (int j=0; j<config.inputDimensions; j++)
+            offS[k][j]=0.0;
+    }
+
 }
 
 
@@ -181,9 +186,19 @@ void ofxGVF::learn(){
     //TODO (Baptiste)
     
     if (gestureTemplates.size() > 0){
+    
         
-        //post("dim %i ", R_single[0][0].size());
-        
+        // ADAPTATION OF THE TOLERANCE
+        // ---------------------------
+        float obsMeanRange = 0.0f;
+        for (int gt=0; gt<gestureTemplates.size(); gt++){
+            for (int d=0; d<config.inputDimensions; d++)
+                obsMeanRange += (gestureTemplates[gt].getMaxRange()[d]-gestureTemplates[gt].getMinRange()[d])/config.inputDimensions;
+        }
+        obsMeanRange/=gestureTemplates.size();
+        parameters.tolerance = obsMeanRange / 2;  // dividing by an heuristic factor [to be learned?]
+        // ---------------------------    
+            
         featVariances.clear();
         
         //config.inputDimensions = R_single[0][0].size();
@@ -309,15 +324,9 @@ ofxGVF::~ofxGVF(){
 //--------------------------------------------------------------
 void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
     
-    int inputDimension = gestureTemplate.getTemplateRaw(0)[0].size(); //TODO Define a method instead!!!
+    //int inputDimension = gestureTemplate.getTemplateRaw(0)[0].size(); //TODO Define a method instead!!!
+    int inputDimension = gestureTemplate.getNumberDimensions();
     
-    /*
-    for (int k=0; k<gestureTemplate.getTemplateRaw(0).size(); k++){
-        for (int j=0; j<gestureTemplate.getTemplateRaw(0)[0].size(); j++)
-            cout << gestureTemplate.getTemplateRaw(0)[0][j] << " ";
-        cout << endl;
-    }
-     */
     
     if(minRange.size() == 0){
         minRange.resize(inputDimension);
@@ -347,15 +356,9 @@ void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
     
     gestureTemplates.push_back(gestureTemplate);
     abs_weights.resize(gestureTemplates.size());
-    
-    /*
-    //verbose
-    for (int k=0; k<gestureTemplates[gestureTemplates.size()-1].getTemplateRaw(0).size(); k++){
-        for (int j=0; j<gestureTemplates[gestureTemplates.size()-1].getTemplateRaw(0)[0].size(); j++)
-            cout << gestureTemplates[gestureTemplates.size()-1].getTemplateRaw(0)[0][j] << " ";
-        cout << endl;
-    }*/
+  
 }
+
 
 //--------------------------------------------------------------
 ofxGVFGesture & ofxGVF::getGestureTemplate(int index){
@@ -369,7 +372,7 @@ vector<ofxGVFGesture> & ofxGVF::getAllGestureTemplates(){
 }
 
 //--------------------------------------------------------------
-int ofxGVF::getNumGestureTemplates(){
+int ofxGVF::getNumberOfGestureTemplates(){
     return gestureTemplates.size();
 }
 
@@ -463,15 +466,17 @@ void ofxGVF::removeAllGestureTemplates(){
 //--------------------------------------------------------------
 // Clear the internal data (templates)
 void ofxGVF::clear(){
+    
     state = STATE_CLEAR;
+    
     gestureTemplates.clear();
-    //	R_single.clear();
-    //    R_initial.clear();
-    O_initial.clear();
+
     //	gestureLengths.clear();
     mostProbableIndex = -1;
     mostProbableStatus.clear();
     //	numTemplates=-1;
+     
+     
 }
 
 ////////////////////////////////////////////////////////////////
@@ -528,11 +533,12 @@ string ofxGVF::getStateAsString(){
 
 //--------------------------------------------------------------
 void ofxGVF::spreadParticles(){
-    
+
     // use default means and ranges - taken from gvfhandler    
-    if (inputDim!=-1)
+    if (inputDim!=-1){
         spreadParticles(parameters);
-    
+        //obsOffset.clear();
+    }
 }
 
 //--------------------------------------------------------------
@@ -580,14 +586,15 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
     initweights();
     //    logW.setConstant(0.0);
 	
+    //post("ngestures=%i",ngestures);
+    
     // Spread uniformly the gesture class among the particles
 	for(int n = 0; n < ns; n++){
 		g[n] = n % ngestures;
-        //  post("%i, %i", ngestures, n % ngestures);
         
         // offsets are set to 0
-        //for (int k=0; k<inputDim; k++)
-        //    offS[n][k]=0.0;
+        for (int k=0; k<inputDim; k++)
+            offS[n][k]=0.0;
     }
     
 }
@@ -598,7 +605,6 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
 // Note that the current implemented distribution for sampling the particles is the uniform distribution
 void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     
-    O_initial.clear(); // clear initial observation data (used to 'center' 2D obs)
     
 	// we copy the initial means and ranges to be able to restart the algorithm
     meansCopy  = means;
@@ -627,8 +633,7 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
 	
     // Spread uniformly the gesture class among the particles
 	for(int n = 0; n < ns; n++){
-		g[n] = n % getNumGestureTemplates();
-        
+		g[n] = n % getNumberOfGestureTemplates();
         // offsets are set to 0
         for (int k=0; k<inputDim; k++)
             offS[n][k]=0.0;
@@ -640,8 +645,9 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
 // Initialialize the weights of the particles. The initial values of the weights is a
 // unifrom weight over the particles
 void ofxGVF::initweights(){
-    for (int k=0; k<ns; k++)
+    for (int k=0; k<ns; k++){
         w[k]=1.0/(float)ns;
+    }
 }
 
 //--------------------------------------------------------------
@@ -669,17 +675,7 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 void ofxGVF::particleFilter(vector<float> & obs){
     
 
-    if(config.translate)
-    {
-        if(O_initial.size() == 0)
-            // store initial obs data
-            O_initial = obs;
-        else
-            // 'translate' data by the first point
-            for(int i = 0; i < obs.size(); i++)
-                obs[i] -= O_initial[i];
-    }
-    
+    // random generators
 #if BOOSTLIB
 	boost::uniform_real<float> ur(0,1);
 	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
@@ -688,13 +684,10 @@ void ofxGVF::particleFilter(vector<float> & obs){
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
     
-    // particles outside the beginning (phase=0) or end (phase=1) of a gesture
-    // must have a weight equals to 0
-    int numParticlesPhaseLt0 = 0;
-    int numParticlesPhaseGt1 = 0;
+
     
     // zero abs weights
-    for(int i = 0 ; i < getNumGestureTemplates(); i++){
+    for(int i = 0 ; i < getNumberOfGestureTemplates(); i++){
         abs_weights[i] = 0.0;
     }
     
@@ -723,72 +716,13 @@ void ofxGVF::particleFilter(vector<float> & obs){
 			X[n][l] += (*rndnorm)() * featVariances[l];
 		vector<float> x_n = X[n];
         
-        
-        // can't observe a particle outside (0,1) range [this behaviour could be changed]
-		if(x_n[0] < 0.0 || x_n[0] > 1.0)
-        {
-            /*
-             //experimental!
-             w[n] = 1/ns;
-             // Spread particles using a uniform distribution
-             for(int i = 0; i < pdim; i++)
-             x_n[i] = (rnduni() - 0.5) * rangesCopy[i] + meansCopy[i];
-             g[n] = n % getNumGestureTemplates(); //gestureLengths.size();
-             particlesPhaseLt0.push_back(n);
-             numParticlesPhaseLt0 += 1;
-             
-             for (int k=0;k<inputDim;k++)
-             offS[n][k] = obs[k];
-             */
-
-            w[n] = 0.0;
-            
-        }/*
-          else if(x_n[0] > 1)
-          {
-          
-          //experimental!
-          w[n] = 1/ns;
-          // Spread particles using a uniform distribution
-          for(int i = 0; i < pdim; i++)
-          x_n[i] = (rnduni() - 0.5) * rangesCopy[i] + meansCopy[i];
-          g[n] = n % getNumGestureTemplates(); //gestureLengths.size();
-          particlesPhaseGt1.push_back(n);
-          numParticlesPhaseGt1 += 1;
-          for (int k=0;k<inputDim;k++)
-          offS[n][k] = obs[k];
-          }*/
-        // Can observe a particle inside (0,1) range
-        //	else
-        //    {
-        // gesture index for the particle
-        else{       // ...otherwise we propagate the particle's values and update its weight
-            
-            //vector<float> x_n = X[n];
-            //vector<float> obs_tmp = obs;
-            
-            /*
-            if (allowSegmentation){
-                
-                if (parameters.translate) {
-                    if (O_initial_particle[n].size()==0) {
-                        O_initial_particle[n] = vector<float> (obs.size());
-                        setVec(O_initial_particle[n], obs);
-                    }
-                }
-                else {
-                    if (O_initial_particle[n].size()==0) {
-                        O_initial_particle[n] = vector<float> (obs.size());
-                        setVec(O_initial_particle[n], (float)0.0);
-                    }
-                }
-                
-                for(int i = 0; i < obs.size(); i++)
-                    obs_tmp[i] -= O_initial_particle[n][i];
-            }
-            else
-                obs_tmp = obs;*/
-            
+ 
+//        if (!config.segmentation){
+        if(x_n[0] < 0.0 || x_n[0] > 1.0) {
+                w[n] = 0.0;
+        }
+        else {       // ...otherwise we propagate the particle's values and update its weight
+              
             
             int pgi = g[n];
             
@@ -798,12 +732,19 @@ void ofxGVF::particleFilter(vector<float> & obs){
             
             // given the index, return the gesture template value at this index
             vector<float> vref(inputDim);
-            setVec(vref, gestureTemplates[pgi].getTemplateNormal()[frameindex]);
+            setVec(vref, gestureTemplates[pgi].getTemplate()[frameindex]);
             
             //setVec(vref, R_single[pgi][frameindex]);
             
+            
             vector<float> vobs(inputDim);
-            setVec(vobs, obs);
+            if (config.translate)
+                for (int j=0; j<inputDim; j++)
+                    vobs[j]=obs[j]-offS[n][j];
+            else
+                setVec(vobs, obs);
+            
+            
             
             // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
             if (inputDim == 2){
@@ -873,7 +814,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
             for(int k=0;k<inputDim;k++) dimWeights[k]=1.0/inputDim;
             
             // observation likelihood and update weights
-            float dist = distance_weightedEuclidean(vref,obs,dimWeights) * 1/(parameters.tolerance*parameters.tolerance);
+            float dist = distance_weightedEuclidean(vref,vobs,dimWeights) * 1/(parameters.tolerance*parameters.tolerance);
             
 
             //cout << "n="<< n << " " << dist << " " << distance_weightedEuclidean(vref,obs,dimWeights) << " " << parameters.tolerance << endl;
@@ -882,8 +823,8 @@ void ofxGVF::particleFilter(vector<float> & obs){
             {
                 w[n]   *= exp(-dist);
                 abs_weights[g[n]] += exp(-dist);
-                //cout << n << "- " << vref[0] << "-" << obs[0] << " | " << vref[1]
-                //    << "-" << obs[1] << " | " << dist << "," << w[n] << " " << X[n][0] << endl;
+            //    cout << n << "- " << g[n] << " -- " << vref[0] << "," << vobs[0] << " | " << vref[1]
+            //        << "," << vobs[1] << " | " << offS[n][0] << " " << offS[n][1] << " " << dist << "," << w[n] << " " << X[n][0] << endl;
             }
             else            // Student's distribution
             {
@@ -892,9 +833,9 @@ void ofxGVF::particleFilter(vector<float> & obs){
 
         }
         
-        //cout << "n=" << n << " w[n]=" << w[n] << endl;
         sumw+=w[n];
     }
+//    }
     
     // normalize weights and compute criterion for degeneracy
     //	w /= w.sum();
@@ -905,52 +846,20 @@ void ofxGVF::particleFilter(vector<float> & obs){
         dotProdw+=w[k]*w[k];
     }
     float neff = 1./dotProdw;
-    //cout << neff << endl;
-    // Try segmentation from here...
-    
-    // do naive maximum value
-    /*
-     float maxSoFar = abs_weights[0];
-     currentGest = 1;
-     for(int i = 1; i< abs_weights.size();i++)
-     {
-     if(abs_weights[i] > maxSoFar)
-     {
-     maxSoFar = abs_weights[i];
-     currentGest = i+1;
-     }
-     }
-     
-     if(maxSoFar > probThreshMin && !compa)
-     {
-     old_max = maxSoFar;
-     compa = true;
-     }
-     
-     if(maxSoFar < probThresh && compa)
-     {
-     spreadParticles(meansCopy, rangesCopy);
-     new_gest = true;
-     (*offset)[0] = obs[0];
-     (*offset)[1] = obs[1];
-     compa = false;
-     }*/
-    
-    // ... to here.
-    
+
+
     
     // avoid degeneracy (no particles active, i.e. weights = 0) by resampling
     // around the active particles
     //cout << "resamplingThreshold: " << resamplingThreshold << " " << neff << endl;
 	if(neff<parameters.resamplingThreshold)
     {
+        //    post("resampling");
         //cout << "Resampling" << endl;
-        resampleAccordingToWeights();
+        resampleAccordingToWeights(obs);
         initweights();
     }
     
-    particlesPhaseLt0.clear();
-    particlesPhaseGt1.clear();
     
 }
 
@@ -959,8 +868,9 @@ void ofxGVF::particleFilter(vector<float> & obs){
 // Particles with negligeable weights will be respread near the particles with non-
 // neglieable weigths (which means the most likely estimation).
 // This steps is important to avoid degeneracy problem
-void ofxGVF::resampleAccordingToWeights()
+void ofxGVF::resampleAccordingToWeights(vector<float> obs)
 {
+    
 #if BOOSTLIB
     boost::uniform_real<float> ur(0,1);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
@@ -980,7 +890,14 @@ void ofxGVF::resampleAccordingToWeights()
         c[i] = c[i-1] + w[i];
     int i = 0;
     float u0 = rnduni()/ns;
+    
+    
+    // defining here the number of particles allocated to reinitialisation
+    // used for segmentation
     int free_pool = 0;
+    if (config.segmentation)
+        free_pool = round(3*ns/100);
+    
     for (int j = 0; j < ns; j++)
     {
         float uj = u0 + (j + 0.) / ns;
@@ -989,13 +906,53 @@ void ofxGVF::resampleAccordingToWeights()
             i++;
         }
         
-        if(j < ns - free_pool){
             for (int kk=0;kk<X[0].size();kk++)
                 X[j][kk] = oldX[i][kk];
             g[j] = oldG[i];
-            //            logW(j) = oldLogW(i);
-        }
+        
+        w[j] = 1.0/(float)ns;
     }
+    
+    for (int j = 0; j < free_pool; j++){
+        
+        int index = round(rnduni()*parameters.numberParticles);
+        
+        if (index == parameters.numberParticles)
+            index = 0;
+       
+            w[index] = 1.0/(float)(ns*ns);
+        
+            
+            float spreadRange = 0.02;
+            int scalingCoefficients  = parameters.scaleInitialSpreading.size();
+            int numberRotationAngles = parameters.rotationInitialSpreading.size();
+            // Spread particles using a uniform distribution
+            X[index][0] = (rnduni() - 0.5) * spreadRange + parameters.phaseInitialSpreading;
+            X[index][1] = (rnduni() - 0.5) * spreadRange + parameters.speedInitialSpreading;
+            for (int nn=0; nn<scalingCoefficients; nn++)
+                X[index][2+nn] = (rnduni() - 0.5) * spreadRange + parameters.scaleInitialSpreading[nn];
+            for (int nn=0; nn<numberRotationAngles; nn++)
+                X[index][2+scalingCoefficients+nn] = (rnduni() - 0.5) * 0.0 + parameters.rotationInitialSpreading[nn];
+
+            if (config.translate)
+            {
+                for (int jj=0; jj<config.inputDimensions; jj++)
+                    offS[index][jj]=obs[jj];
+            }
+        
+            g[index] = index % getNumberOfGestureTemplates(); // distribute particles across templates
+    }
+    //initweights();
+    
+    if (config.segmentation)
+    {
+        float sumw = 0.0;
+        for (int j = 0; j < ns; j++)
+            sumw+=w[j];
+        for (int j = 0; j < ns; j++)
+            w[j]/=sumw;
+    }
+     
     
 }
 
@@ -1005,25 +962,17 @@ void ofxGVF::resampleAccordingToWeights()
 // a set of observation.
 void ofxGVF::infer(vector<float> vect){
     
-    
-    for(int j = 0; j < inputDim; j++){
-        vect[j] = vect[j] / (maxRange[j] - minRange[j]);
-    }
-    
-    //cout << vect[0] << " " << vect[1] << endl;
-    
     particleFilter(vect);
     updateEstimatedStatus();
+    
 }
 
 void ofxGVF::updateEstimatedStatus(){
     // get the number of gestures in the vocabulary
     //	unsigned int ngestures = numTemplates+1;
-	//cout << "getEstimatedStatus():: ngestures= "<< numTemplates+1<< endl;
-    //cout << "getEstimatedStatus():: pdim= "<< pdim<< endl;
     
     //    vector< vector<float> > es;
-    setMat(S, 0.0f, getNumGestureTemplates(), pdim+1);   // rows are gestures, cols are features + probabilities
+    setMat(S, 0.0f, getNumberOfGestureTemplates(), pdim+1);   // rows are gestures, cols are features + probabilities
 	//printMatf(es);
     
 	// compute the estimated features by computing the expected values
@@ -1040,7 +989,8 @@ void ofxGVF::updateEstimatedStatus(){
     float maxProbability = 0.0f;
     mostProbableIndex = -1;
     
-	for(int gi = 0; gi < getNumGestureTemplates(); gi++){
+    
+	for(int gi = 0; gi < getNumberOfGestureTemplates(); gi++){
         for(int m=0; m<pdim; m++){
             S[gi][m] /= S[gi][pdim];
         }
@@ -1118,7 +1068,7 @@ ofxGVFOutcomes ofxGVF::getOutcomes() {
     
 
     
-    // get the estimations
+    // get the estimations for the recognized gesture
     //////////////////////
     // phase
     outcomes.estimatedPhase = mostProbableStatus[0];
@@ -1133,7 +1083,30 @@ ofxGVFOutcomes ofxGVF::getOutcomes() {
     for (int nn=0; nn<numberRotationAngles; nn++)
         outcomes.estimatedRotation[nn] = mostProbableStatus[2+scalingCoefficients+nn];
     
+    int numbOfGestureTemplates=gestureTemplates.size();
     
+    // get all the estimations
+    outcomes.allPhases = vector<float> (numbOfGestureTemplates);
+    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+        outcomes.allPhases[nn] = S[nn][0];
+    
+    outcomes.allSpeeds = vector<float> (numbOfGestureTemplates);
+    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+        outcomes.allSpeeds[nn] = S[nn][1];
+    
+    outcomes.allScales = vector<float> (numbOfGestureTemplates);
+    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+        for (int mm=0; mm<scalingCoefficients; mm++)
+            outcomes.allScales[nn*scalingCoefficients+mm] = S[nn][2+mm];
+    
+    outcomes.allRotations = vector<float> (numbOfGestureTemplates);
+    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+        for (int mm=0; mm<numberRotationAngles; mm++)
+            outcomes.allRotations[nn*numberRotationAngles+mm] = S[nn][2+scalingCoefficients+mm];
+    
+    outcomes.allProbabilities = vector<float> (numbOfGestureTemplates);
+    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+        outcomes.allProbabilities[nn] = S[nn][S[0].size()-1];
     
     return outcomes;
     
@@ -1154,7 +1127,7 @@ vector<float> ofxGVF::getGestureProbabilities()
 {
     //	unsigned int ngestures = numTemplates+1;
     
-	vector<float> gp(getNumGestureTemplates());
+	vector<float> gp(getNumberOfGestureTemplates());
     setVec(gp, 0.0f);
 	for(int n = 0; n < ns; n++)
 		gp[g[n]] += w[n];
@@ -1172,6 +1145,19 @@ vector< vector<float> > ofxGVF::getParticlesPositions(){
 // GET & SET FUNCTIONS FOR ALL INTERNAL VALUES
 //
 ////////////////////////////////////////////////////////////////
+
+// CONFIGURATION
+
+//--------------------------------------------------------------
+void ofxGVF::setConfig(ofxGVFConfig _config){
+    config = _config;
+}
+
+//--------------------------------------------------------------
+ofxGVFConfig ofxGVF::getConfig(){
+    return config;
+}
+
 
 // PARAMETERS
 
@@ -1327,6 +1313,22 @@ vector<float> ofxGVF::getW(){
     return w;
 }
 
+// MISC
+
+//--------------------------------------------------------------
+// Get a vector of Offsets corresponging to each particle's
+// assigned offset
+vector<vector<float> > ofxGVF::getIndividualOffset() {
+    return offS;
+}
+
+//--------------------------------------------------------------
+// Get the offset for a specific particle
+vector<float> ofxGVF::getIndividualOffset(int particleIndex) {
+    return offS[particleIndex];
+}
+
+
 // UTILITIES
 
 //--------------------------------------------------------------
@@ -1340,7 +1342,7 @@ void ofxGVF::saveTemplates(string filename){
         for(int i=0; i<gestureTemplates.size(); i++) // Number of gesture templates
         {
             file_write << "template " << i << " " << config.inputDimensions << endl;
-            vector<vector<float> > templateTmp = gestureTemplates[i].getTemplateNormal();
+            vector<vector<float> > templateTmp = gestureTemplates[i].getTemplate();
             for(int j=0; j<templateTmp.size(); j++)
             {
                 for(int k=0; k<config.inputDimensions; k++)
@@ -1371,71 +1373,68 @@ void ofxGVF::saveTemplates(string filename){
 void ofxGVF::loadTemplates(string filename){
     //    clear();
     //
-    //    ifstream infile;
-    //    stringstream doung;
+    
+    ofxGVFGesture loadedGesture;
+    loadedGesture.clear();
+    
+        ifstream infile;
+        stringstream doung;
+    
+        infile.open (filename.c_str(), ifstream::in);
     //
-    //    infile.open (filename.c_str(), ifstream::in);
-    //
-    //    string line;
-    //    vector<string> list;
-    //    int cl=-1;
-    //    while(!infile.eof())
-    //    {
-    //        cl++;
-    //        infile >> line;
-    //        //post("%i %s",cl,line.c_str());
-    //        list.push_back(line);
-    //    }
-    //
-    //    int k=0;
-    //    int template_starting_point = 1;
-    //    int template_id=-1;
-    //    int template_dim = 0;
-    //    float* vect_0_l;
-    //    //post("list size %i",list.size());
-    //
-    //    while (k < (list.size()-1) ){ // TODO to be changed if dim>2
-    //        if (!strcmp(list[k].c_str(),"template"))
-    //        {
-    //            template_id = atoi(list[k+1].c_str());
-    //            template_dim = atoi(list[k+2].c_str());
-    //            k=k+3;
-    //            //post("add template %i with size %i (k=%i)", template_id, template_dim,k);
-    //            addTemplate();
-    //            template_starting_point = 1;
-    //        }
-    //
-    //        if (template_dim<=0){
-    //            //post("bug dim = -1");
-    //        }
-    //        else{
-    //
-    //            vector<float> vect(template_dim);
-    //            if (template_starting_point==1)
-    //            {
-    //                // keep track of the first point
-    //                for (int kk=0; kk<template_dim; kk++)
-    //                {
-    //                    vect[kk] = (float)atof(list[k+kk].c_str());
-    //                    vect_0_l[kk] = vect[kk];
-    //                }
-    //                template_starting_point=0;
-    //            }
-    //            // store the incoming list as a vector of float
-    //            for (int kk=0; kk<template_dim; kk++)
-    //            {
-    //                vect[kk] = (float)atof(list[k+kk].c_str());
-    //                vect[kk] = vect[kk]-vect_0_l[kk];
-    //            }
-    //            //post("fill %i with %f %f",numTemplates,vect[0],vect[1]);
-    //            fillTemplate(numTemplates,vect);
-    //        }
-    //
-    //        k+=template_dim;
-    //
-    //    }
-    //
-    //    infile.close();
+        string line;
+        vector<string> list;
+        int cl=-1;
+        while(!infile.eof())
+        {
+            cl++;
+            infile >> line;
+    
+            list.push_back(line);
+        }
+    
+        int k=0;
+        int template_id=-1;
+        int template_dim = 0;
+
+    
+    while (k < (list.size()-1) ){ // TODO to be changed if dim>2
+
+                
+            if (!strcmp(list[k].c_str(),"template"))
+            {
+                template_id = atoi(list[k+1].c_str());
+                template_dim = atoi(list[k+2].c_str());
+                k=k+3;
+                
+                if (loadedGesture.getNumberOfTemplates()>0){
+                    addGestureTemplate(loadedGesture);
+                    loadedGesture.clear();
+                }
+            }
+
+            if (template_dim<=0){
+                //post("bug dim = -1");
+            }
+            else{
+    
+                vector<float> vect(template_dim);
+
+                for (int kk=0; kk<template_dim; kk++)
+                    vect[kk] = (float)atof(list[k+kk].c_str());
+
+                loadedGesture.addObservation(vect);
+            }
+            k+=template_dim;
+    
+        }
+    
+    if (loadedGesture.getTemplateLength()>0){
+        addGestureTemplate(loadedGesture);
+        loadedGesture.clear();
+    }
+    
+        infile.close();
 }
 
 //--------------------------------------------------------------

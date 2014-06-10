@@ -14,8 +14,9 @@
 #include <tr1/random>
 #include <iostream>
 #include <math.h>
+#include <assert.h>
 
-#define OPENFRAMEWORKS 0
+#define OPENFRAMEWORKS 1
 #define BOOSTLIB 0
 #define OPTIMISD 0
 #define VDSPOPTM 0
@@ -38,7 +39,8 @@ enum ofxGVFGestureType{
 typedef struct{
     int     inputDimensions;
     bool    translate;
-    bool    allowSegmentation;
+    bool    normalization;
+    bool    segmentation;
 } ofxGVFConfig;
 
 // ofxGVFParameters
@@ -83,11 +85,16 @@ typedef struct{
     float estimatedSpeed;
     vector<float> estimatedScale;
     vector<float> estimatedRotation;
+    vector<float> allPhases;
+    vector<float> allSpeeds;
+    vector<float> allScales;
+    vector<float> allRotations;
+    vector<float> allProbabilities;
 } ofxGVFOutcomes;
 
 
 
-#ifdef OPENFRAMEWORKS
+#if OPENFRAMEWORKS
 
 #include "ofMain.h"
 
@@ -140,9 +147,11 @@ template <typename T>
 inline void setMat(vector< vector<T> > & C, vector< vector<float> > & M){
     int rows = M.size();
     int cols = M[0].size();
-    C.resize(rows);
+    //C.resize(rows);
+    C = vector<vector<T> >(rows);
     for (int n=0; n<rows; n++){
-        C[n].resize(cols);
+        //C[n].resize(cols);
+        C[n] = vector<T>(cols);
         for (int m=0;m<cols;m++){
             C[n][m] = M[n][m];
         }
@@ -205,7 +214,8 @@ inline void initVec(vector<T> & V, int rows){
 template <typename T>
 inline void setVec(vector<T> & C, vector<int> &V){
     int rows = V.size();
-    C.resize(rows);
+    C = vector<T>(rows);
+    //C.resize(rows);
     for (int n=0; n<rows; n++){
         C[n] = V[n];
     }

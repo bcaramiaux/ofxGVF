@@ -20,16 +20,9 @@
 #include <vector>
 #include <unistd.h>
 
+
 using namespace std;
 
-
-enum {STATE_CLEAR, STATE_LEARNING, STATE_FOLLOWING};
-
-int restarted_l;
-int restarted_d;
-
-vector<float> vect_0_l;
-vector<float> vect_0_d;
 
 
 
@@ -37,53 +30,41 @@ class gvf : public MaxCpp6<gvf> {
 
 private:
 
-	ofxGVF *bubi;
-    ofxGVFGesture               currentGesture;     // storing template and live gesture
-    ofxGVFParameters            parameters;         // GVF parameters
-    ofxGVFVarianceCoefficents   coefficents;
-    ofxGVFVariations            variations;         // GVF outcomes
-
-	int state;
-	int lastreferencelearned, currentToBeLearned;
-	
-    map<int,vector<pair<float,float> > > refmap;
-	int Nspg, Rtpg;
-	float sp, sv, sr, ss, so; // pos,vel,rot,scal,observation
-	int pdim;
-//	Eigen::VectorXf mpvrs;
-//	Eigen::VectorXf rpvrs;
-    float value_mmax;
-    bool offline_recognition;
-    int toBeTranslated;
-    
+	ofxGVF              *bubi;
+    ofxGVFGesture       currentGesture;
+    ofxGVFConfig        config;
+    ofxGVFParameters    parameters;
+    ofxGVFOutcomes      outcomes;
 
 public:
     
 
     gvf(t_symbol * sym, long argc, t_atom *argv)
     {
+        
         setupIO(1, 3); // inlets / outlets
-        post("gvf - realtime adaptive gesture recognition (version: 09-2013)");
+        
+        post("gvf - realtime adaptive gesture recognition (version: 06-2014)");
         post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
         
-	    parameters.inputDimensions = 2;
-        parameters.numberParticles = 2000;
-        parameters.tolerance = 0.2f;
-        parameters.resamplingThreshold = 500;
-        parameters.distribution = 0.0f;
-    
-        coefficents.phaseVariance = 0.000005;
-        coefficents.speedVariance = 0.0001;
-        coefficents.scaleVariance = 0.00001;
-        coefficents.rotationVariance = 0.00000001;
-    
-        bubi->setup(parameters, coefficents);
+	    // CONFIGURATION of the GVF
+        config.inputDimensions  = 2;
+        config.translate        = true;
+        config.segmentation     = true;
         
-		state = STATE_CLEAR;
+        // PARAMETERS of the GVF
+        parameters.numberParticles      = 2000;
+        parameters.tolerance            = 0.2f;
+        parameters.resamplingThreshold  = 500;
+        parameters.distribution         = 0.0f;
+        parameters.phaseVariance        = 0.000001;
+        parameters.speedVariance        = 0.001;
+        parameters.scaleVariance        = 0.0001;
+        parameters.rotationVariance     = 0.000001;
         
-        lastreferencelearned = -1;
-        currentToBeLearned = -1;
-        value_mmax = -INFINITY;
+        // CREATE the corresponding GVF
+        //bubi->setup(config, parameters);
+        bubi = new ofxGVF(config, parameters);
 		
     }
     
@@ -114,42 +95,11 @@ public:
     ///////////////////////////////////////////////////////////
     //====================== LEARN
     ///////////////////////////////////////////////////////////
-	void learn(long inlet, t_symbol * s, long ac, t_atom * av) {
-        /*
-        if(ac != 1)
-        {
-            post("wrong number of argument (must be 1)");
-            return;
-        }
-        int refI = atom_getlong(&av[0]);
-        refI = refI-1; // start at 1 in the patch but 0 in C++
-        currentToBeLearned=refI;
-        if(refI > lastreferencelearned+1)
-        {
-            post("you need to learn reference %d first",lastreferencelearned+1);
-            return;
-        }
-        else{
-            if(refI == lastreferencelearned+1)
-            {
-                lastreferencelearned++;
-                //refmap[refI] = vector<pair<float, float> >();
-                post("learning reference %d", refI+1);
-                bubi->addTemplate();
-            }
-            else{
-                //refmap[refI] = vector<pair<float, float> >();
-                post("modifying reference %d", refI+1);
-                bubi->clearTemplate(refI);
-            }
-        }
-        
-        state = STATE_LEARNING;
-        */
+	void learn(long inlet, t_symbol * s, long ac, t_atom * av)
+    {
         
         bubi->setState(ofxGVF::STATE_LEARNING);
-
-        restarted_l=1;
+        currentGesture.clear();
         
     }
     
@@ -158,28 +108,25 @@ public:
     ///////////////////////////////////////////////////////////
     //====================== FOLLOW
     ///////////////////////////////////////////////////////////
-    void follow(long inlet, t_symbol * s, long ac, t_atom * av) {
-        
-        /*
-        if(lastreferencelearned >= 0)
-        {
-            //post("I'm about to follow!");
-            
-            bubi->spreadParticles(mpvrs,rpvrs);
-            restarted_l=1;
-            restarted_d=1;
-            //post("nb of gest after following %i", bubi->getNbOfGestures());
-            
-            state = STATE_FOLLOWING;
-            
-        }
-        else
-        {
-            post("no reference has been learned");
-            return;
-        }
-        */
+    void follow(long inlet, t_symbol * s, long ac, t_atom * av)
+    {
         bubi->setState(ofxGVF::STATE_FOLLOWING);
+    }
+   
+    void gestureOn(long inlet, t_symbol * s, long ac, t_atom * av)
+    {
+        // nothing
+    }
+    
+    
+    void gestureOff(long inlet, t_symbol * s, long ac, t_atom * av)
+    {
+    
+        // add the current gesture to the template if in learning mode and
+        // the current gesture not empty!
+        if (bubi->getState()==ofxGVF::STATE_LEARNING && (currentGesture.getTemplateLength()>0))
+            bubi->addGestureTemplate(currentGesture);
+    
     }
     
     
@@ -197,166 +144,71 @@ public:
         
         // INCOMING DATA - CLEAR MODE
         // -----------------------------
-        if(state == STATE_CLEAR)
+        if(bubi->getState() == ofxGVF::STATE_CLEAR)
         {
             post("I'm in a standby (must learn something beforehand)");
             return;
         }
         
-
-
-
-        /*
-        // INCOMING DATA - LEARNING MODE
-        // -----------------------------
-        else if(state == STATE_LEARNING)
-        {
-            
-            vector<float> vect(ac);
-            
-            if (toBeTranslated){
-            // keeping track of the first point (offset)
-                if (restarted_l==1)
-                {
-                    // keep track of the first point
-                    for (int k=0; k<ac; k++)
-                    {
-                        vect[k] = atom_getfloat(&av[k]);
-                    }
-                    vect_0_l = vect;
-                    restarted_l=0;
-                }
-                // store the incoming list as a vector of float
-                for (int k=0; k<ac; k++)
-                {
-                    vect[k] = atom_getfloat(&av[k]);
-                    vect[k]=vect[k]-vect_0_l[k];
-                }
-            }
-            // otherwise just store the incoming obs
-            else {
-                for (int k=0; k<ac; k++){
-                    vect[k] = atom_getfloat(&av[k]);
-                    if (vect[k]>=value_mmax)
-                        value_mmax=abs(vect[k]);
-                }
-            }
-            //            float newcov = so *value_mmax;
-            //            bubi->setIcovSingleValue(1/(newcov*newcov));
-            // Fill template with the observation
-            //            bubi->fillTemplate(lastreferencelearned,vect);
-            bubi->fillTemplate(currentToBeLearned,vect);
-            
-        }
-        
-        // INCOMING DATA - FOLLOWING MODE
-        // ------------------------------
-        else if(state == STATE_FOLLOWING)
-        {
-                
-                vector<float> vect(ac);
-
-            if (toBeTranslated){
-                
-                // incoming observation is 2-dimensional: translate the data by the offset
-//                if (ac==2){
-                    if (restarted_d==1)
-                    {
-                        // store the incoming list as a vector of float
-                        for (int k=0; k<ac; k++)
-                        {
-                            vect[k] = atom_getfloat(&av[k]);
-                        }
-                        vect_0_d = vect;
-                        restarted_d=0;
-                    }
-                    // store the data in vect and translate
-                    for (int k=0; k<ac; k++)
-                    {
-                        vect[k] = atom_getfloat(&av[k]);
-                        vect[k]=vect[k]-vect_0_d[k];
-                    }
-                }
-                else
-                {
-                    for (int k=0; k<ac; k++)
-                        vect[k] = atom_getfloat(&av[k]);
-                }
-
-                // perform the inference with the current observation
-                bubi->infer(vect);
-
-            
-            
-            // output recognition
-            
-            Eigen::MatrixXf statu = bubi->getEstimatedStatus(); //getGestureProbabilities();
-            t_atom *outAtoms = new t_atom[statu.rows()];
-            
-            for(int j = 0; j < statu.rows(); j++)
-                atom_setfloat(&outAtoms[j],statu(j,0));
-            outlet_anything(m_outlets[0], gensym("phase"), statu.rows(), outAtoms);
-            delete[] outAtoms;
-            
-            for(int j = 0; j < statu.rows(); j++)
-                atom_setfloat(&outAtoms[j],statu(j,1));
-            outlet_anything(m_outlets[0], gensym("speed"), statu.rows(), outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[statu.rows()];
-            for(int j = 0; j < statu.rows(); j++)
-                atom_setfloat(&outAtoms[j],statu(j,2));
-            outlet_anything(m_outlets[0], gensym("scale"), statu.rows(), outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[statu.rows()];
-            for(int j = 0; j < statu.rows(); j++)
-                atom_setfloat(&outAtoms[j],statu(j,3));
-            outlet_anything(m_outlets[0], gensym("angle"), statu.rows(), outAtoms);
-            delete[] outAtoms;
-            
-            Eigen::VectorXf gprob = bubi->getGestureConditionnalProbabilities();
-            outAtoms = new t_atom[gprob.size()];
-            for(int j = 0; j < gprob.size(); j++)
-                atom_setfloat(&outAtoms[j],gprob[j]);
-            outlet_anything(m_outlets[1], gensym("weights"), statu.rows(), outAtoms);
-            delete[] outAtoms;
-            
-            std::vector<float> aw = bubi->abs_weights;
-            outAtoms = new t_atom[aw.size()];
-            for(int j = 0; j < aw.size(); j++)
-                atom_setfloat(&outAtoms[j],aw[j]);
-            outlet_anything(m_outlets[2], gensym("absweights"), aw.size(), outAtoms);
-            delete[] outAtoms;
-            
-            std::vector<float>* offs = bubi->offset;
-            outAtoms = new t_atom[(*offs).size()];
-            for(int j = 0; j < (*offs).size(); j++)
-                atom_setfloat(&outAtoms[j],(*offs)[j]);
-            outlet_anything(m_outlets[2], gensym("offset"), (*offs).size(), outAtoms);
-            delete[] outAtoms;
-            
-        }*/
         switch(bubi->getState()){
+                
             case ofxGVF::STATE_LEARNING:
             {
                 vector<float> observation_vector(ac);
                 for (int k=0; k<ac; k++)
                     observation_vector[k] = atom_getfloat(&av[k]);
-                
-                currentGesture.addObservationRaw(observation_vector);
+
+                currentGesture.addObservation(observation_vector);
+
                 break;
             }
+                
             case ofxGVF::STATE_FOLLOWING:
             {
                 vector<float> observation_vector(ac);
                 for (int k=0; k<ac; k++)
                     observation_vector[k] = atom_getfloat(&av[k]);
                 
-                currentGesture.addObservationRaw(observation_vector);
-
-                gvf.infer(currentGesture.getLastRawObservation());
+                currentGesture.addObservation(observation_vector);
                 
+                // inference on the last observation
+                bubi->infer(currentGesture.getLastObservation());
+
+                
+                // output recognition
+                outcomes = bubi->getOutcomes();
+                
+                t_atom *outAtoms = new t_atom[outcomes.allPhases.size()];
+                
+                for(int j = 0; j < outcomes.allPhases.size(); j++)
+                    atom_setfloat(&outAtoms[j],outcomes.allPhases[j]);
+                outlet_anything(m_outlets[0], gensym("phase"), outcomes.allPhases.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[outcomes.allSpeeds.size()];
+                for(int j = 0; j < outcomes.allSpeeds.size(); j++)
+                    atom_setfloat(&outAtoms[j],outcomes.allSpeeds[j]);
+                outlet_anything(m_outlets[0], gensym("speed"), outcomes.allSpeeds.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[outcomes.allScales.size()];
+                for(int j = 0; j < outcomes.allScales.size(); j++)
+                    atom_setfloat(&outAtoms[j],outcomes.allScales[j]);
+                outlet_anything(m_outlets[0], gensym("scale"), outcomes.allScales.size(), outAtoms);
+                delete[] outAtoms;
+
+                outAtoms = new t_atom[outcomes.allRotations.size()];
+                for(int j = 0; j < outcomes.allRotations.size(); j++)
+                    atom_setfloat(&outAtoms[j],outcomes.allRotations[j]);
+                outlet_anything(m_outlets[0], gensym("angle"), outcomes.allRotations.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[outcomes.allProbabilities.size()];
+                for(int j = 0; j < outcomes.allProbabilities.size(); j++)
+                    atom_setfloat(&outAtoms[j],outcomes.allProbabilities[j]);
+                outlet_anything(m_outlets[1], gensym("weights"), outcomes.allProbabilities.size(), outAtoms);
+                delete[] outAtoms;
+                 
                 break;
             }
             
@@ -370,17 +222,11 @@ public:
     
     
     ///////////////////////////////////////////////////////////
-    //====================== SAVE_VOCABULARY
+    //====================== savetemplates
     ///////////////////////////////////////////////////////////
-    void save_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
+    void savetemplates(long inlet, t_symbol * s, long ac, t_atom * av){
         char* mpath = atom_string(av);
-        //        string filename = "/Users/caramiaux/gotest";
-        int i=0;
-        while ( *(mpath+i)!='/' )
-            i++;
-        mpath = mpath+i;
         string filename(mpath);
-        //post("%s", filename.c_str());
         bubi->saveTemplates(filename);
         
     }
@@ -388,23 +234,17 @@ public:
     
     
     ///////////////////////////////////////////////////////////
-    //====================== LOAD_VOCABULARY
+    //====================== loadtemplates
     ///////////////////////////////////////////////////////////
-    void load_vocabulary(long inlet, t_symbol * s, long ac, t_atom * av){
+    void loadtemplates(long inlet, t_symbol * s, long ac, t_atom * av){
         char* mpath = atom_string(av);
-        //        string filename = "/Users/caramiaux/gotest.txt";
         int i=0;
         while ( *(mpath+i)!='/' )
             i++;
         mpath = mpath+i;
         string filename(mpath);
         bubi->loadTemplates(filename);
-        lastreferencelearned=bubi->getNbOfTemplates()-1;
-        
-        t_atom* outAtoms = new t_atom[1];
-        atom_setlong(&outAtoms[0],bubi->getNbOfTemplates());
-        outlet_anything(m_outlets[2], gensym("vocabulary_size"), 1, outAtoms);
-        delete[] outAtoms;
+
     }
     
     
@@ -413,16 +253,9 @@ public:
     //====================== CLEAR
     ///////////////////////////////////////////////////////////
     void clear(long inlet, t_symbol * s, long ac, t_atom * av) {
-        lastreferencelearned = -1;
         
         bubi->clear();
         
-        restarted_l=1;
-        restarted_d=1;
-        
-        value_mmax = -INFINITY;
-        
-        state = STATE_CLEAR;
     }
     
     
@@ -431,15 +264,16 @@ public:
     //====================== PRINTME
     ///////////////////////////////////////////////////////////
     void printme(long inlet, t_symbol * s, long ac, t_atom * av) {
-        post("N. particles %d: ", bubi->getNbOfParticles());
-        post("Resampling Th. %d: ", bubi->getResamplingThreshold());
-        post("Tolerance %.2f: ", bubi->getObservationNoiseStd());
-        post("Means %.3f %.3f %.3f %.3f: ", mpvrs[0], mpvrs[1], mpvrs[2], mpvrs[3]);
-        post("Ranges %.3f %.3f %.3f %.3f: ", rpvrs[0], rpvrs[1], rpvrs[2], rpvrs[3]);
-        for(int i = 0; i < bubi->getNbOfTemplates(); i++)
+        
+        post("Number of particles %d", bubi->getNumberOfParticles());
+        post("Resampling Threshold %d", bubi->getResamplingThreshold());
+        post("Tolerance %.2f", bubi->getParameters().tolerance);
+        for(int i = 0; i < bubi->getNumberOfGestureTemplates(); i++)
         {
             post("reference %d: ", i);
-            vector<vector<float> > tplt = bubi->getTemplateByInd(i);
+            
+            vector<vector<float> > tplt = bubi->getGestureTemplate(i).getTemplate();
+            
             for(int j = 0; j < tplt.size(); j++)
             {
                 post("%02.4f  %02.4f", tplt[j][0], tplt[j][1]);
@@ -453,17 +287,13 @@ public:
     ///////////////////////////////////////////////////////////
     //====================== RESTART
     ///////////////////////////////////////////////////////////
-    void restart(long inlet, t_symbol * s, long ac, t_atom * av) {
-        restarted_l=1;
-        if(state == STATE_FOLLOWING)
-        {
-            
-            //bubi->spreadParticles(mpvrs,rpvrs);
-            bubi->restart();
-            
-            restarted_l=1;
-            restarted_d=1;
-        }
+    void restart(long inlet, t_symbol * s, long ac, t_atom * av)
+    {
+        
+        currentGesture.clear();
+        
+        if(bubi->getState() == ofxGVF::STATE_FOLLOWING)
+            bubi->spreadParticles();
     }
     
     
@@ -476,7 +306,9 @@ public:
         float stdnew = atom_getfloat(&av[0]);
         if (stdnew == 0.0)
             stdnew = 0.1;
-        bubi->setIcovSingleValue(1/(stdnew*stdnew));
+        parameters=bubi->getParameters();
+        parameters.tolerance=stdnew;
+        bubi->setParameters(parameters);
     }
     
     ///////////////////////////////////////////////////////////
@@ -484,7 +316,7 @@ public:
     ///////////////////////////////////////////////////////////
     void resampling_threshold(long inlet, t_symbol * s, long ac, t_atom * av) {
         int rtnew = atom_getlong(&av[0]);
-        int cNS = bubi->getNbOfParticles();
+        int cNS = bubi->getNumberOfParticles();
         if (rtnew >= cNS)
             rtnew = floor(cNS/2);
         bubi->setResamplingThreshold(rtnew);
@@ -494,16 +326,14 @@ public:
     //====================== spreading_means
     ///////////////////////////////////////////////////////////
     void spreading_means(long inlet, t_symbol * s, long ac, t_atom * av) {
-        mpvrs = Eigen::VectorXf(pdim);
-        mpvrs << atom_getfloat(&av[0]), atom_getfloat(&av[1]), atom_getfloat(&av[2]), atom_getfloat(&av[3]);
+        // do something
     }
     
     ///////////////////////////////////////////////////////////
     //====================== spreading_ranges
     ///////////////////////////////////////////////////////////
     void spreading_ranges(long inlet, t_symbol * s, long ac, t_atom * av) {
-        rpvrs = Eigen::VectorXf(pdim);
-        rpvrs << atom_getfloat(&av[0]), atom_getfloat(&av[1]), atom_getfloat(&av[2]), atom_getfloat(&av[3]);
+        // do something
     }
     
     ///////////////////////////////////////////////////////////
@@ -516,22 +346,26 @@ public:
         as.push_back(atom_getfloat(&av[2]));
         as.push_back(atom_getfloat(&av[3]));
         
-        bubi->setAdaptSpeed(as);
+        // do something
     }
     
-    void probThresh(long inlet, t_symbol * s, long ac, t_atom * av) {
-        bubi->probThresh = atom_getlong(&av[0])*bubi->getNbOfParticles();
-    }
-    
-    void probThreshMin(long inlet, t_symbol * s, long ac, t_atom * av) {
-        bubi->probThreshMin = atom_getlong(&av[0])*bubi->getNbOfParticles();
-    }
     
     ///////////////////////////////////////////////////////////
     //====================== translate
     ///////////////////////////////////////////////////////////
     void translate(long inlet, t_symbol * s, long ac, t_atom * av){
-        toBeTranslated = atom_getlong(&av[0]);
+        config = bubi->getConfig();
+        config.translate = (atom_getlong(&av[0])==0)? false : true;
+        bubi->setConfig(config);
+    }
+    
+    ///////////////////////////////////////////////////////////
+    //====================== translate
+    ///////////////////////////////////////////////////////////
+    void segmentation(long inlet, t_symbol * s, long ac, t_atom * av){
+        config = bubi->getConfig();
+        config.segmentation = (atom_getlong(&av[0])==0)? false : true;
+        bubi->setConfig(config);
     }
     
 };
@@ -566,7 +400,10 @@ extern "C" int main(void) {
     REGISTER_METHOD_GIMME(gvf, spreading_means);
     REGISTER_METHOD_GIMME(gvf, spreading_ranges);
     REGISTER_METHOD_GIMME(gvf, adaptation_speed);
-    REGISTER_METHOD_GIMME(gvf, save_vocabulary);
-    REGISTER_METHOD_GIMME(gvf, load_vocabulary);
+    REGISTER_METHOD_GIMME(gvf, savetemplates);
+    REGISTER_METHOD_GIMME(gvf, loadtemplates);
     REGISTER_METHOD_GIMME(gvf, translate);
+    REGISTER_METHOD_GIMME(gvf, segmentation);
+    REGISTER_METHOD_GIMME(gvf, gestureOff);
+    REGISTER_METHOD_GIMME(gvf, gestureOn);
 }

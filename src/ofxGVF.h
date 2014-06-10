@@ -71,7 +71,7 @@ public:
     void particleFilter(vector<float> & obs);
 	
     // resample particles according to the proba distrib given by the weights
-    void resampleAccordingToWeights();
+    void resampleAccordingToWeights(vector<float> obs);
 	
     // makes the inference by calling particleFilteringOptim
 	void infer(vector<float> data);   // rename to update?
@@ -100,7 +100,7 @@ public:
     void addGestureTemplate(ofxGVFGesture & gestureTemplate);
     ofxGVFGesture & getGestureTemplate(int index);
     vector<ofxGVFGesture> & getAllGestureTemplates();
-    int getNumGestureTemplates();
+    int getNumberOfGestureTemplates();
     
     void removeGestureTemplate(int index);
     void removeAllGestureTemplates();
@@ -133,6 +133,12 @@ public:
     string getStateAsString();
     void setState(ofxGVFState _state);
 
+    // CONFIG
+
+    void setConfig(ofxGVFConfig _config);
+    ofxGVFConfig getConfig();
+    
+    
     // PARAMETERS
     
     void setParameters(ofxGVFParameters parameters);
@@ -172,6 +178,12 @@ public:
     vector< vector<float> > getX();
 	vector<int>    getG();
 	vector<float>  getW();
+    
+    // MISC
+    
+    vector<vector<float> >  getIndividualOffset();
+    vector<float>           getIndividualOffset(int particleIndex);
+    
 
     // UTILITIES
     
@@ -180,14 +192,18 @@ public:
     
     string getStateAsString(ofxGVFState state);
 	
+
+    
 private:
     
     // private variables
+    
 
-    ofxGVFConfig config;
-    ofxGVFParameters parameters;
-
-    ofxGVFOutcomes outcomes;
+    ofxGVFConfig        config;
+    ofxGVFParameters    parameters;
+    ofxGVFOutcomes      outcomes;
+    
+    
 //    ofxGVFVarianceCoefficents coefficents;
 //    ofxGVFInitialSpreadingParameters spreadingParameters;
     
@@ -221,10 +237,7 @@ private:
     vector<float> minRange;
     
     vector<ofxGVFGesture> gestureTemplates;
-    
-    vector<float> O_initial;                    // observed initial data
-    vector<float>  particlesPhaseLt0;           // store particles whose phase is < 0 (outside of the gesture)
-    vector<float>  particlesPhaseGt1;           // store particles whose phase is > 1 (outside of the gesture)
+
     
     //in order to output particles
     vector< vector<float> > particlesPositions;
@@ -242,7 +255,7 @@ private:
     tr1::uniform_real<float> *unifdist;
 	tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm;//(rng, *normdist);
 #endif
-    
+    vector<float> obsOffset;
 	// Segmentation variables
 	vector<float> abs_weights;
 	double probThresh;
