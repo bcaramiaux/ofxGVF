@@ -1,29 +1,33 @@
-gvf
+ofxGVF
 ===
 
-Gesture Variation Follower is a library for realtime gesture recognition and variations estimation. It has been designed for human-computer interactions mixing discrete and continuous commands, and specifically for creative applications such as controlling sounds and visuals.
+ofxGVF: add-on for gesture variation follower, a library for realtime gesture recognition and gesture variations estimation. 
 
 
-Content
+Installation
 ===
 
-The repository contains the following folders
-- **src/** gathers the core library called GestureVariationFollower.*
-- **maxmsp/** that contains the xCode project to build the gvf max object (help patch included)
-- **puredata/** that contains the files to build teh gvf pure data object  (help patch included)
-- **openframeworks/** that shows an example of interfacing the library in openframeworks. The example is the visualization of 2-dimensional gestures
-- **Eigen/** is a library used for matrices and vectors
+Compiling the openFrameworks version: make sure that in ofxGVFTypes.h you set
+
+#define OPENFRAMEWORKS 1
+
+Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you set
+
+#define OPENFRAMEWORKS 0
+
+
 
 
 Credits
 ===
 
 The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova)
+
 It has been extended at Goldsmiths College, University of London, by Baptiste Caramiaux.
 
-Reading:
-- B. Caramiaux, N. Montecchio, F. Bevilacqua. **Adaptive Gesture Recognition with Variations Estimation for Interactive Systems**.
-- B. Caramiaux. **Studies on the Relationship between Gesture and Sound in Musical Performance**. PhD Thesis, University of Pierre et Marie Curie (Paris 6) and Ircam Centre Pompidou. France. 2012
+The openFrameworks add-on has been greatly done by Matthew Gingold (https://github.com/gameoverhack) 
+
+
 
 License
 ===
