@@ -5,7 +5,7 @@ ofxGVF: add-on for gesture variation follower, a library for realtime gesture re
 
 
 Installation
-===
+---
 
 Compiling the openFrameworks version: make sure that in ofxGVFTypes.h you set
 
@@ -19,7 +19,7 @@ Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you
 
 
 Credits
-===
+---
 
 The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova)
 
