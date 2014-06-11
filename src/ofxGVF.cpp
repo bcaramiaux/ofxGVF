@@ -196,7 +196,7 @@ void ofxGVF::learn(){
                 obsMeanRange += (gestureTemplates[gt].getMaxRange()[d]-gestureTemplates[gt].getMinRange()[d])/config.inputDimensions;
         }
         obsMeanRange/=gestureTemplates.size();
-        parameters.tolerance = obsMeanRange / 2;  // dividing by an heuristic factor [to be learned?]
+        parameters.tolerance = obsMeanRange / 3.0f;  // dividing by an heuristic factor [to be learned?]
         // ---------------------------    
             
         featVariances.clear();
