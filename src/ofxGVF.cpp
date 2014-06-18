@@ -577,8 +577,8 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
             X[n][2+nn] = (rnduni() - 0.5) * spreadRange
             + _parameters.scaleInitialSpreading[nn];
         for (int nn=0; nn<numberRotationAngles; nn++)
-            X[n][2+scalingCoefficients+nn] = (rnduni() - 0.5) * 0.0 //spreadRange/2
-            + _parameters.rotationInitialSpreading[nn];
+            X[n][2+scalingCoefficients+nn] = (rnduni() - 0.5) * _parameters.rotationInitialSpreading[nn] //spreadRange/2
+            + 0.0;
     }
     
     

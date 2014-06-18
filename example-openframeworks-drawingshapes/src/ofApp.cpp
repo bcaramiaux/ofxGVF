@@ -8,6 +8,8 @@ void ofApp::setup(){
     
     // CONFIGURATION of the GVF
     config.inputDimensions = 2;
+    config.translate       = true;
+    config.segmentation    = false;
     
     // PARAMETERS of the GVF
     parameters.numberParticles      = 2000;

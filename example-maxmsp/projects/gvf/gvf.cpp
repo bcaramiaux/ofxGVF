@@ -50,7 +50,7 @@ public:
 	    // CONFIGURATION of the GVF
         config.inputDimensions  = 2;
         config.translate        = true;
-        config.segmentation     = true;
+        config.segmentation     = false;
         
         // PARAMETERS of the GVF
         parameters.numberParticles      = 2000;
@@ -321,6 +321,28 @@ public:
             rtnew = floor(cNS/2);
         bubi->setResamplingThreshold(rtnew);
     }
+
+    ///////////////////////////////////////////////////////////
+    //====================== spreading_means
+    ///////////////////////////////////////////////////////////
+    void rotation_spreading(long inlet, t_symbol * s, long ac, t_atom * av) {
+        // do something
+        parameters=bubi->getParameters();
+        config=bubi->getConfig();
+        if (config.inputDimensions==2)
+            parameters.rotationInitialSpreading[0]=atom_getfloat(&av[0]);
+        else if (config.inputDimensions==3) {
+            if (ac==1)
+                for (int k=0; k<config.inputDimensions; k++)
+                    parameters.rotationInitialSpreading[k]=atom_getfloat(&av[0]);
+            if (ac==3)
+                for (int k=0; k<config.inputDimensions; k++)
+                    parameters.rotationInitialSpreading[k]=atom_getfloat(&av[k]);
+        }
+        bubi->setParameters(parameters);
+        
+    }
+    
     
     ///////////////////////////////////////////////////////////
     //====================== spreading_means
@@ -406,4 +428,5 @@ extern "C" int main(void) {
     REGISTER_METHOD_GIMME(gvf, segmentation);
     REGISTER_METHOD_GIMME(gvf, gestureOff);
     REGISTER_METHOD_GIMME(gvf, gestureOn);
+        REGISTER_METHOD_GIMME(gvf, rotation_spreading);
 }

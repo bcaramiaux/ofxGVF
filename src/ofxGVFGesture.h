@@ -12,6 +12,7 @@
 #include "ofxGVFTypes.h"
 #include <assert.h>
 
+
 /* Macros for min/max. */
 #ifndef MIN
 #define	MIN(a,b) (((a)<(b))?(a):(b))
@@ -45,6 +46,24 @@ public:
 
         setAutoAdjustRanges(true);
 
+        
+        //added
+        templatesRaw    = vector<vector<vector<float > > >();
+        templatesNormal = vector<vector<vector<float > > >();
+        
+        clear();
+    }
+    
+    ofxGVFGesture(int _inputdim){
+        inputDimensions = _inputdim; // default to 2D
+        type = GEOMETRIC; // default to a geometric shape
+        
+        //        bAutoAdjustNormalRange = true;
+        //        bIsRangeMinSet = false;
+        //        bIsRangeMaxSet = false;
+        
+        setAutoAdjustRanges(true);
+        
         
         //added
         templatesRaw    = vector<vector<vector<float > > >();
@@ -187,11 +206,17 @@ public:
 #endif
     
     void addObservation(vector<float> observation, int templateIndex = 0){
+        //post("size %i",observation.size());
+        if (observation.size()!=inputDimensions)
+            inputDimensions=observation.size();
         addObservationRaw(observation);
     }
     
     
     void addObservationRaw(vector<float> observation, int templateIndex = 0){
+        
+        //post("%i %i",templateIndex,templateInitialRaw.size());
+        
         
         // check we have a valid templateIndex and correct number of input dimensions
         assert(templateIndex <= templatesRaw.size());
@@ -224,6 +249,7 @@ public:
         if(bAutoAdjustNormalRange) autoAdjustMinMax(observation);
         
         normalise();
+         
         
     }
     
