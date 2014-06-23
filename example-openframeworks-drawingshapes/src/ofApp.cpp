@@ -63,7 +63,7 @@ void ofApp::draw(){
     ofPopMatrix();
     
     
-    for(int i = 0; i < gvf.getNumGestureTemplates(); i++){
+    for(int i = 0; i < gvf.getNumberOfGestureTemplates(); i++){
         
         ofxGVFGesture & gestureTemplate = gvf.getGestureTemplate(i);
         
