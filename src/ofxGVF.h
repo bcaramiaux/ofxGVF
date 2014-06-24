@@ -17,8 +17,6 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-// TEST AVZ
-
 #ifndef _H_OFXGVF
 #define _H_OFXGVF
 
@@ -166,11 +164,11 @@ public:
     void setSpeedVariance(float speedVariance);
     float getSpeedVariance();
     
-    void setScaleVariance(float scaleVariance);
-    float getScaleVariance();
+    void setScaleVariance(vector<float> scaleVariance); // TODO: adapt to multiple dimensions
+    vector<float> getScaleVariance();
     
-    void setRotationVariance(float rotationVariance);
-    float getRotationVariance();
+    void setRotationVariance(vector<float> rotationVariance); // TODO: adapt to multiple dimensions
+    vector<float> getRotationVariance();
     
     // MATHS
     

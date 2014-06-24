@@ -88,8 +88,8 @@ void ofxGVF::setup(){
     defaultParameters.distribution = 0.0f;
     defaultParameters.phaseVariance = 0.00001;
     defaultParameters.speedVariance = 0.00001;
-    defaultParameters.scaleVariance = 0.00001;
-    defaultParameters.rotationVariance = 0.00001;
+    defaultParameters.scaleVariance = vector<float>(1, 0.00001); // TODO: Check that default works like this.
+    defaultParameters.rotationVariance = vector<float>(1, 0.00001);
     
     setup(defaultConfig, defaultParameters);
 }
@@ -224,8 +224,8 @@ void ofxGVF::learn(){
             
             featVariances[0]=sqrt(parameters.phaseVariance);
             featVariances[1]=sqrt(parameters.speedVariance);
-            for (int k=0;k<scaleDim;k++)    featVariances[2+k]=sqrt(parameters.scaleVariance);
-            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k]=sqrt(parameters.rotationVariance);
+            for (int k=0;k<scaleDim;k++)    featVariances[2+k] = sqrt(parameters.scaleVariance[0]);
+            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k] = sqrt(parameters.rotationVariance[0]);
             
             
             
@@ -244,7 +244,7 @@ void ofxGVF::learn(){
             // phase, speed, scale (1d), rotation (3d)
             
             scaleDim = 3;
-            rotationDim = config.inputDimensions;
+            rotationDim = 3;
             
             pdim = 2 + scaleDim + rotationDim;
             
@@ -252,7 +252,7 @@ void ofxGVF::learn(){
             
             featVariances[0]=sqrt(parameters.phaseVariance);
             featVariances[1]=sqrt(parameters.speedVariance);
-            for (int k=0;k<scaleDim;k++) featVariances[2+k]=sqrt(parameters.scaleVariance);
+            for (int k=0;k<scaleDim;k++) featVariances[2+k]=sqrt(parameters.scaleVariance); // TODO: adapt to vector
             for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k]=sqrt(parameters.rotationVariance);
             
             
@@ -275,7 +275,7 @@ void ofxGVF::learn(){
             
             featVariances[0]=sqrt(parameters.phaseVariance);
             featVariances[1]=sqrt(parameters.speedVariance);
-            featVariances[2]=sqrt(parameters.scaleVariance);
+            featVariances[2]=sqrt(parameters.scaleVariance); // TODO: adapt to vector
             
             // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
             parameters.phaseInitialSpreading = 0.15;
@@ -1261,19 +1261,21 @@ float ofxGVF::getSpeedVariance(){
     return parameters.speedVariance;
 }
 
+// TODO: Adapt to multiple dimensions
 //--------------------------------------------------------------
-void ofxGVF::setScaleVariance(float scaleVariance){
+void ofxGVF::setScaleVariance(vector<float> scaleVariance){
     parameters.scaleVariance = scaleVariance;
     featVariances[2] = scaleVariance;
 }
 
 //--------------------------------------------------------------
-float ofxGVF::getScaleVariance(){
+vector<float> ofxGVF::getScaleVariance(){
     return parameters.scaleVariance;
 }
 
+// TODO: Adapt to multiple dimensions
 //--------------------------------------------------------------
-void ofxGVF::setRotationVariance(float rotationVariance){
+void ofxGVF::setRotationVariance(vector<float> rotationVariance){
     if(inputDim > 2 && rotationVariance != 0.0){
         cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
         rotationVariance = 0.0f;
@@ -1283,7 +1285,7 @@ void ofxGVF::setRotationVariance(float rotationVariance){
 }
 
 //--------------------------------------------------------------
-float ofxGVF::getRotationVariance(){
+vector<float> ofxGVF::getRotationVariance(){
     return parameters.rotationVariance;
 }
 
