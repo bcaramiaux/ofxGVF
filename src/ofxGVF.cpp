@@ -1094,12 +1094,12 @@ ofxGVFOutcomes ofxGVF::getOutcomes() {
     for (int nn=0; nn<numbOfGestureTemplates; nn++)
         outcomes.allSpeeds[nn] = S[nn][1];
     
-    outcomes.allScales = vector<float> (numbOfGestureTemplates);
+    outcomes.allScales = vector<float> (numbOfGestureTemplates*scalingCoefficients);
     for (int nn=0; nn<numbOfGestureTemplates; nn++)
         for (int mm=0; mm<scalingCoefficients; mm++)
             outcomes.allScales[nn*scalingCoefficients+mm] = S[nn][2+mm];
     
-    outcomes.allRotations = vector<float> (numbOfGestureTemplates);
+    outcomes.allRotations = vector<float> (numbOfGestureTemplates*numberRotationAngles);
     for (int nn=0; nn<numbOfGestureTemplates; nn++)
         for (int mm=0; mm<numberRotationAngles; mm++)
             outcomes.allRotations[nn*numberRotationAngles+mm] = S[nn][2+scalingCoefficients+mm];
