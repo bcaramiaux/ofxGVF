@@ -164,11 +164,11 @@ public:
     void setSpeedVariance(float speedVariance);
     float getSpeedVariance();
     
-    void setScaleVariance(float scaleVariance); // Here for reverse compatability. 
+    void setScaleVariance(float scaleVariance);
     void setScaleVariance(vector<float> scaleVariance);
     vector<float> getScaleVariance();
     
-    void setRotationVariance(float rotationVariance); // Here for reverse compatability.
+    void setRotationVariance(float rotationVariance);
     void setRotationVariance(vector<float> rotationVariance);
     vector<float> getRotationVariance();
     
