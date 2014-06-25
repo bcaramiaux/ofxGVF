@@ -62,6 +62,11 @@ ofxGVF::ofxGVF(){
 }
 
 //--------------------------------------------------------------
+ofxGVF::ofxGVF(ofxGVFConfig _config){
+    setup(_config);
+}
+
+//--------------------------------------------------------------
 //ofxGVF::ofxGVF(ofxGVFParameters _parameters, ofxGVFVarianceCoefficents _coefficents){
 ofxGVF::ofxGVF(ofxGVFConfig _config, ofxGVFParameters _parameters){
     setup(_config, _parameters);
@@ -71,14 +76,18 @@ ofxGVF::ofxGVF(ofxGVFConfig _config, ofxGVFParameters _parameters){
 void ofxGVF::setup(){
     
     // use defualt parameters
-    // EXPERIMENTAL!!!
     
     ofxGVFConfig defaultConfig;
     
     defaultConfig.inputDimensions   = 2;
     defaultConfig.translate         = true;
     defaultConfig.segmentation      = true;
+    
+    setup(defaultConfig);
+}
 
+//--------------------------------------------------------------
+void ofxGVF::setup(ofxGVFConfig _config){
     
     ofxGVFParameters defaultParameters;
     
@@ -91,7 +100,7 @@ void ofxGVF::setup(){
     defaultParameters.scaleVariance = vector<float>(1, 0.00001); // TODO: Check that default works like this.
     defaultParameters.rotationVariance = vector<float>(1, 0.00001);
     
-    setup(defaultConfig, defaultParameters);
+    setup(_config, defaultParameters);
 }
 
 //--------------------------------------------------------------

@@ -89,18 +89,10 @@ static void *gvf_new(t_symbol *s, int argc, t_atom *argv)
     x->config.translate        = true;
     x->config.segmentation     = true;
         
-    // PARAMETERS of the GVF
-    x->parameters.numberParticles      = 2000;
-    x->parameters.tolerance            = 0.2f;
-    x->parameters.resamplingThreshold  = 500;
-    x->parameters.distribution         = 0.0f;
-    x->parameters.phaseVariance        = 0.000001;
-    x->parameters.speedVariance        = 0.001;
-    x->parameters.scaleVariance        = 0.0001;
-    x->parameters.rotationVariance     = 0.000001;
+    // PARAMETERS are set by default
         
     // CREATE the corresponding GVF
-    x->bubi = new ofxGVF(x->config, x->parameters);
+    x->bubi = new ofxGVF(x->config);
 
     // CREATE THE GESTURE
     x->currentGesture = new ofxGVFGesture();

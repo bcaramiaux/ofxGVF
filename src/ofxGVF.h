@@ -53,13 +53,15 @@ public:
     };
     
 	// constructor of the gvf instance
-	ofxGVF(); // use defualt parameters
+	ofxGVF(); // use default config and parameters
+    ofxGVF(ofxGVFConfig _config); // use default parameters
 	ofxGVF(ofxGVFConfig _config, ofxGVFParameters _parameters);
     
 	// destructor
     ~ofxGVF();
 	
-    void setup();
+    void setup(); // use default config and parameters
+    void setup(ofxGVFConfig _config); // default parameters
     void setup(ofxGVFConfig _config, ofxGVFParameters _parameters);
     void learn();
 	// spread particles

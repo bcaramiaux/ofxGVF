@@ -52,19 +52,10 @@ public:
         config.translate        = true;
         config.segmentation     = false;
         
-        // PARAMETERS of the GVF
-        parameters.numberParticles      = 2000;
-        parameters.tolerance            = 0.2f;
-        parameters.resamplingThreshold  = 500;
-        parameters.distribution         = 0.0f;
-        parameters.phaseVariance        = 0.000001;
-        parameters.speedVariance        = 0.001;
-        parameters.scaleVariance        = 0.0001;
-        parameters.rotationVariance     = 0.000001;
+        // PARAMETERS are set by default
         
         // CREATE the corresponding GVF
-        //bubi->setup(config, parameters);
-        bubi = new ofxGVF(config, parameters);
+        bubi = new ofxGVF(config);
 		
     }
     
