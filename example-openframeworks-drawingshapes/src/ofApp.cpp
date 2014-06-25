@@ -222,7 +222,7 @@ void ofApp::mousePressed(int x, int y, int button){
             currentGesture.clear();
             currentGesture.setAutoAdjustRanges(false);
             currentGesture.setMin(0.0f, 0.0f);
-            currentGesture.setM3ax(ofGetWidth(), ofGetHeight());
+            currentGesture.setMax(ofGetWidth(), ofGetHeight());
             currentGesture.addObservationRaw(ofPoint(x, y, 0));
             
             inputX = x; inputY = y;

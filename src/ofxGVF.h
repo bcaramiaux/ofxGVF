@@ -17,8 +17,6 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-// TEST AVZ
-
 #ifndef _H_OFXGVF
 #define _H_OFXGVF
 
@@ -214,7 +212,7 @@ private:
 	int     resamplingThreshold;// resampling threshol
     int     ns;
 	int     pdim;               // number of state dimension
-    int     inputDim;           // Dimension of the input data
+    bool    has_learned;        // true if gesture templates have been learned
     
     int mostProbableIndex;                      // cached most probable index
     vector<float> mostProbableStatus;           // cached most probable status [phase, speed, scale[, rotation], probability]
