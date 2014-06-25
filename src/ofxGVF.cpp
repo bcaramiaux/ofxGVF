@@ -203,7 +203,8 @@ void ofxGVF::learn(){
         
         //config.inputDimensions = R_single[0][0].size();
         config.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
-        inputDim = config.inputDimensions;
+        
+        inputDim = config.inputDimensions; // !!!: Seems very roundabout for inputDim
         
         int scaleDim;
         int rotationDim;
@@ -496,7 +497,7 @@ void ofxGVF::setState(ofxGVFState _state){
             break;
         case STATE_FOLLOWING:
             if (gestureTemplates.size()>0){
-                if (inputDim==-1)
+               // if (inputDim==-1)
                     learn();
                 spreadParticles(); // TODO provide setter for mean and range on init
             }
@@ -535,10 +536,10 @@ string ofxGVF::getStateAsString(){
 void ofxGVF::spreadParticles(){
 
     // use default means and ranges - taken from gvfhandler    
-    if (inputDim!=-1){
+   // if (inputDim != -1){
         spreadParticles(parameters);
         //obsOffset.clear();
-    }
+   // }
 }
 
 //--------------------------------------------------------------
