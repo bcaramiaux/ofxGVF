@@ -119,8 +119,8 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     //    rotation
     parameters = _parameters;
     
-    // IMPORTANT that inputDim = -1, though can be managed in ofxGVFGesture directly
-    inputDim = -1;
+    has_learned = false;
+    
     ns = parameters.numberParticles;
     
     /*
@@ -203,8 +203,6 @@ void ofxGVF::learn(){
         
         //config.inputDimensions = R_single[0][0].size();
         config.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
-        
-        inputDim = config.inputDimensions; // !!!: Seems very roundabout for inputDim
         
         int scaleDim;
         int rotationDim;
@@ -293,6 +291,8 @@ void ofxGVF::learn(){
         initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
         initVec(g, parameters.numberParticles);                 // Vector of gesture class
         initVec(w, parameters.numberParticles);                 // Weights
+        
+        has_learned = true; // ???: Should there be a verification that learning was successful?
     }
     
 }
@@ -497,8 +497,7 @@ void ofxGVF::setState(ofxGVFState _state){
             break;
         case STATE_FOLLOWING:
             if (gestureTemplates.size()>0){
-               // if (inputDim==-1)
-                    learn();
+                learn();
                 spreadParticles(); // TODO provide setter for mean and range on init
             }
             state = _state;
@@ -536,10 +535,11 @@ string ofxGVF::getStateAsString(){
 void ofxGVF::spreadParticles(){
 
     // use default means and ranges - taken from gvfhandler    
-   // if (inputDim != -1){
+    if (has_learned)
+    {
         spreadParticles(parameters);
         //obsOffset.clear();
-   // }
+    }
 }
 
 //--------------------------------------------------------------
@@ -594,7 +594,7 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
 		g[n] = n % ngestures;
         
         // offsets are set to 0
-        for (int k=0; k<inputDim; k++)
+        for (int k=0; k < config.inputDimensions; k++)
             offS[n][k]=0.0;
     }
     
@@ -636,7 +636,7 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
 	for(int n = 0; n < ns; n++){
 		g[n] = n % getNumberOfGestureTemplates();
         // offsets are set to 0
-        for (int k=0; k<inputDim; k++)
+        for (int k=0; k < config.inputDimensions; k++)
             offS[n][k]=0.0;
     }
     
@@ -732,15 +732,15 @@ void ofxGVF::particleFilter(vector<float> & obs){
             int frameindex = min((int)(gestureTemplates[pgi].getTemplateLength() - 1),(int)(floor(x_n[0] * gestureTemplates[pgi].getTemplateLength() ) ) ); //min((int)(gestureLengths[pgi]-1),(int)(floor(x_n[0] * gestureLengths[pgi])));
             
             // given the index, return the gesture template value at this index
-            vector<float> vref(inputDim);
+            vector<float> vref(config.inputDimensions);
             setVec(vref, gestureTemplates[pgi].getTemplate()[frameindex]);
             
             //setVec(vref, R_single[pgi][frameindex]);
             
             
-            vector<float> vobs(inputDim);
+            vector<float> vobs(config.inputDimensions);
             if (config.translate)
-                for (int j=0; j<inputDim; j++)
+                for (int j=0; j < config.inputDimensions; j++)
                     vobs[j]=obs[j]-offS[n][j];
             else
                 setVec(vobs, obs);
@@ -748,10 +748,10 @@ void ofxGVF::particleFilter(vector<float> & obs){
             
             
             // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
-            if (inputDim == 2){
+            if (config.inputDimensions == 2){
                 
                 // scaling
-                for (int k=0;k<inputDim;k++)
+                for (int k=0;k < config.inputDimensions;k++)
                     vref[k] *= x_n[2];
                 
                 // rotation
@@ -769,7 +769,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
                 
             }
             // If incoming data is 3-dimensional
-            else if (inputDim == 3){
+            else if (config.inputDimensions == 3){
                 
                 // Scale template sample according to the estimated scaling coefficients
                 int numberScaleCoefficients = parameters.scaleInitialSpreading.size();
@@ -785,7 +785,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
                 // put the positions into vector
                 // [used for visualization]
                 std::vector<float> temp;
-                for (int ndi=0; ndi<inputDim; ndi++)
+                for (int ndi=0; ndi < config.inputDimensions; ndi++)
                     temp.push_back(vref[ndi]);
                 particlesPositions.push_back(temp);
                 
@@ -793,13 +793,13 @@ void ofxGVF::particleFilter(vector<float> & obs){
             else {
                 
                 // sca1ing
-                for (int k=0;k<inputDim;k++)
+                for (int k=0;k < config.inputDimensions; k++)
                     vref[k] *= x_n[2];
                 
                 // put the positions into vector
                 // [used for visualization]
                 std::vector<float> temp;
-                for (int ndi=0; ndi<inputDim; ndi++)
+                for (int ndi=0; ndi < config.inputDimensions; ndi++)
                     temp.push_back(vref[ndi]);
                 particlesPositions.push_back(temp);
                 
@@ -811,8 +811,8 @@ void ofxGVF::particleFilter(vector<float> & obs){
             // and the incoming observation
             
             // define weights here on the dimension if needed
-            vector<float> dimWeights(inputDim);
-            for(int k=0;k<inputDim;k++) dimWeights[k]=1.0/inputDim;
+            vector<float> dimWeights(config.inputDimensions);
+            for(int k=0; k < config.inputDimensions; k++) dimWeights[k]=1.0 / config.inputDimensions;
             
             // observation likelihood and update weights
             float dist = distance_weightedEuclidean(vref,vobs,dimWeights) * 1/(parameters.tolerance*parameters.tolerance);
@@ -1095,12 +1095,12 @@ ofxGVFOutcomes ofxGVF::getOutcomes() {
     for (int nn=0; nn<numbOfGestureTemplates; nn++)
         outcomes.allSpeeds[nn] = S[nn][1];
     
-    outcomes.allScales = vector<float> (numbOfGestureTemplates);
+    outcomes.allScales = vector<float> (numbOfGestureTemplates*scalingCoefficients);
     for (int nn=0; nn<numbOfGestureTemplates; nn++)
         for (int mm=0; mm<scalingCoefficients; mm++)
             outcomes.allScales[nn*scalingCoefficients+mm] = S[nn][2+mm];
     
-    outcomes.allRotations = vector<float> (numbOfGestureTemplates);
+    outcomes.allRotations = vector<float> (numbOfGestureTemplates*numberRotationAngles);
     for (int nn=0; nn<numbOfGestureTemplates; nn++)
         for (int mm=0; mm<numberRotationAngles; mm++)
             outcomes.allRotations[nn*numberRotationAngles+mm] = S[nn][2+scalingCoefficients+mm];
@@ -1277,7 +1277,7 @@ vector<float> ofxGVF::getScaleVariance(){
 // TODO: Adapt to multiple dimensions
 //--------------------------------------------------------------
 void ofxGVF::setRotationVariance(vector<float> rotationVariance){
-    if(inputDim > 2 && rotationVariance != 0.0){
+    if(config.inputDimensions > 2 && rotationVariance != 0.0){
         cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
         rotationVariance = 0.0f;
     }
@@ -1342,7 +1342,7 @@ void ofxGVF::saveTemplates(string filename){
     
         std::ofstream file_write(directory.c_str());
 
-        for(int i=0; i<gestureTemplates.size(); i++) // Number of gesture templates
+        for(int i=0; i < gestureTemplates.size(); i++) // Number of gesture templates
         {
             file_write << "template " << i << " " << config.inputDimensions << endl;
             vector<vector<float> > templateTmp = gestureTemplates[i].getTemplate();
