@@ -119,6 +119,9 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     //    rotation
     parameters = _parameters;
     
+    setStateDimensions(config.inputDimensions);
+    initVariances(scale_dim, rotation_dim);
+    
     has_learned = false;
     
     ns = parameters.numberParticles;
@@ -191,7 +194,7 @@ void ofxGVF::learn(){
         // ADAPTATION OF THE TOLERANCE
         // ---------------------------
         float obsMeanRange = 0.0f;
-        for (int gt=0; gt<gestureTemplates.size(); gt++){
+        for (int gt=0; gt<gestureTemplates.size(); gt++) {
             for (int d=0; d<config.inputDimensions; d++)
                 obsMeanRange += (gestureTemplates[gt].getMaxRange()[d]-gestureTemplates[gt].getMinRange()[d])/config.inputDimensions;
         }
@@ -204,89 +207,12 @@ void ofxGVF::learn(){
         //config.inputDimensions = R_single[0][0].size();
         config.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
         
-        int scaleDim;
-        int rotationDim;
+        // Set Scale and Rotation dimensions, according to input dimensions
         
-        if (config.inputDimensions == 2){
-            
-            //post(" dim 2 -> pdim 4");
-            
-            // state space dimension = 4
-            // phase, speed, scale, rotation
-            
-            scaleDim = 1;
-            rotationDim = 1;
-            
-            pdim = 2 + scaleDim + rotationDim;
-            
-            featVariances = vector<float> (pdim);
-            
-            featVariances[0]=sqrt(parameters.phaseVariance);
-            featVariances[1]=sqrt(parameters.speedVariance);
-            for (int k=0;k<scaleDim;k++)    featVariances[2+k] = sqrt(parameters.scaleVariance[0]);
-            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k] = sqrt(parameters.rotationVariance[0]);
-            
-            
-            
-            // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
-            parameters.phaseInitialSpreading = 0.1;
-            parameters.speedInitialSpreading = 1.0;
-            parameters.scaleInitialSpreading = vector<float> (scaleDim);
-            parameters.rotationInitialSpreading = vector<float> (rotationDim);
-            for (int k=0;k<scaleDim;k++)    parameters.scaleInitialSpreading[k]=1.0f;
-            for (int k=0;k<rotationDim;k++) parameters.rotationInitialSpreading[k]=0.0f;
-            
-        }
-        else if (config.inputDimensions == 3){
-            
-            // state space dimension = 8
-            // phase, speed, scale (1d), rotation (3d)
-            
-            scaleDim = 3;
-            rotationDim = 3;
-            
-            pdim = 2 + scaleDim + rotationDim;
-            
-            featVariances = vector<float> (pdim);
-            
-            featVariances[0]=sqrt(parameters.phaseVariance);
-            featVariances[1]=sqrt(parameters.speedVariance);
-            for (int k=0;k<scaleDim;k++) featVariances[2+k]=sqrt(parameters.scaleVariance); // TODO: adapt to vector
-            for (int k=0;k<rotationDim;k++) featVariances[2+scaleDim+k]=sqrt(parameters.rotationVariance);
-            
-            
-            parameters.phaseInitialSpreading = 0.15;
-            parameters.speedInitialSpreading = 1.0;
-            parameters.scaleInitialSpreading = vector<float> (scaleDim);
-            parameters.rotationInitialSpreading = vector<float> (rotationDim);
-            for (int k=0;k<scaleDim;k++) parameters.scaleInitialSpreading[k]=1.0f;
-            for (int k=0;k<rotationDim;k++) parameters.rotationInitialSpreading[k]=0.0f;
-            
-        }
-        else {
-            
-            scaleDim = 1;
-            rotationDim = 0;
-            
-            pdim = 2 + scaleDim + rotationDim;
-            
-            featVariances = vector<float> (pdim);
-            
-            featVariances[0]=sqrt(parameters.phaseVariance);
-            featVariances[1]=sqrt(parameters.speedVariance);
-            featVariances[2]=sqrt(parameters.scaleVariance); // TODO: adapt to vector
-            
-            // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
-            parameters.phaseInitialSpreading = 0.15;
-            parameters.speedInitialSpreading = 1.0;
-            parameters.scaleInitialSpreading = vector<float> (scaleDim);
-            //            parameters.rotationInitialSpreading = vector<float> (rotationDim);
-            for (int k=0;k<scaleDim;k++) parameters.scaleInitialSpreading[k]=1.0f;
-            //            for (int k=0;k<rotationDim;k++) parameters.rotationInitialSpreading[k]=0.0f;
-        }
-        
-        
-        
+        setStateDimensions(config.inputDimensions);
+                
+        // Initialize Variances
+        initVariances(scale_dim, rotation_dim);
         
         initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
         initVec(g, parameters.numberParticles);                 // Vector of gesture class
@@ -294,6 +220,63 @@ void ofxGVF::learn(){
         
         has_learned = true; // ???: Should there be a verification that learning was successful?
     }
+    
+}
+
+void ofxGVF::setStateDimensions(int input_dim) {
+    
+    if (input_dim == 2){
+        
+        //post(" dim 2 -> pdim 4");
+        
+        // state space dimension = 4
+        // phase, speed, scale, rotation
+        
+        scale_dim = 1;
+        rotation_dim = 1;
+        
+    }
+    else if (input_dim == 3){
+        
+        // state space dimension = 8
+        // phase, speed, scale (1d), rotation (3d)
+        
+        scale_dim = 3;
+        rotation_dim = 3;
+        
+    }
+    else {
+        
+        scale_dim = 1;
+        rotation_dim = 0;
+        
+    }
+    
+    pdim = 2 + scale_dim + rotation_dim;
+    
+}
+
+void ofxGVF::initVariances(int scaleDim, int rotationDim) {
+    
+    featVariances = vector<float> (pdim);
+    
+    featVariances[0] = sqrt(parameters.phaseVariance);
+    featVariances[1] = sqrt(parameters.speedVariance);
+    for (int k = 0; k < scaleDim; k++)
+        featVariances[2+k] = sqrt(parameters.scaleVariance[k]);
+    for (int k = 0; k < rotationDim; k++)
+        featVariances[2+scaleDim+k] = sqrt(parameters.rotationVariance[k]);
+    
+    // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
+    parameters.phaseInitialSpreading = 0.1;
+    parameters.speedInitialSpreading = 1.0;
+    parameters.scaleInitialSpreading = vector<float> (scaleDim);
+    parameters.rotationInitialSpreading = vector<float> (rotationDim);
+    // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
+    for (int k = 0; k < scaleDim; k++)
+        parameters.scaleInitialSpreading[k]=1.0f;
+    for (int k = 0;k < rotationDim; k++)
+        parameters.rotationInitialSpreading[k]=0.0f;
     
 }
 
@@ -496,7 +479,7 @@ void ofxGVF::setState(ofxGVFState _state){
             state = _state;
             break;
         case STATE_FOLLOWING:
-            if (gestureTemplates.size()>0){
+            if (gestureTemplates.size() > 0){
                 learn();
                 spreadParticles(); // TODO provide setter for mean and range on init
             }
@@ -1262,11 +1245,16 @@ float ofxGVF::getSpeedVariance(){
     return parameters.speedVariance;
 }
 
-// TODO: Adapt to multiple dimensions
+//--------------------------------------------------------------
+void ofxGVF::setScaleVariance(float scaleVariance){
+    setScaleVariance(vector<float>(scale_dim, scaleVariance));
+}
+
 //--------------------------------------------------------------
 void ofxGVF::setScaleVariance(vector<float> scaleVariance){
+    assert(scaleVariance.size() == scale_dim);
     parameters.scaleVariance = scaleVariance;
-    featVariances[2] = scaleVariance;
+    initVariances(scale_dim, rotation_dim);
 }
 
 //--------------------------------------------------------------
@@ -1274,15 +1262,24 @@ vector<float> ofxGVF::getScaleVariance(){
     return parameters.scaleVariance;
 }
 
-// TODO: Adapt to multiple dimensions
+//--------------------------------------------------------------
+void ofxGVF::setRotationVariance(float rotationVariance){
+    setRotationVariance(vector<float>(rotation_dim, rotationVariance));
+}
+
 //--------------------------------------------------------------
 void ofxGVF::setRotationVariance(vector<float> rotationVariance){
-    if(config.inputDimensions > 2 && rotationVariance != 0.0){
-        cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
-        rotationVariance = 0.0f;
-    }
+    
+    assert(rotationVariance.size() == rotation_dim);
     parameters.rotationVariance = rotationVariance;
-    featVariances[3] = rotationVariance;
+    initVariances(scale_dim, rotation_dim);
+    
+//    if(config.inputDimensions > 2 && rotationVariance != 0.0){
+//        cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
+//        rotationVariance = 0.0f;
+//    }
+//    parameters.rotationVariance = rotationVariance;
+//    featVariances[3] = rotationVariance;
 }
 
 //--------------------------------------------------------------

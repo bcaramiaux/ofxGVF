@@ -18,8 +18,8 @@ void ofApp::setup(){
     parameters.distribution         = 0.0f;
     parameters.phaseVariance        = 0.000001;
     parameters.speedVariance        = 0.001;
-    parameters.scaleVariance        = 0.0001;
-    parameters.rotationVariance     = 0.000001;
+    parameters.scaleVariance        = vector<float>(1, 0.0001);
+    parameters.rotationVariance     = vector<float>(1, 0.000001);
 
     // CREATE the corresponding GVF
     gvf.setup(config, parameters);

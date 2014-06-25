@@ -164,10 +164,12 @@ public:
     void setSpeedVariance(float speedVariance);
     float getSpeedVariance();
     
-    void setScaleVariance(vector<float> scaleVariance); // TODO: adapt to multiple dimensions
+    void setScaleVariance(float scaleVariance); // Here for reverse compatability. 
+    void setScaleVariance(vector<float> scaleVariance);
     vector<float> getScaleVariance();
     
-    void setRotationVariance(vector<float> rotationVariance); // TODO: adapt to multiple dimensions
+    void setRotationVariance(float rotationVariance); // Here for reverse compatability.
+    void setRotationVariance(vector<float> rotationVariance);
     vector<float> getRotationVariance();
     
     // MATHS
@@ -212,6 +214,8 @@ private:
 	int     resamplingThreshold;// resampling threshol
     int     ns;
 	int     pdim;               // number of state dimension
+    int     scale_dim;          // scale state dimension
+    int     rotation_dim;       // rotation state dimension
     bool    has_learned;        // true if gesture templates have been learned
     
     int mostProbableIndex;                      // cached most probable index
@@ -269,6 +273,9 @@ private:
     
     // private functions
     void initweights();                         // initialize weights
+    
+    void setStateDimensions(int input_dim);
+    void initVariances(int scaleDim, int rotationRim);
     
 };
 
