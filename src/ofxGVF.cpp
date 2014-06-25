@@ -95,10 +95,10 @@ void ofxGVF::setup(ofxGVFConfig _config){
     defaultParameters.tolerance = 0.1f;
     defaultParameters.resamplingThreshold = 500;
     defaultParameters.distribution = 0.0f;
-    defaultParameters.phaseVariance = 0.00001;
-    defaultParameters.speedVariance = 0.00001;
+    defaultParameters.phaseVariance = 0.000001;
+    defaultParameters.speedVariance = 0.001;
     defaultParameters.scaleVariance = vector<float>(1, 0.00001); // TODO: Check that default works like this.
-    defaultParameters.rotationVariance = vector<float>(1, 0.00001);
+    defaultParameters.rotationVariance = vector<float>(1, 0.000001);
     
     setup(_config, defaultParameters);
 }
