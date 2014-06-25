@@ -22,6 +22,7 @@ Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you
 API
 ---
 
+
 ofxGVF object and variables:
 ```
 ofxGVF 				gvf;
@@ -32,10 +33,28 @@ ofxGVFParameters    parameters;
 ofxGVFOutcomes      outcomes;
 ```
 
+CHOICE 1 (automatic parameterization)
+
+
 From that configuration and parameterization:
 ```
-config.inputDimensions = 2; // in case of a 2-dimensional input data
+config.inputDimensions          = 2; // in case of a 2-dimensional input data
+defaultConfig.translate         = true;
+defaultConfig.segmentation      = false;
+```
 
+Then create the object
+```
+gvf.setup(config);
+```
+
+CHOICE 2 (manual parameterization)
+
+From that configuration and parameterization:
+```
+config.inputDimensions          = 2; // in case of a 2-dimensional input data
+defaultConfig.translate         = true;
+defaultConfig.segmentation      = false;
 
 parameters.numberParticles      = 2000; 		// can be less for low CPU resources
 parameters.tolerance            = 0.2f;         // set auto
@@ -51,6 +70,8 @@ Then create the object
 ```
 gvf.setup(config, parameters);
 ```
+
+
 
 Learning of a gesture template:
 ```
