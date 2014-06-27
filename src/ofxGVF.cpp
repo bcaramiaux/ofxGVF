@@ -205,9 +205,10 @@ void ofxGVF::learn(){
         float obsMeanRange = 0.0f;
         for (int gt=0; gt<gestureTemplates.size(); gt++) {
             for (int d=0; d<config.inputDimensions; d++)
-                obsMeanRange += (gestureTemplates[gt].getMaxRange()[d]-gestureTemplates[gt].getMinRange()[d])/config.inputDimensions;
+                obsMeanRange += (gestureTemplates[gt].getMaxRange()[d] - gestureTemplates[gt].getMinRange()[d])
+/config.inputDimensions;
         }
-        obsMeanRange/=gestureTemplates.size();
+        obsMeanRange /= gestureTemplates.size();
         parameters.tolerance = obsMeanRange / 3.0f;  // dividing by an heuristic factor [to be learned?]
         // ---------------------------    
             
@@ -587,7 +588,7 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
         
         // offsets are set to 0
         for (int k=0; k < config.inputDimensions; k++)
-            offS[n][k]=0.0;
+            offS[n][k] = 0.0;
     }
     
 }
@@ -652,7 +653,7 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
     
     float dist=0;
     for(int k=0;k<count;k++){
-        dist+=w[k]*pow((x[k]-y[k]),2);
+        dist += w[k] * pow((x[k] - y[k]), 2);
     }
     return dist;
 }
@@ -688,12 +689,12 @@ void ofxGVF::particleFilter(vector<float> & obs){
     // (this is used for possible visualization but not in the inference)
     particlesPositions.clear();
     
-    float sumw=0.0;
+    float sumw = 0.0;
     
     
     
     // MAIN LOOP: same process for EACH particle (row n in X)
-    for(int n = ns-1; n >= 0; --n)
+    for(int n = ns - 1; n >= 0; --n)
     {
         
         // Move the particle
@@ -710,7 +711,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
 		vector<float> x_n = X[n];
         
  
-//        if (!config.segmentation){
+//        if (!config.segmentation){ ???
         if(x_n[0] < 0.0 || x_n[0] > 1.0) {
                 w[n] = 0.0;
         }
@@ -804,16 +805,18 @@ void ofxGVF::particleFilter(vector<float> & obs){
             
             // define weights here on the dimension if needed
             vector<float> dimWeights(config.inputDimensions);
-            for(int k=0; k < config.inputDimensions; k++) dimWeights[k]=1.0 / config.inputDimensions;
+            for(int k=0; k < config.inputDimensions; k++) dimWeights[k] = 1.0 / config.inputDimensions;
             
             // observation likelihood and update weights
-            float dist = distance_weightedEuclidean(vref,vobs,dimWeights) * 1/(parameters.tolerance*parameters.tolerance);
+            float dist = distance_weightedEuclidean(vref,vobs,dimWeights) * 1 / (parameters.tolerance * parameters.tolerance);
             
 
             //cout << "n="<< n << " " << dist << " " << distance_weightedEuclidean(vref,obs,dimWeights) << " " << parameters.tolerance << endl;
             
             if(parameters.distribution == 0.0f)    // Gaussian distribution
             {
+//                cout << "Dist is " << dist << endl;
+//                cout << "exp(-dist) " << exp(-dist) << endl;
                 w[n]   *= exp(-dist);
                 abs_weights[g[n]] += exp(-dist);
             //    cout << n << "- " << g[n] << " -- " << vref[0] << "," << vobs[0] << " | " << vref[1]
@@ -821,21 +824,21 @@ void ofxGVF::particleFilter(vector<float> & obs){
             }
             else            // Student's distribution
             {
-                w[n]   *= pow(dist/nu + 1,-nu/2-1);    // dimension is 2 .. pay attention if editing]
+                w[n]   *= pow(dist/nu + 1, -nu/2 - 1);    // dimension is 2 .. pay attention if editing]
             }
 
         }
         
-        sumw+=w[n];
+        sumw += w[n];
     }
 //    }
     
     // normalize weights and compute criterion for degeneracy
     //	w /= w.sum();
     //	float neff = 1./w.dot(w);
-    float dotProdw=0.0;
-    for (int k=0;k<ns;k++){
-        w[k]/=sumw;
+    float dotProdw = 0.0;
+    for (int k = 0; k < ns; k++){
+        w[k] /= sumw;
         dotProdw+=w[k]*w[k];
     }
     float neff = 1./dotProdw;
@@ -965,14 +968,17 @@ void ofxGVF::updateEstimatedStatus(){
     //	unsigned int ngestures = numTemplates+1;
     
     //    vector< vector<float> > es;
-    setMat(S, 0.0f, getNumberOfGestureTemplates(), pdim+1);   // rows are gestures, cols are features + probabilities
-	//printMatf(es);
+    setMat(S, 0.0f, getNumberOfGestureTemplates(), pdim + 1);   // rows are gestures, cols are features + probabilities
+	//printMatf(es); 
     
 	// compute the estimated features by computing the expected values
     // sum ( feature values * weights)
 	for(int n = 0; n < ns; n++){
         int gi = g[n];
-        for(int m=0; m<pdim; m++){
+        for(int m = 0; m < pdim; m++){
+//            cout << "S[" << gi << "][" << m << "] " << S[gi][m] << endl;
+//            cout << "X[" << n << "][" << m << "] " << X[n][m] << endl;
+//            cout << "ues: w[" << n << "] " << w[n] << endl;
             S[gi][m] += X[n][m] * w[n];
         }
 		S[gi][pdim] += w[n];
@@ -984,7 +990,7 @@ void ofxGVF::updateEstimatedStatus(){
     
     
 	for(int gi = 0; gi < getNumberOfGestureTemplates(); gi++){
-        for(int m=0; m<pdim; m++){
+        for(int m = 0; m < pdim; m++){
             S[gi][m] /= S[gi][pdim];
         }
         if(S[gi][pdim] > maxProbability){
@@ -994,8 +1000,10 @@ void ofxGVF::updateEstimatedStatus(){
 		//es.block(gi,0,1,pdim) /= es(gi,pdim);
 	}
     
-    if(mostProbableIndex > -1) mostProbableStatus = S[mostProbableIndex];
+    if(mostProbableIndex > -1)
+        mostProbableStatus = S[mostProbableIndex];
     
+//    cout << S[0][0] << " " << S[0][1] << endl;
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1071,7 +1079,7 @@ ofxGVFOutcomes ofxGVF::getOutcomes() {
     outcomes.estimatedScale = vector<float> (scalingCoefficients);
     for (int nn=0; nn<scalingCoefficients; nn++)
         outcomes.estimatedScale[nn] = mostProbableStatus[2+nn];
-    // rotation
+    // rotationl
     outcomes.estimatedRotation = vector<float> (numberRotationAngles);
     for (int nn=0; nn<numberRotationAngles; nn++)
         outcomes.estimatedRotation[nn] = mostProbableStatus[2+scalingCoefficients+nn];
@@ -1080,25 +1088,25 @@ ofxGVFOutcomes ofxGVF::getOutcomes() {
     
     // get all the estimations
     outcomes.allPhases = vector<float> (numbOfGestureTemplates);
-    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+    for (int nn = 0; nn < numbOfGestureTemplates; nn++)
         outcomes.allPhases[nn] = S[nn][0];
     
     outcomes.allSpeeds = vector<float> (numbOfGestureTemplates);
-    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+    for (int nn = 0; nn < numbOfGestureTemplates; nn++)
         outcomes.allSpeeds[nn] = S[nn][1];
     
     outcomes.allScales = vector<float> (numbOfGestureTemplates*scalingCoefficients);
-    for (int nn=0; nn<numbOfGestureTemplates; nn++)
-        for (int mm=0; mm<scalingCoefficients; mm++)
+    for (int nn = 0; nn < numbOfGestureTemplates; nn++)
+        for (int mm = 0; mm < scalingCoefficients; mm++)
             outcomes.allScales[nn*scalingCoefficients+mm] = S[nn][2+mm];
     
     outcomes.allRotations = vector<float> (numbOfGestureTemplates*numberRotationAngles);
-    for (int nn=0; nn<numbOfGestureTemplates; nn++)
-        for (int mm=0; mm<numberRotationAngles; mm++)
+    for (int nn=0; nn < numbOfGestureTemplates; nn++)
+        for (int mm = 0; mm < numberRotationAngles; mm++)
             outcomes.allRotations[nn*numberRotationAngles+mm] = S[nn][2+scalingCoefficients+mm];
     
     outcomes.allProbabilities = vector<float> (numbOfGestureTemplates);
-    for (int nn=0; nn<numbOfGestureTemplates; nn++)
+    for (int nn=0; nn < numbOfGestureTemplates; nn++)
         outcomes.allProbabilities[nn] = S[nn][S[0].size()-1];
     
     return outcomes;
