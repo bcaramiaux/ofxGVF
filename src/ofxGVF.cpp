@@ -1352,6 +1352,7 @@ vector<float> ofxGVF::getIndividualOffset(int particleIndex) {
 // Save function. This function is used by applications to save the
 // vocabulary in a text file given by filename (filename is also the complete path + filename)
 void ofxGVF::saveTemplates(string filename){
+    
        std::string directory = filename;
     
         std::ofstream file_write(directory.c_str());
@@ -1360,9 +1361,9 @@ void ofxGVF::saveTemplates(string filename){
         {
             file_write << "template " << i << " " << config.inputDimensions << endl;
             vector<vector<float> > templateTmp = gestureTemplates[i].getTemplate();
-            for(int j=0; j<templateTmp.size(); j++)
+            for(int j = 0; j < templateTmp.size(); j++)
             {
-                for(int k=0; k<config.inputDimensions; k++)
+                for(int k = 0; k < config.inputDimensions; k++)
                     file_write << templateTmp[j][k] << " ";
                 file_write << endl;
             }
@@ -1401,7 +1402,7 @@ void ofxGVF::loadTemplates(string filename){
     //
         string line;
         vector<string> list;
-        int cl=-1;
+        int cl = -1;
         while(!infile.eof())
         {
             cl++;
@@ -1410,12 +1411,12 @@ void ofxGVF::loadTemplates(string filename){
             list.push_back(line);
         }
     
-        int k=0;
-        int template_id=-1;
+        int k = 0;
+        int template_id = -1;
         int template_dim = 0;
 
     
-    while (k < (list.size()-1) ){ // TODO to be changed if dim>2
+    while (k < (list.size() - 1)){ // TODO to be changed if dim>2
 
                 
             if (!strcmp(list[k].c_str(),"template"))
@@ -1424,29 +1425,29 @@ void ofxGVF::loadTemplates(string filename){
                 template_dim = atoi(list[k+2].c_str());
                 k=k+3;
                 
-                if (loadedGesture.getNumberOfTemplates()>0){
+                if (loadedGesture.getNumberOfTemplates() > 0){
                     addGestureTemplate(loadedGesture);
                     loadedGesture.clear();
                 }
             }
 
-            if (template_dim<=0){
+            if (template_dim <= 0){
                 //post("bug dim = -1");
             }
             else{
     
                 vector<float> vect(template_dim);
 
-                for (int kk=0; kk<template_dim; kk++)
-                    vect[kk] = (float)atof(list[k+kk].c_str());
+                for (int kk = 0; kk < template_dim; kk++)
+                    vect[kk] = (float) atof(list[k + kk].c_str());
 
                 loadedGesture.addObservation(vect);
             }
-            k+=template_dim;
+            k += template_dim;
     
         }
     
-    if (loadedGesture.getTemplateLength()>0){
+    if (loadedGesture.getTemplateLength() > 0){
         addGestureTemplate(loadedGesture);
         loadedGesture.clear();
     }
