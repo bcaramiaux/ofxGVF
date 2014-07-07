@@ -129,6 +129,12 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     parameters = _parameters;
     
     setStateDimensions(config.inputDimensions);
+    
+    // MARK: Adjust to dimensions necessary (added by AVZ)
+    parameters.scaleVariance = vector<float>(scale_dim, parameters.scaleVariance[0]);
+    parameters.rotationVariance = vector<float>(rotation_dim, parameters.rotationVariance[0]);
+    
+    
     initVariances(scale_dim, rotation_dim);
     
     has_learned = false;
@@ -267,6 +273,9 @@ void ofxGVF::setStateDimensions(int input_dim) {
 }
 
 void ofxGVF::initVariances(int scaleDim, int rotationDim) {
+    
+    assert(parameters.scaleVariance.size() == scale_dim);
+    assert(parameters.rotationVariance.size() == rotation_dim);
     
     featVariances = vector<float> (pdim);
     
@@ -1269,7 +1278,6 @@ void ofxGVF::setScaleVariance(float scaleVariance){
 
 //--------------------------------------------------------------
 void ofxGVF::setScaleVariance(vector<float> scaleVariance){
-    assert(scaleVariance.size() == scale_dim);
     parameters.scaleVariance = scaleVariance;
     initVariances(scale_dim, rotation_dim);
 }
@@ -1287,16 +1295,9 @@ void ofxGVF::setRotationVariance(float rotationVariance){
 //--------------------------------------------------------------
 void ofxGVF::setRotationVariance(vector<float> rotationVariance){
     
-    assert(rotationVariance.size() == rotation_dim);
     parameters.rotationVariance = rotationVariance;
     initVariances(scale_dim, rotation_dim);
     
-    //    if(config.inputDimensions > 2 && rotationVariance != 0.0){
-    //        cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
-    //        rotationVariance = 0.0f;
-    //    }
-    //    parameters.rotationVariance = rotationVariance;
-    //    featVariances[3] = rotationVariance;
 }
 
 //--------------------------------------------------------------
