@@ -436,6 +436,35 @@ public:
     }
 
 #if OPENFRAMEWORKS
+    
+    // ADDED BY ALEJANDRO PROTOTYPING
+    void draw_following(float _phase, float _probability, float x, float y, float w, float h) {
+        
+        ofColor current = representationsNormal[0][0].getColor(0);
+        
+        float phase = _phase;
+        
+        if (phase >= 1.)
+            phase = 1.;
+
+        float n_vertices = (float) representationsNormal[0][0].getNumColors();
+        int end_index = (int) (phase * n_vertices);
+        
+        ofSetLineWidth(0.5 + 10 * _probability);
+        
+        for (int i = 0; i < end_index; ++i) {
+            representationsNormal[0][0].setColor(i, ofColor(255, 0, 0));
+        }
+        
+        draw(x, y, w, h);
+        
+        for (int i = 0; i < end_index; ++i) {
+            representationsNormal[0][0].setColor(i, current);
+        }
+        
+        ofSetLineWidth(1);
+        
+    }
 
     void draw(){
         
@@ -490,6 +519,7 @@ public:
             ofPushMatrix();
             
             ofScale(scaleX, scaleY);
+            
             representationsNormal[0][0].draw();
 
             ofPopMatrix();

@@ -89,7 +89,6 @@ public:
     float getMostProbableProbability(); // this is horrible - maybe probability should be at index 0 OR we should use a struct rather than a vector??
     
     ofxGVFOutcomes getOutcomes();
-    ofxGVFOutcomes getOutcomes(int gestureIndex);
     
     vector< vector<float> > getEstimatedStatus();
     
@@ -222,7 +221,7 @@ private:
     
     int mostProbableIndex;                      // cached most probable index
     vector<float> mostProbableStatus;           // cached most probable status [phase, speed, scale[, rotation], probability]
-    vector< vector<float> > S;                  // cached estimated status for all templates
+    vector< vector<float> > status;                  // cached estimated status for all templates
 	vector< vector<float> > X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]
@@ -278,6 +277,8 @@ private:
     
     void setStateDimensions(int input_dim);
     void initVariances(int scaleDim, int rotationRim);
+    
+    void UpdateOutcomes();
     
 };
 

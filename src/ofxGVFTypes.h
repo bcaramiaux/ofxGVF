@@ -16,7 +16,7 @@
 #include <math.h>
 #include <assert.h>
 
-#define OPENFRAMEWORKS 0
+#define OPENFRAMEWORKS 1
 #define BOOSTLIB 0
 #define OPTIMISD 0
 #define VDSPOPTM 0
@@ -79,17 +79,19 @@ typedef struct{
 } ofxGVFInitialSpreadingParameters;
 */
 
+// ofxGVFEstimation
+typedef struct {
+    float probability;
+    float phase;
+    float speed;
+    vector<float> rotation;
+    vector<float> scale;
+} ofxGVFEstimation;
+
 // ofxGVFVariations
 typedef struct{
-    float estimatedPhase;
-    float estimatedSpeed;
-    vector<float> estimatedScale;
-    vector<float> estimatedRotation;
-    vector<float> allPhases;
-    vector<float> allSpeeds;
-    vector<float> allScales;
-    vector<float> allRotations;
-    vector<float> allProbabilities;
+    int most_probable;
+    vector<ofxGVFEstimation> estimations;
 } ofxGVFOutcomes;
 
 

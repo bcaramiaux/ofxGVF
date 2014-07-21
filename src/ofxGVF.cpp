@@ -974,11 +974,12 @@ void ofxGVF::infer(vector<float> vect){
 }
 
 void ofxGVF::updateEstimatedStatus(){
+    
     // get the number of gestures in the vocabulary
     //	unsigned int ngestures = numTemplates+1;
     
     //    vector< vector<float> > es;
-    setMat(S, 0.0f, getNumberOfGestureTemplates(), pdim + 1);   // rows are gestures, cols are features + probabilities
+    setMat(status, 0.0f, getNumberOfGestureTemplates(), pdim + 1);   // rows are gestures, cols are features + probabilities
 	//printMatf(es);
     
 	// compute the estimated features by computing the expected values
@@ -989,9 +990,9 @@ void ofxGVF::updateEstimatedStatus(){
             //            cout << "S[" << gi << "][" << m << "] " << S[gi][m] << endl;
             //            cout << "X[" << n << "][" << m << "] " << X[n][m] << endl;
             //            cout << "ues: w[" << n << "] " << w[n] << endl;
-            S[gi][m] += X[n][m] * w[n];
+            status[gi][m] += X[n][m] * w[n];
         }
-		S[gi][pdim] += w[n];
+		status[gi][pdim] += w[n];
     }
 	
     // calculate most probable index during scaling...
@@ -1000,20 +1001,19 @@ void ofxGVF::updateEstimatedStatus(){
     
 	for(int gi = 0; gi < getNumberOfGestureTemplates(); gi++){
         for(int m = 0; m < pdim; m++){
-            S[gi][m] /= S[gi][pdim];
+            status[gi][m] /= status[gi][pdim];
         }
-        if(S[gi][pdim] > maxProbability){
-            maxProbability = S[gi][pdim];
+        if(status[gi][pdim] > maxProbability){
+            maxProbability = status[gi][pdim];
             mostProbableIndex = gi;
         }
 		//es.block(gi,0,1,pdim) /= es(gi,pdim);
 	}
     
     if(mostProbableIndex > -1)
-        mostProbableStatus = S[mostProbableIndex];
+        mostProbableStatus = status[mostProbableIndex];
     
-    
-    //    cout << S[0][0] << " " << S[0][1] << endl;
+    UpdateOutcomes();
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1064,70 +1064,43 @@ float ofxGVF::getMostProbableProbability(){
 // The output matrix is an Eigen matrix
 // NOW CACHED DURING 'infer' see updateEstimatedStatus()
 vector< vector<float> > ofxGVF::getEstimatedStatus(){
-    return S;
+    return status;
 }
-
 
 ofxGVFOutcomes ofxGVF::getOutcomes() {
-    
-    assert(mostProbableIndex > -1);
-
-    // number of scaling coefficients
-    int scalingCoefficients  = parameters.scaleInitialSpreading.size();
-    
-    // number of rotation angles
-    int numberRotationAngles = parameters.rotationInitialSpreading.size();
-    
-    // get the estimations for the recognized gesture
-    //////////////////////
-    // phase
-    outcomes.estimatedPhase = mostProbableStatus[0];
-    // speed
-    outcomes.estimatedSpeed = mostProbableStatus[1];
-    // scale
-    outcomes.estimatedScale = vector<float> (scalingCoefficients);
-    for (int nn=0; nn<scalingCoefficients; nn++)
-        outcomes.estimatedScale[nn] = mostProbableStatus[2+nn];
-    // rotationl
-    outcomes.estimatedRotation = vector<float> (numberRotationAngles);
-    for (int nn=0; nn<numberRotationAngles; nn++)
-        outcomes.estimatedRotation[nn] = mostProbableStatus[2+scalingCoefficients+nn];
-    
-    int numbOfGestureTemplates=gestureTemplates.size();
-    
-    // get all the estimations
-    outcomes.allPhases = vector<float> (numbOfGestureTemplates);
-    for (int nn = 0; nn < numbOfGestureTemplates; nn++)
-        outcomes.allPhases[nn] = S[nn][0];
-    
-    outcomes.allSpeeds = vector<float> (numbOfGestureTemplates);
-    for (int nn = 0; nn < numbOfGestureTemplates; nn++)
-        outcomes.allSpeeds[nn] = S[nn][1];
-    
-    outcomes.allScales = vector<float> (numbOfGestureTemplates*scalingCoefficients);
-    for (int nn = 0; nn < numbOfGestureTemplates; nn++)
-        for (int mm = 0; mm < scalingCoefficients; mm++)
-            outcomes.allScales[nn*scalingCoefficients+mm] = S[nn][2+mm];
-    
-    outcomes.allRotations = vector<float> (numbOfGestureTemplates*numberRotationAngles);
-    for (int nn=0; nn < numbOfGestureTemplates; nn++)
-        for (int mm = 0; mm < numberRotationAngles; mm++)
-            outcomes.allRotations[nn*numberRotationAngles+mm] = S[nn][2+scalingCoefficients+mm];
-    
-    outcomes.allProbabilities = vector<float> (numbOfGestureTemplates);
-    for (int nn=0; nn < numbOfGestureTemplates; nn++)
-        outcomes.allProbabilities[nn] = S[nn][S[0].size()-1];
-    
     return outcomes;
-    
 }
 
-ofxGVFOutcomes ofxGVF::getOutcomes(int gestureIndex) {
+void ofxGVF::UpdateOutcomes() {
     
-    // TODO
+    outcomes.most_probable = mostProbableIndex;
+    
+    outcomes.estimations.clear(); // FIXME: edit later to only clear when necessary
+    
+    // Fill estimation for each gesture
+    for (int i = 0; i < gestureTemplates.size(); ++i) {
+        ofxGVFEstimation estimation;
+        
+        estimation.phase = status[i][0];
+        
+        estimation.speed = status[i][1];
+        
+        estimation.scale = vector<float> (scale_dim);
+        for (int j = 0; j < scale_dim; ++j)
+            estimation.scale[j] = status[i][2 + j];
+        
+        estimation.rotation = vector<float> (rotation_dim);
+        for (int j = 0; j < rotation_dim; ++j)
+            estimation.rotation[j] = status[i][2 + scale_dim + j];
+        
+        estimation.probability = status[i][status[0].size() - 1]; // !!!: Probability is last in list (counter-intuitive!)
+        
+        outcomes.estimations.push_back(estimation);
+    }
+    
+    assert(outcomes.estimations.size() == gestureTemplates.size());
     
 }
-
 
 //--------------------------------------------------------------
 // Returns the probabilities of each gesture. This probability is conditionnal
