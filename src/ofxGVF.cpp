@@ -992,7 +992,7 @@ void ofxGVF::updateEstimatedStatus(){
             //            cout << "ues: w[" << n << "] " << w[n] << endl;
             status[gi][m] += X[n][m] * w[n];
         }
-		status[gi][pdim] += w[n];
+		status[gi][pdim] += w[n]; // probability
     }
 	
     // calculate most probable index during scaling...

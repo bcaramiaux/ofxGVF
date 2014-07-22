@@ -22,6 +22,7 @@
 
 #include "ofxGVFTypes.h"
 #include "ofxGVFGesture.h"
+#include <math.h>
 
 using namespace std;
 

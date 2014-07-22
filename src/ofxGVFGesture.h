@@ -55,15 +55,17 @@ public:
     }
     
     ofxGVFGesture(int _inputdim){
-        inputDimensions = _inputdim; // default to 2D
-        type = GEOMETRIC; // default to a geometric shape
+        inputDimensions = _inputdim;
+        if (inputDimensions == 2 || inputDimensions == 3)
+            type = GEOMETRIC;
+        else
+            type = TEMPORAL;
         
         //        bAutoAdjustNormalRange = true;
         //        bIsRangeMinSet = false;
         //        bIsRangeMaxSet = false;
         
         setAutoAdjustRanges(true);
-        
         
         //added
         templatesRaw    = vector<vector<vector<float > > >();
@@ -261,6 +263,7 @@ public:
 #if OPENFRAMEWORKS
         // reserve space for raw and normal meshes
         representationsNormal.resize(templatesRaw.size() + 1);
+        representationsRaw.resize(templatesRaw.size() + 1);
 #endif 
         
         templatesNormal.resize(templatesRaw.size());
@@ -273,19 +276,24 @@ public:
                 
                 representationsNormal[t].resize(1);
                 representationsNormal[t][0].setMode(OF_PRIMITIVE_LINE_STRIP);
+                representationsRaw[t].resize(1);
+                representationsRaw[t][0].setMode(OF_PRIMITIVE_LINE_STRIP);
                 
             }else{
                 
                 // for TEMPORAL representations let's use a mesh for EACH of the n-Dimensions
                 
                 representationsNormal[t].resize(inputDimensions);
+                representationsRaw[t].resize(inputDimensions);
                 for(int i = 0; i < inputDimensions; i++){
                     representationsNormal[t][i].setMode(OF_PRIMITIVE_LINE_STRIP);
+                    representationsRaw[t][i].setMode(OF_PRIMITIVE_LINE_STRIP);
                 }
             }
       
             for(int m = 0; m < representationsNormal[t].size(); m++){
                 representationsNormal[t][m].clear();
+                representationsRaw[t][m].clear();
             }
 #endif  
             
@@ -294,6 +302,7 @@ public:
             for(int o = 0; o < templatesRaw[t].size(); o++){
 #if OPENFRAMEWORKS
                 ofPoint pN;
+                ofPoint pR;
 #endif
                 templatesNormal[t][o].resize(inputDimensions);
                 
@@ -305,7 +314,7 @@ public:
                     templateInitialNormal[d] = templateInitialRaw[d] / (observationRangeMax[d] - observationRangeMin[d]);
                     
 #if OPENFRAMEWORKS
-                    
+                    // Normal Representation
                     if(type == GEOMETRIC){
                         
                         pN[d] = templatesNormal[t][o][d] + templateInitialNormal[d];
@@ -319,6 +328,21 @@ public:
                         representationsNormal[t][d].addColor(ofColor(255, 255, 255));
                         
                     }
+                    
+                    // Raw Representation
+                    if(type == GEOMETRIC){
+                        
+                        pR[d] = templatesRaw[t][o][d] + templateInitialRaw[d];
+                        
+                    }else{
+                        
+                        pR.x = o;
+                        pR.y = templatesRaw[t][o][d] + templateInitialRaw[d];
+                        
+                        representationsRaw[t][d].addVertex(pR);
+                        representationsRaw[t][d].addColor(ofColor(255, 255, 255));
+                        
+                    }
 #endif
                     
                 }
@@ -328,6 +352,9 @@ public:
                     
                     representationsNormal[t][0].addVertex(pN);
                     representationsNormal[t][0].addColor(ofColor(255, 255, 255));
+                    
+                    representationsRaw[t][0].addVertex(pR);
+                    representationsRaw[t][0].addColor(ofColor(255, 255, 255));
                     
                 }
 #endif
@@ -402,6 +429,10 @@ public:
         return templatesNormal;
     }
     
+    vector< vector< ofMesh> >& getRepresentationsRaw() {
+        return representationsRaw;
+    }
+    
     vector<float>& getInitialObservation(){
         return templateInitialRaw;
     }
@@ -420,6 +451,7 @@ public:
         templatesNormal[templateIndex].clear();
 #if OPENFRAMEWORKS
         representationsNormal[templateIndex].clear();
+        representationsRaw[templateIndex].clear();
 #endif
     }
     
@@ -428,6 +460,7 @@ public:
         templatesNormal.clear();
 #if OPENFRAMEWORKS
         representationsNormal.clear();
+        representationsRaw.clear();
 #endif
         bIsRangeMinSet = false;
         bIsRangeMaxSet = false;
@@ -436,36 +469,8 @@ public:
     }
 
 #if OPENFRAMEWORKS
-    
-    // ADDED BY ALEJANDRO PROTOTYPING
-    void draw_following(float _phase, float _probability, float x, float y, float w, float h) {
-        
-        ofColor current = representationsNormal[0][0].getColor(0);
-        
-        float phase = _phase;
-        
-        if (phase >= 1.)
-            phase = 1.;
 
-        float n_vertices = (float) representationsNormal[0][0].getNumColors();
-        int end_index = (int) (phase * n_vertices);
-        
-        ofSetLineWidth(0.5 + 10 * _probability);
-        
-        for (int i = 0; i < end_index; ++i) {
-            representationsNormal[0][0].setColor(i, ofColor(255, 0, 0));
-        }
-        
-        draw(x, y, w, h);
-        
-        for (int i = 0; i < end_index; ++i) {
-            representationsNormal[0][0].setColor(i, current);
-        }
-        
-        ofSetLineWidth(1);
-        
-    }
-
+    // Draws the Normalized Mesh
     void draw(){
         
         float x = 0.0f;
@@ -595,6 +600,7 @@ protected:
     
 #if OPENFRAMEWORKS
     vector< vector<ofMesh> > representationsNormal;
+    vector< vector<ofMesh> > representationsRaw;
 #endif
     
 };
