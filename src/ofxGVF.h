@@ -48,7 +48,6 @@ public:
 	
     enum ofxGVFState{
         STATE_CLEAR = 0,
-        STATE_WAIT,
         STATE_LEARNING,
         STATE_FOLLOWING
     };
@@ -86,11 +85,10 @@ public:
     // GESTURE PROBABILITIES + POSITIONS
     
     int getMostProbableGestureIndex();
-    vector<float> getMostProbableGestureStatus();
-    float getMostProbableProbability(); // this is horrible - maybe probability should be at index 0 OR we should use a struct rather than a vector??
-    
+ 
     ofxGVFOutcomes getOutcomes();
     
+    // !!!: Now unecessary
     vector< vector<float> > getEstimatedStatus();
     
     vector<float> getGestureProbabilities();
@@ -106,23 +104,11 @@ public:
     void removeGestureTemplate(int index);
     void removeAllGestureTemplates();
     
-//    // add template to the vocabulary
-//	void addTemplate();
-//	void addTemplate(vector<float> & data);
-//    
-//	// fill template given by id with data vector
-//	void fillTemplate(int id, vector<float> & data);
-//    
-//    // clear template given by id
-//    void clearTemplate(int id);
-//    
+    // TODO: clearTemplate by given ID
+    void clearTemplate(int id);
+    
 	// reset ofxGVF
 	void clear();
-//
-//    // template utilities
-//    int getNumberOfTemplates();
-//    vector< vector<float> >& getTemplateByIndex(int index);
-//    int getLengthOfTemplateByIndex(int index);
     
     ///////////////////////
     // Getters & Setters //
@@ -138,7 +124,6 @@ public:
 
     void setConfig(ofxGVFConfig _config);
     ofxGVFConfig getConfig();
-    
     
     // PARAMETERS
     
@@ -186,7 +171,6 @@ public:
     
     vector<vector<float> >  getIndividualOffset();
     vector<float>           getIndividualOffset(int particleIndex);
-    
 
     // UTILITIES
     

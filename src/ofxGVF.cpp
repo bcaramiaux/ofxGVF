@@ -47,7 +47,7 @@ vector<vector<float> > return_RotationMatrix_3d(float phi, float theta, float ps
 // typical use
 //   ofxGVF *myGVF;
 //   myGVF = new ofxGVF(NS, Sigs, Icov, ResThresh, Nu)
-//
+// 
 // ns is the number of particles
 // Sigs is the variance for each varying feature that has to be estimated (speed, scale, twisting angle)
 //
@@ -142,11 +142,6 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     ns = parameters.numberParticles;
     
     /*
-     if(inputDim > 2 && parameters.rotationVariance != 0.0){
-     cout << "Warning rotation variance will not be considered for more than 2 input dimensions!" << endl;
-     parameters.rotationVariance = 0.0f;
-     }*/
-    /*
      
      //MATT: everything below about variance coefficients, matrix inits will be moved to GVF::learn()
      //  the function is created but empty
@@ -201,8 +196,6 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
 //
 void ofxGVF::learn(){
     
-    //TODO (Baptiste)
-    
     if (gestureTemplates.size() > 0){
         
         
@@ -220,7 +213,6 @@ void ofxGVF::learn(){
         
         featVariances.clear();
         
-        //config.inputDimensions = R_single[0][0].size();
         config.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
         
         // Set Scale and Rotation dimensions, according to input dimensions
@@ -298,8 +290,6 @@ void ofxGVF::initVariances(int scaleDim, int rotationDim) {
         parameters.rotationInitialSpreading[k]=0.0f;
     
 }
-
-
 
 // Destructor of the class
 ofxGVF::~ofxGVF(){
@@ -389,82 +379,6 @@ void ofxGVF::removeGestureTemplate(int index){
 void ofxGVF::removeAllGestureTemplates(){
     gestureTemplates.clear();
 }
-
-////--------------------------------------------------------------
-//// Add a template into the vocabulary. This method does not add the data but allocate
-//// the memory and increases the number of learned gesture
-//void ofxGVF::addTemplate(){
-//	numTemplates++;                                         // increment the num. of learned gesture
-//	R_single[numTemplates] = vector< vector<float> >();      // allocate the memory for the gesture's data
-//    gestureLengths.push_back(0);                        // add an element (0) in the gesture lengths table
-//    abs_weights.resize(numTemplates+1);
-//}
-//
-//void ofxGVF::addTemplate(vector<float> & data){
-//	addTemplate();
-//    fillTemplate(getNumberOfTemplates(), data);
-//}
-//
-////--------------------------------------------------------------
-//// Fill the template given by the integer 'id' by appending the current data vector 'data'
-//// This example fills the template 1 with the live gesture data (stored in liveGesture)
-//// for (int k=0; k<SizeLiveGesture; k++)
-////    myGVF->fillTemplate(1, liveGesture[k]);
-//void ofxGVF::fillTemplate(int id, vector<float> & data){
-//	if (id <= numTemplates){
-//
-//        // BAPTISTE: WHY ONLY DO THIS FOR 2D DATA????????
-//        if(data.size() == 2){
-//
-//            // store initial point
-//            if(R_single[id].size() == 0){
-//                R_initial[id] = data;
-//            }
-//
-//            // 'center' data
-//            for(int i = 0; i < data.size(); i++){
-//                data[i] -= R_initial[id][i];
-//            }
-//        }
-//
-//		R_single[id].push_back(data);
-//		gestureLengths[id] = gestureLengths[id]+1;
-//	}
-//}
-//
-////--------------------------------------------------------------
-//// clear template given by id
-//void ofxGVF::clearTemplate(int id){
-//    if (id <= numTemplates){
-//        R_single[id] = vector< vector<float> >();      // allocate the memory for the gesture's data
-//        gestureLengths[id] = 0;                // add an element (0) in the gesture lengths table
-//    }
-//}
-//
-////--------------------------------------------------------------
-//// Return the number of templates in the vocabulary
-//int ofxGVF::getNumberOfTemplates(){
-//    return gestureLengths.size();
-//}
-//
-////--------------------------------------------------------------
-//// Return the template given by its index in the vocabulary
-//vector< vector<float> >& ofxGVF::getTemplateByIndex(int index){
-//	if (index < gestureLengths.size())
-//		return R_single[index];
-//	else
-//		return EmptyTemplate;
-//}
-//
-////--------------------------------------------------------------
-//// Return the length of a specific template given by its index
-//// in the vocabulary
-//int ofxGVF::getLengthOfTemplateByIndex(int index){
-//	if (index < gestureLengths.size())
-//		return gestureLengths[index];
-//	else
-//		return -1;
-//}
 
 //--------------------------------------------------------------
 // Clear the internal data (templates)
@@ -1028,30 +942,7 @@ void ofxGVF::updateEstimatedStatus(){
 // Returns the index of the currently recognized gesture
 // NOW CACHED DURING 'infer' see updateEstimatedStatus()
 int ofxGVF::getMostProbableGestureIndex(){
-    //    vector< vector< float> > M = getEstimatedStatus();
-    //    float maxProbability = 0.0f;
-    //    int indexMostProb = -1; // IMPORTANT: users need to check for negative index!!!
-    //    for (int k=0; k<M.size(); k++){
-    //        cout << M[k][M[0].size() - 1] << " > " << maxProbability << endl;
-    //        if (M[k][M[0].size() - 1] > maxProbability){
-    //            maxProbability = M[k][M[0].size() - 1];
-    //            indexMostProb = k;
-    //        }
-    //    }
-    //    return indexMostProb;
     return mostProbableIndex;
-}
-
-//--------------------------------------------------------------
-// Returns the index of the currently recognized gesture
-vector<float> ofxGVF::getMostProbableGestureStatus(){
-    return mostProbableStatus;
-}
-
-//--------------------------------------------------------------
-// Returns the probability of the currently recognized gesture
-float ofxGVF::getMostProbableProbability(){
-    return mostProbableStatus[mostProbableStatus.size() - 1];
 }
 
 //--------------------------------------------------------------
