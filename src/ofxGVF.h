@@ -22,6 +22,7 @@
 
 #include "ofxGVFTypes.h"
 #include "ofxGVFGesture.h"
+#include <math.h>
 
 using namespace std;
 
@@ -47,7 +48,6 @@ public:
 	
     enum ofxGVFState{
         STATE_CLEAR = 0,
-        STATE_WAIT,
         STATE_LEARNING,
         STATE_FOLLOWING
     };
@@ -85,12 +85,12 @@ public:
     // GESTURE PROBABILITIES + POSITIONS
     
     int getMostProbableGestureIndex();
-    vector<float> getMostProbableGestureStatus();
-    float getMostProbableProbability(); // this is horrible - maybe probability should be at index 0 OR we should use a struct rather than a vector??
-    
+ 
     ofxGVFOutcomes getOutcomes();
-    ofxGVFOutcomes getOutcomes(int gestureIndex);
+    ofxGVFEstimation getTemplateRecogInfo(int templateNumber);
+    ofxGVFEstimation getRecogInfoOfMostProbable(); // !!!: bad naming
     
+    // !!!: Now unecessary
     vector< vector<float> > getEstimatedStatus();
     
     vector<float> getGestureProbabilities();
@@ -106,23 +106,11 @@ public:
     void removeGestureTemplate(int index);
     void removeAllGestureTemplates();
     
-//    // add template to the vocabulary
-//	void addTemplate();
-//	void addTemplate(vector<float> & data);
-//    
-//	// fill template given by id with data vector
-//	void fillTemplate(int id, vector<float> & data);
-//    
-//    // clear template given by id
-//    void clearTemplate(int id);
-//    
+    // TODO: clearTemplate by given ID
+    void clearTemplate(int id);
+    
 	// reset ofxGVF
 	void clear();
-//
-//    // template utilities
-//    int getNumberOfTemplates();
-//    vector< vector<float> >& getTemplateByIndex(int index);
-//    int getLengthOfTemplateByIndex(int index);
     
     ///////////////////////
     // Getters & Setters //
@@ -138,7 +126,6 @@ public:
 
     void setConfig(ofxGVFConfig _config);
     ofxGVFConfig getConfig();
-    
     
     // PARAMETERS
     
@@ -186,7 +173,6 @@ public:
     
     vector<vector<float> >  getIndividualOffset();
     vector<float>           getIndividualOffset(int particleIndex);
-    
 
     // UTILITIES
     
@@ -222,7 +208,7 @@ private:
     
     int mostProbableIndex;                      // cached most probable index
     vector<float> mostProbableStatus;           // cached most probable status [phase, speed, scale[, rotation], probability]
-    vector< vector<float> > S;                  // cached estimated status for all templates
+    vector< vector<float> > status;                  // cached estimated status for all templates
 	vector< vector<float> > X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]
@@ -278,6 +264,8 @@ private:
     
     void setStateDimensions(int input_dim);
     void initVariances(int scaleDim, int rotationRim);
+    
+    void UpdateOutcomes();
     
 };
 
