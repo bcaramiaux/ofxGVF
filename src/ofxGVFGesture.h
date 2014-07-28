@@ -209,8 +209,8 @@ public:
     
     void addObservation(vector<float> observation, int templateIndex = 0){
         //post("size %i",observation.size());
-        if (observation.size()!=inputDimensions)
-            inputDimensions=observation.size();
+        if (observation.size() != inputDimensions)
+            inputDimensions = observation.size();
         addObservationRaw(observation);
     }
     

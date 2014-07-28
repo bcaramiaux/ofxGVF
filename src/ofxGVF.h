@@ -87,6 +87,8 @@ public:
     int getMostProbableGestureIndex();
  
     ofxGVFOutcomes getOutcomes();
+    ofxGVFEstimation getTemplateRecogInfo(int templateNumber);
+    ofxGVFEstimation getRecogInfoOfMostProbable(); // !!!: bad naming
     
     // !!!: Now unecessary
     vector< vector<float> > getEstimatedStatus();

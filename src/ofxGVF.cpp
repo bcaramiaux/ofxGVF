@@ -81,7 +81,7 @@ void ofxGVF::setup(){
     
     defaultConfig.inputDimensions   = 2;
     defaultConfig.translate         = true;
-    defaultConfig.segmentation      = true;
+    defaultConfig.segmentation      = false;
     
     setup(defaultConfig);
 }
@@ -994,6 +994,35 @@ void ofxGVF::UpdateOutcomes() {
 }
 
 //--------------------------------------------------------------
+ofxGVFEstimation ofxGVF::getTemplateRecogInfo(int templateNumber) { // FIXME: Rename!
+    
+    // ???: Later transfer to an assert here.
+    //    assert(templateNumber >= 0 && templateNumber < getOutcomes().estimations.size());
+    
+    if (getOutcomes().estimations.size() <= templateNumber) {
+        ofxGVFEstimation estimation;
+        return estimation; // blank
+    }
+    else
+        return getOutcomes().estimations[templateNumber];
+}
+
+//--------------------------------------------------------------
+ofxGVFEstimation ofxGVF::getRecogInfoOfMostProbable() // FIXME: Rename!
+{
+    int indexMostProbable = getMostProbableGestureIndex();
+    
+    if ((getState() == ofxGVF::STATE_FOLLOWING) && (getMostProbableGestureIndex() != -1)) {
+        return getTemplateRecogInfo(indexMostProbable);
+    }
+    else {
+        ofxGVFEstimation estimation;
+        return estimation; // blank
+    }
+}
+
+
+//--------------------------------------------------------------
 // Returns the probabilities of each gesture. This probability is conditionnal
 // because it depends on the other gestures in the vocabulary:
 // probability to be in gesture A knowing that we have gesture A, B, C, ... in the vocabulary
@@ -1116,7 +1145,7 @@ float ofxGVF::getDistribution(){
 //--------------------------------------------------------------
 void ofxGVF::setPhaseVariance(float phaseVariance){
     parameters.phaseVariance = phaseVariance;
-    featVariances[0] = phaseVariance;
+    featVariances[0] = sqrt(phaseVariance);
 }
 
 //--------------------------------------------------------------
@@ -1127,7 +1156,7 @@ float ofxGVF::getPhaseVariance(){
 //--------------------------------------------------------------
 void ofxGVF::setSpeedVariance(float speedVariance){
     parameters.speedVariance = speedVariance;
-    featVariances[1] = speedVariance;
+    featVariances[1] = sqrt(speedVariance);
 }
 
 //--------------------------------------------------------------
@@ -1143,7 +1172,9 @@ void ofxGVF::setScaleVariance(float scaleVariance){
 //--------------------------------------------------------------
 void ofxGVF::setScaleVariance(vector<float> scaleVariance){
     parameters.scaleVariance = scaleVariance;
-    initVariances(scale_dim, rotation_dim);
+//    initVariances(scale_dim, rotation_dim);
+    for (int k = 0; k < scale_dim; k++)
+        featVariances[2+k] = sqrt(parameters.scaleVariance[k]);
 }
 
 //--------------------------------------------------------------
@@ -1160,7 +1191,9 @@ void ofxGVF::setRotationVariance(float rotationVariance){
 void ofxGVF::setRotationVariance(vector<float> rotationVariance){
     
     parameters.rotationVariance = rotationVariance;
-    initVariances(scale_dim, rotation_dim);
+    //initVariances(scale_dim, rotation_dim);
+    for (int k = 0; k < rotation_dim; k++)
+        featVariances[2+scale_dim+k] = sqrt(parameters.rotationVariance[k]);
     
 }
 
@@ -1326,9 +1359,6 @@ string ofxGVF::getStateAsString(ofxGVFState state){
         case STATE_CLEAR:
             return "STATE_CLEAR";
             break;
-        case STATE_WAIT:
-            return "STATE_WAIT";
-            break;
         case STATE_LEARNING:
             return "STATE_LEARNING";
             break;
@@ -1340,8 +1370,6 @@ string ofxGVF::getStateAsString(ofxGVFState state){
             break;
     }
 }
-
-
 
 
 ///////// ROTATION MATRIX

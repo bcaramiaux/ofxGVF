@@ -60,25 +60,6 @@ typedef struct{
     vector<float>   rotationInitialSpreading;
 } ofxGVFParameters;
 
-// ofxGVFVarianceCoefficents
-//  variances of the probability distributions
-/*typedef struct{
-    float phaseVariance;
-    float speedVariance;
-    float scaleVariance;
-    float rotationVariance;
-} ofxGVFVarianceCoefficents;
- */
-
-// ofxGVFInitialSpreadingParameters
-/*typedef struct{
-    float phaseInitialSpreading;
-    float speedInitialSpreading;
-    vector<float> scaleInitialSpreading;
-    vector<float> rotationInitialSpreading;
-} ofxGVFInitialSpreadingParameters;
-*/
-
 // ofxGVFEstimation
 typedef struct {
     float probability;
