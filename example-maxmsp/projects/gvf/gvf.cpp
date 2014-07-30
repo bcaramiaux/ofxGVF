@@ -44,7 +44,7 @@ public:
         
         setupIO(1, 3); // inlets / outlets
         
-        post("gvf - realtime adaptive gesture recognition (version: 06-2014)");
+        post("gvf - realtime adaptive gesture recognition (version: 07-2014)");
         post("(c) Goldsmiths, University of London and Ircam - Centre Pompidou");
         
 	    // CONFIGURATION of the GVF
@@ -168,6 +168,42 @@ public:
                 
                 // output recognition
                 outcomes = bubi->getOutcomes();
+                int numberOfTemplates = outcomes.estimations.size();
+                
+                t_atom *outAtoms = new t_atom[numberOfTemplates];
+                
+                for(int j = 0; j < numberOfTemplates; j++)
+                    atom_setfloat(&outAtoms[j],outcomes.estimations[j].phase);
+                outlet_anything(m_outlets[0], gensym("phase"), numberOfTemplates, outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    atom_setfloat(&outAtoms[j],outcomes.estimations[j].speed);
+                outlet_anything(m_outlets[0], gensym("speed"), numberOfTemplates, outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates * outcomes.estimations[0].scale.size()];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    for(int jj = 0; jj < outcomes.estimations[0].scale.size(); jj++)
+                    atom_setfloat(&outAtoms[j],outcomes.estimations[j].scale[jj]);
+                outlet_anything(m_outlets[0], gensym("scale"), numberOfTemplates * outcomes.estimations[0].scale.size(), outAtoms);
+                delete[] outAtoms;
+
+                outAtoms = new t_atom[numberOfTemplates * outcomes.estimations[0].rotation.size()];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    for(int jj = 0; jj < outcomes.estimations[0].rotation.size(); jj++)
+                        atom_setfloat(&outAtoms[j],outcomes.estimations[j].rotation[jj]);
+                outlet_anything(m_outlets[0], gensym("angle"), numberOfTemplates * outcomes.estimations[0].rotation.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    atom_setfloat(&outAtoms[j],outcomes.estimations[j].probability);
+                outlet_anything(m_outlets[1], gensym("weights"), numberOfTemplates, outAtoms);
+                delete[] outAtoms;
+                /*
+                outcomes = bubi->getOutcomes();
                 
                 t_atom *outAtoms = new t_atom[outcomes.allPhases.size()];
                 
@@ -199,6 +235,7 @@ public:
                     atom_setfloat(&outAtoms[j],outcomes.allProbabilities[j]);
                 outlet_anything(m_outlets[1], gensym("weights"), outcomes.allProbabilities.size(), outAtoms);
                 delete[] outAtoms;
+                */
                  
                 break;
             }
