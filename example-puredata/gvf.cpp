@@ -198,6 +198,42 @@ static void gvf_data(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
                 
                 // output recognition
                 x->outcomes = x->bubi->getOutcomes();
+                int numberOfTemplates = x->outcomes.estimations.size();
+                
+                t_atom *outAtoms = new t_atom[numberOfTemplates];
+                
+                for(int j = 0; j < numberOfTemplates; j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.estimations[j].phase);
+                outlet_list(x->Position, &s_list, numberOfTemplates, outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.estimations[j].speed);
+                outlet_list(x->Vitesse, &s_list, numberOfTemplates, outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].scale.size()];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    for(int jj = 0; jj < x->outcomes.estimations[0].scale.size(); jj++)
+                        SETFLOAT(&outAtoms[j],x->outcomes.estimations[j].scale[jj]);
+                outlet_list(x->Scaling, &s_list, numberOfTemplates * x->outcomes.estimations[0].scale.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].rotation.size()];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    for(int jj = 0; jj < x->outcomes.estimations[0].rotation.size(); jj++)
+                        SETFLOAT(&outAtoms[j],x->outcomes.estimations[j].rotation[jj]);
+                outlet_list(x->Rotation, &s_list, numberOfTemplates * x->outcomes.estimations[0].rotation.size(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    SETFLOAT(&outAtoms[j],x->outcomes.estimations[j].probability);
+                outlet_list(x->Likelihoods, &s_list, numberOfTemplates, outAtoms);
+                delete[] outAtoms;
+                /*
+                x->outcomes = x->bubi->getOutcomes();
                 
                 t_atom *outAtoms = new t_atom[x->outcomes.allPhases.size()];
                 
@@ -229,6 +265,7 @@ static void gvf_data(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
                     SETFLOAT(&outAtoms[j],x->outcomes.allProbabilities[j]);
                 outlet_list(x->Likelihoods, &s_list, x->outcomes.allProbabilities.size(), outAtoms);
                 delete[] outAtoms;
+                 */
                  
                 break;
             }

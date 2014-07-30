@@ -428,10 +428,11 @@ public:
     vector< vector< vector<float> > >& getTemplatesNormal(){
         return templatesNormal;
     }
-    
+#if OPENFRAMEWORKS
     vector< vector< ofMesh> >& getRepresentationsRaw() {
         return representationsRaw;
     }
+#endif
     
     vector<float>& getInitialObservation(){
         return templateInitialRaw;
