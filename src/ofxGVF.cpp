@@ -208,7 +208,7 @@ void ofxGVF::learn(){
                 /config.inputDimensions;
         }
         obsMeanRange /= gestureTemplates.size();
-        parameters.tolerance = obsMeanRange / 3.0f;  // dividing by an heuristic factor [to be learned?]
+//        parameters.tolerance = obsMeanRange / 3.0f;  // dividing by an heuristic factor [to be learned?]
         // ---------------------------
         
         featVariances.clear();
@@ -1165,8 +1165,13 @@ float ofxGVF::getSpeedVariance(){
 }
 
 //--------------------------------------------------------------
-void ofxGVF::setScaleVariance(float scaleVariance){
-    setScaleVariance(vector<float>(scale_dim, scaleVariance));
+void ofxGVF::setScaleVariance(float scaleVariance, int dim){
+    
+    vector<float> scale_variance = parameters.scaleVariance;
+    
+    scale_variance[dim] = scaleVariance;
+    
+    setScaleVariance(scale_variance);
 }
 
 //--------------------------------------------------------------
@@ -1183,8 +1188,13 @@ vector<float> ofxGVF::getScaleVariance(){
 }
 
 //--------------------------------------------------------------
-void ofxGVF::setRotationVariance(float rotationVariance){
-    setRotationVariance(vector<float>(rotation_dim, rotationVariance));
+void ofxGVF::setRotationVariance(float rotationVariance, int dim){
+    
+    vector<float> rotation_variance = parameters.rotationVariance;
+    
+    rotation_variance[dim] = rotationVariance;
+    
+    setRotationVariance(rotation_variance);
 }
 
 //--------------------------------------------------------------

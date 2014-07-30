@@ -65,8 +65,8 @@ typedef struct {
     float probability;
     float phase;
     float speed;
-    vector<float> rotation;
     vector<float> scale;
+    vector<float> rotation;
 } ofxGVFEstimation;
 
 // ofxGVFVariations
