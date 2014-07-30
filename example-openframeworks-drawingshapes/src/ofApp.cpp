@@ -131,11 +131,11 @@ void ofApp::draw(){
         // get outcomes: estimations of how the gesture is performed
         outcomes = gvf.getOutcomes();
         
-        if (gvf.getMostProbableGestureIndex() >= 0){
-            phase = outcomes.estimatedPhase;
-            speed = outcomes.estimatedSpeed;
-            size  = outcomes.estimatedScale[0]; // only 1 scale coefficient
-            angle = outcomes.estimatedRotation[0]; // only 1 angle or rotation
+          if (outcomes.most_probable >= 0){
+            phase = outcomes.estimations[outcomes.most_probable].phase;
+            speed = outcomes.estimations[outcomes.most_probable].speed;
+              size = outcomes.estimations[outcomes.most_probable].scale[0];
+                          angle = outcomes.estimations[outcomes.most_probable].rotation[0];
         }
     }
   
