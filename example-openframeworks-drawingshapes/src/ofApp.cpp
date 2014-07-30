@@ -88,9 +88,10 @@ void ofApp::draw(){
             ofPoint point(pp[i][0], pp[i][1]);
             
             // and then scaled and translated in order to be drawn
-            float x = ((point.x)) * (currentGesture.getMaxRange()[0] - currentGesture.getMinRange()[0]);
-            float y = ((point.y)) * (currentGesture.getMaxRange()[1] - currentGesture.getMinRange()[1]);
-
+            //float x = ((point.x)) * (currentGesture.getMaxRange()[0] - currentGesture.getMinRange()[0]);
+            //float y = ((point.y)) * (currentGesture.getMaxRange()[1] - currentGesture.getMinRange()[1]);
+            float x = point.x;
+            float y = point.y;
             
             // the weight of the particle is normalised
             // and then used as the radius of the circle representing the particle
