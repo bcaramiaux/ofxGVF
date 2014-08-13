@@ -153,11 +153,11 @@ public:
     void setSpeedVariance(float speedVariance);
     float getSpeedVariance();
     
-    void setScaleVariance(float scaleVariance);
+    void setScaleVariance(float scaleVariance, int dim = 0);
     void setScaleVariance(vector<float> scaleVariance);
     vector<float> getScaleVariance();
     
-    void setRotationVariance(float rotationVariance);
+    void setRotationVariance(float rotationVariance, int dim = 0);
     void setRotationVariance(vector<float> rotationVariance);
     vector<float> getRotationVariance();
     
