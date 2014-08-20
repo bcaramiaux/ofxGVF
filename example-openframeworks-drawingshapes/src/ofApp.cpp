@@ -17,8 +17,14 @@ void ofApp::setup(){
     gvf.setup(config);
     
     ofBackground(0, 0, 0);
+	performingLearning = false;
     performingFollowing = false;
     
+	
+	templateFile = ofToDataPath("templates.txt");
+	if( ofFile::doesFileExist(templateFile) ) {
+		gvf.loadTemplates(templateFile);
+	}
 }
 
 //--------------------------------------------------------------
@@ -160,7 +166,7 @@ void ofApp::keyPressed(int key){
             gvf.setState(ofxGVF::STATE_CLEAR);
             break;
         case 's':
-            gvf.saveTemplates("/Users/caramiaux/test.txt");
+            gvf.saveTemplates(templateFile);
             break;
         case 'g':
             currentGesture.setType(ofxGVFGesture::GEOMETRIC);
