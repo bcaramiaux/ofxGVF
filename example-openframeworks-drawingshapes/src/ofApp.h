@@ -29,6 +29,8 @@ class ofApp : public ofBaseApp{
         float initX, initY;
 
     float inputX, inputY;
-    bool performingLearning = false;
-    bool performingFollowing = false;
+    bool performingLearning;
+    bool performingFollowing;
+	
+	string templateFile;
 };
