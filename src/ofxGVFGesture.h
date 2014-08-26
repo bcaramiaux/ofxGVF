@@ -23,7 +23,7 @@
 
 
 
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
 #include "ofMain.h"
 #endif
 
@@ -105,7 +105,7 @@ public:
         bAutoAdjustNormalRange = b;
     }
     
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
     
     void setMax(ofPoint max){
         assert(inputDimensions <= 2);
@@ -196,7 +196,7 @@ public:
         }
     }
     
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
     void addObservationRaw(ofPoint observation, int templateIndex = 0){
         assert(inputDimensions <= 3);
         vector<float> obs(inputDimensions);
@@ -260,7 +260,7 @@ public:
     void normalise(){
         
 
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
         // reserve space for raw and normal meshes
         representationsNormal.resize(templatesRaw.size() + 1);
         representationsRaw.resize(templatesRaw.size() + 1);
@@ -269,7 +269,7 @@ public:
         templatesNormal.resize(templatesRaw.size());
         
         for(int t = 0; t < templatesRaw.size(); t++){
-#if OPENFRAMEWORKS         
+#ifdef OF_OFXGVF         
             if(type == GEOMETRIC){
                 
                 // for GEOMETRIC representations let's use a single mesh with n-Dimensions
@@ -300,7 +300,7 @@ public:
             templatesNormal[t].resize(templatesRaw[t].size());
             
             for(int o = 0; o < templatesRaw[t].size(); o++){
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
                 ofPoint pN;
                 ofPoint pR;
 #endif
@@ -313,7 +313,7 @@ public:
                     templatesNormal[t][o][d] = templatesRaw[t][o][d] / (observationRangeMax[d] - observationRangeMin[d]);
                     templateInitialNormal[d] = templateInitialRaw[d] / (observationRangeMax[d] - observationRangeMin[d]);
                     
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
                     // Normal Representation
                     if(type == GEOMETRIC){
                         
@@ -347,7 +347,7 @@ public:
                     
                 }
 
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
                 if(type == GEOMETRIC){
                     
                     representationsNormal[t][0].addVertex(pN);
@@ -428,7 +428,7 @@ public:
     vector< vector< vector<float> > >& getTemplatesNormal(){
         return templatesNormal;
     }
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
     vector< vector< ofMesh> >& getRepresentationsRaw() {
         return representationsRaw;
     }
@@ -450,7 +450,7 @@ public:
         assert(templateIndex < templatesRaw.size());
         templatesRaw[templateIndex].clear();
         templatesNormal[templateIndex].clear();
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
         representationsNormal[templateIndex].clear();
         representationsRaw[templateIndex].clear();
 #endif
@@ -459,7 +459,7 @@ public:
     void clear(){
         templatesRaw.clear();
         templatesNormal.clear();
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
         representationsNormal.clear();
         representationsRaw.clear();
 #endif
@@ -469,7 +469,7 @@ public:
         observationRangeMin.assign(inputDimensions,  INFINITY);
     }
 
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
 
     // Draws the Normalized Mesh
     void draw(){
@@ -599,7 +599,7 @@ protected:
     vector< vector< vector<float> > > templatesRaw;
     vector< vector< vector<float> > > templatesNormal;
     
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
     vector< vector<ofMesh> > representationsNormal;
     vector< vector<ofMesh> > representationsRaw;
 #endif

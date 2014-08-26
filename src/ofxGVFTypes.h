@@ -16,7 +16,6 @@
 #include <math.h>
 #include <assert.h>
 
-#define OPENFRAMEWORKS 0
 #define BOOSTLIB 0
 #define OPTIMISD 0
 #define VDSPOPTM 0
@@ -77,7 +76,7 @@ typedef struct{
 
 
 
-#if OPENFRAMEWORKS
+#ifdef OF_OFXGVF
 
 #include "ofMain.h"
 

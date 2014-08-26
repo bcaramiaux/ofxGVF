@@ -15,6 +15,7 @@ void ofApp::setup(){
 
     // CREATE the corresponding GVF
     gvf.setup(config);
+	gvf.setTolerance(20.f);
     
     ofBackground(0, 0, 0);
 	performingLearning = false;

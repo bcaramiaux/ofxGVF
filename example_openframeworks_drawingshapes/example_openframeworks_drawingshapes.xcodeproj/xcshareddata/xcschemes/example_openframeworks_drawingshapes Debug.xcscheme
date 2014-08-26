@@ -15,16 +15,16 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-               BuildableName = "ofxGVF-Example.app"
-               BlueprintName = "ofxGVF-Example"
-               ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
+               BuildableName = "example_openframeworks_drawingshapes.app"
+               BlueprintName = "example_openframeworks_drawingshapes"
+               ReferencedContainer = "container:example_openframeworks_drawingshapes.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       buildConfiguration = "Debug">
       <Testables>
@@ -33,15 +33,15 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxGVF-Example.app"
-            BlueprintName = "ofxGVF-Example"
-            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
+            BuildableName = "example_openframeworks_drawingshapes.app"
+            BlueprintName = "example_openframeworks_drawingshapes"
+            ReferencedContainer = "container:example_openframeworks_drawingshapes.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </TestAction>
    <LaunchAction
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.GDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.GDB"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       buildConfiguration = "Debug"
@@ -52,9 +52,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxGVF-Example.app"
-            BlueprintName = "ofxGVF-Example"
-            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
+            BuildableName = "example_openframeworks_drawingshapes.app"
+            BlueprintName = "example_openframeworks_drawingshapes"
+            ReferencedContainer = "container:example_openframeworks_drawingshapes.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <AdditionalOptions>
@@ -70,9 +70,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E4B69B5A0A3A1756003C02F2"
-            BuildableName = "ofxGVF-Example.app"
-            BlueprintName = "ofxGVF-Example"
-            ReferencedContainer = "container:ofxGVF-Example.xcodeproj">
+            BuildableName = "example_openframeworks_drawingshapes.app"
+            BlueprintName = "example_openframeworks_drawingshapes"
+            ReferencedContainer = "container:example_openframeworks_drawingshapes.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
