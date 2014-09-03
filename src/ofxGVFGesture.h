@@ -211,7 +211,7 @@ public:
         //post("size %i",observation.size());
         if (observation.size() != inputDimensions)
             inputDimensions = observation.size();
-        addObservationRaw(observation);
+        addObservationRaw(observation, templateIndex);
     }
     
     

@@ -1267,14 +1267,17 @@ void ofxGVF::saveTemplates(string filename){
     
     for(int i=0; i < gestureTemplates.size(); i++) // Number of gesture templates
     {
-        file_write << "template " << i << " " << config.inputDimensions << endl;
-        vector<vector<float> > templateTmp = gestureTemplates[i].getTemplate();
-        for(int j = 0; j < templateTmp.size(); j++)
-        {
-            for(int k = 0; k < config.inputDimensions; k++)
-                file_write << templateTmp[j][k] << " ";
-            file_write << endl;
-        }
+		for(int ii=0; ii < gestureTemplates[i].getNumberOfTemplates(); ii++)
+		{
+			file_write << "template " << i << " " << config.inputDimensions << " index " << ii << endl;
+			vector<vector<float> > templateTmp = gestureTemplates[i].getTemplate(ii);
+			for(int j = 0; j < templateTmp.size(); j++)
+			{
+				for(int k = 0; k < config.inputDimensions; k++)
+					file_write << templateTmp[j][k] << " ";
+				file_write << endl;
+			}
+		}
     }
     file_write.close();
     
@@ -1322,6 +1325,7 @@ void ofxGVF::loadTemplates(string filename){
     int k = 0;
     int template_id = -1;
     int template_dim = 0;
+	int template_index = 0;
     
     
     while (k < (list.size() - 1)){ // TODO to be changed if dim>2
@@ -1331,9 +1335,17 @@ void ofxGVF::loadTemplates(string filename){
         {
             template_id = atoi(list[k+1].c_str());
             template_dim = atoi(list[k+2].c_str());
-            k = k + 3;
-            
-            if (loadedGesture.getNumberOfTemplates() > 0){
+			if (!strcmp(list[k+3].c_str(),"index"))
+			{
+				template_index = atoi(list[k+4].c_str());
+				k = k + 5;
+			}
+			else{
+				template_index = 0;
+				k = k + 3;
+			}
+
+            if (template_index == 0 && loadedGesture.getNumberOfTemplates() > 0){
                 addGestureTemplate(loadedGesture);
                 loadedGesture.clear();
             }
@@ -1349,7 +1361,7 @@ void ofxGVF::loadTemplates(string filename){
             for (int kk = 0; kk < template_dim; kk++)
                 vect[kk] = (float) atof(list[k + kk].c_str());
             
-            loadedGesture.addObservation(vect);
+            loadedGesture.addObservation(vect, template_index);
         }
         k += template_dim;
         
