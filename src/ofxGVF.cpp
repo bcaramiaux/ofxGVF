@@ -88,19 +88,60 @@ void ofxGVF::setup(){
 
 //--------------------------------------------------------------
 void ofxGVF::setup(ofxGVFConfig _config){
+ 
+    clear(); // just in case
     
-    ofxGVFParameters defaultParameters;
+    // Set parameters:
+    //    input dimensions
+    //    translate flag
+    //    translate flag
+    config = _config;
     
-    defaultParameters.numberParticles = 2000;
-    defaultParameters.tolerance = 0.1f;
-    defaultParameters.resamplingThreshold = 500;
-    defaultParameters.distribution = 0.0f;
-    defaultParameters.phaseVariance = 0.000001;
-    defaultParameters.speedVariance = 0.001;
-    defaultParameters.scaleVariance = vector<float>(1, 0.00001); // TODO: Check that default works like this.
-    defaultParameters.rotationVariance = vector<float>(1, 0.00001);
+    // default parameters
+    parameters.numberParticles = 2000;
+    parameters.tolerance = 0.1f;
+    parameters.resamplingThreshold = 500;
+    parameters.distribution = 0.0f;
+    parameters.phaseVariance = 0.000001;
+    parameters.speedVariance = 0.001;
+    parameters.scaleVariance = vector<float>(1, 0.00001); // TODO: Check that default works like this.
+    parameters.rotationVariance = vector<float>(1, 0.00000);
     
-    setup(_config, defaultParameters);
+    parametersSetAsDefault = true;
+    
+    setStateDimensions(config.inputDimensions);
+    
+    // MARK: Adjust to dimensions necessary (added by AVZ)
+    parameters.scaleVariance = vector<float>(scale_dim, parameters.scaleVariance[0]);
+    parameters.rotationVariance = vector<float>(rotation_dim, parameters.rotationVariance[0]);
+
+    initVariances(scale_dim, rotation_dim);
+    
+    has_learned = false;
+    
+    ns = parameters.numberParticles;
+    
+    
+#if !BOOSTLIB
+    normdist = new std::tr1::normal_distribution<float>();
+    unifdist = new std::tr1::uniform_real<float>();
+    rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
+#endif
+    
+    // absolute weights
+    abs_weights = vector<float>();
+    
+    // Offset for segmentation
+    offS=vector<vector<float> >(ns);
+    for (int k = 0; k < ns; k++)
+    {
+        offS[k] = vector<float>(config.inputDimensions);
+        
+        for (int j = 0; j < config.inputDimensions; j++)
+            offS[k][j] = 0.0;
+    }
+    
+
 }
 
 //--------------------------------------------------------------
@@ -140,33 +181,7 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     has_learned = false;
     
     ns = parameters.numberParticles;
-    
-    /*
-     
-     //MATT: everything below about variance coefficients, matrix inits will be moved to GVF::learn()
-     //  the function is created but empty
-     
-     if(parameters.phaseVariance != -1.0f) featVariances.push_back(sqrt(parameters.phaseVariance));
-     if(parameters.speedVariance != -1.0f) featVariances.push_back(sqrt(parameters.speedVariance));
-     if(parameters.scaleVariance != -1.0f) featVariances.push_back(sqrt(parameters.scaleVariance));
-     if(parameters.rotationVariance != -1.0f) featVariances.push_back(sqrt(parameters.rotationVariance));
-     
-     pdim = featVariances.size();
-     
-     initMat(X, ns, pdim);           // Matrix of NS particles
-     initVec(g, ns);                 // Vector of gesture class
-     initVec(w, ns);                 // Weights
-     initMat(offS, ns, inputDim);    // Offsets
-     
-     resamplingThreshold = parameters.resamplingThreshold;   // Set resampling threshold (usually NS/2)
-     tolerance = parameters.tolerance;                       // inverse of the global tolerance (variance)
-     nu = parameters.distribution;                           // Set Student's distribution parameter Nu
-     
-     //    kGestureType = parameters.gestureType;
-     
-     //    numTemplates=-1;                        // Set num. of learned gesture to -1
-     //    gestureLengths = vector<int>();         // Vector of gesture lengths
-     */
+
     
 #if !BOOSTLIB
     normdist = new std::tr1::normal_distribution<float>();
@@ -187,6 +202,8 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
             offS[k][j] = 0.0;
     }
     
+    parametersSetAsDefault = false;
+    
 }
 
 
@@ -199,8 +216,9 @@ void ofxGVF::learn(){
     if (gestureTemplates.size() > 0){
         
         
-        // ADAPTATION OF THE TOLERANCE
+        // ADAPTATION OF THE TOLERANCE IF DEFAULT PARAMTERS
         // ---------------------------
+        if (parametersSetAsDefault) {
         float obsMeanRange = 0.0f;
         for (int gt=0; gt<gestureTemplates.size(); gt++) {
             for (int d=0; d<config.inputDimensions; d++)
@@ -208,7 +226,9 @@ void ofxGVF::learn(){
                 /config.inputDimensions;
         }
         obsMeanRange /= gestureTemplates.size();
-//        parameters.tolerance = obsMeanRange / 3.0f;  // dividing by an heuristic factor [to be learned?]
+            parameters.tolerance = obsMeanRange / 8.0f;  // dividing by an heuristic factor [to be learned?]
+
+        }
         // ---------------------------
         
         featVariances.clear();
@@ -881,7 +901,7 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
 // has been originally created to be able to infer on a new observation or
 // a set of observation.
 void ofxGVF::infer(vector<float> vect){
-    
+
     particleFilter(vect);
     updateEstimatedStatus();
     

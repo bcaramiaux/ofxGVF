@@ -9,10 +9,10 @@ void ofApp::setup(){
     // CONFIGURATION of the GVF
     config.inputDimensions = 2;
     config.translate       = true;
-    config.segmentation    = false;
+    //config.segmentation    = false;
     
     // PARAMETERS are set by default
-
+    
     // CREATE the corresponding GVF
     gvf.setup(config);
     
@@ -20,11 +20,12 @@ void ofApp::setup(){
 	performingLearning = false;
     performingFollowing = false;
     
-	
+	/*
 	templateFile = ofToDataPath("templates.txt");
 	if( ofFile::doesFileExist(templateFile) ) {
 		gvf.loadTemplates(templateFile);
 	}
+     */
 }
 
 //--------------------------------------------------------------
@@ -136,16 +137,18 @@ void ofApp::draw(){
     {
         // get outcomes: estimations of how the gesture is performed
         outcomes = gvf.getOutcomes();
-        
+
           if (outcomes.most_probable >= 0){
             phase = outcomes.estimations[outcomes.most_probable].phase;
             speed = outcomes.estimations[outcomes.most_probable].speed;
-              size = outcomes.estimations[outcomes.most_probable].scale[0];
-                          angle = outcomes.estimations[outcomes.most_probable].rotation[0];
+            size = outcomes.estimations[outcomes.most_probable].scale[0];
+            angle = outcomes.estimations[outcomes.most_probable].rotation[0];
         }
     }
   
+    
     os << "Cursor: " << phase << " | Speed: " << speed << " | Size: " << size << " | Angle: " << angle << endl;
+    
     
     ofDrawBitmapString(os.str(), 20, 20);
     

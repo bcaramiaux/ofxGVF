@@ -16,7 +16,7 @@
 #include <math.h>
 #include <assert.h>
 
-#define OPENFRAMEWORKS 0
+#define OPENFRAMEWORKS 1
 #define BOOSTLIB 0
 #define OPTIMISD 0
 #define VDSPOPTM 0

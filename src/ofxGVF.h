@@ -192,6 +192,8 @@ private:
     ofxGVFParameters    parameters;
     ofxGVFOutcomes      outcomes;
     
+    bool parametersSetAsDefault;
+    
     
 //    ofxGVFVarianceCoefficents coefficents;
 //    ofxGVFInitialSpreadingParameters spreadingParameters;
