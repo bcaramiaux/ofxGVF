@@ -39,8 +39,8 @@ CHOICE 1 (automatic parameterization)
 From that configuration and parameterization:
 ```
 config.inputDimensions          = 2; // in case of a 2-dimensional input data
-defaultConfig.translate         = true;
-defaultConfig.segmentation      = false;
+config.translate         = true;
+config.segmentation      = false;
 ```
 
 Then create the object
