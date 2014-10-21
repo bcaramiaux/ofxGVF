@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>C0F4E5D5-5B54-4C4A-A3EF-21F1E0363DEC</string>
+	<key>IDESourceControlProjectName</key>
+	<string>ofxGVF-Kinect</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>77F887B8687689A22EC75452628A3F65A5485DC9</key>
+		<string>https://github.com/asarasua/ofxGVF.git</string>
+		<key>D7770A14563D2CF85508E1CB3D7DDC50864B9F47</key>
+		<string>https://github.com/asarasua/ofxKinectFeatures.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>openNiGVF/ofxGVF-Kinect.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>77F887B8687689A22EC75452628A3F65A5485DC9</key>
+		<string>../../..</string>
+		<key>D7770A14563D2CF85508E1CB3D7DDC50864B9F47</key>
+		<string>../../../../ofxKinectFeatures</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/asarasua/ofxGVF.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>77F887B8687689A22EC75452628A3F65A5485DC9</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>77F887B8687689A22EC75452628A3F65A5485DC9</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxGVF</string>
+		</dict>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>D7770A14563D2CF85508E1CB3D7DDC50864B9F47</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxKinectFeatures</string>
+		</dict>
+	</array>
+</dict>
+</plist>
