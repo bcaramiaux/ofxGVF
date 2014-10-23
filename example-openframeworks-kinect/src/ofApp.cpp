@@ -21,9 +21,6 @@ void ofApp::setup(){
     kinect.start();
     hadUsers = false;
     
-    //Feature extractor
-    featExtractor.setKinect(&kinect);
-    
     // CONFIGURATION of the GVF
     velocityThreshold = 30.0;
     config.inputDimensions = 3;
@@ -37,10 +34,10 @@ void ofApp::setup(){
     gvfLeft.setup(config);
     
     ofBackground(0, 0, 0);
-	performingLearningRight = performingLearningLeft = performingFollowingRight = performingFollowingLeft = false;
+    performingLearningRight = performingLearningLeft = performingFollowingRight = performingFollowingLeft = false;
     //performingFollowing = false;
     
-	/*
+    /*
      templateFile = ofToDataPath("templates.txt");
      if( ofFile::doesFileExist(templateFile) ) {
      gvf.loadTemplates(templateFile);
@@ -52,129 +49,144 @@ void ofApp::setup(){
 void ofApp::update(){
     kinect.update();
     checkKinectReset();
-    featExtractor.update();
-    
-    //Right hand
-    //Gesture being performed when hand moves at higher speed than velocityThreshold
-    if (featExtractor.getVelocityMean(JOINT_RIGHT_HAND) > velocityThreshold) {
-        if (gvfRight.getState() == ofxGVF::STATE_LEARNING){
-            if (!performingLearningRight) { //init
-                currentGestureRight.setAutoAdjustRanges(false);
-                currentGestureRight.setNumberDimensions(3);
-                currentGestureRight.setMin(-1500.0f, -1500.0f, 0.0f);
-                currentGestureRight.setMax(1500.0f, 1500.0f, 4000.0f);
+    if (kinect.getNumTrackedUsers()) {
+        ofxOpenNIUser user = kinect.getTrackedUser(0);
+        
+        //The following "if" statement is a hard-coded alternative for if(kinect.getUserGenerator().IsNewDataAvailable()), which doesn't work properly in ofxOpenNI
+        if (user.getJoint((Joint)0).getWorldPosition() != ofPoint(0,0,0) &&
+            (!featExtractor.skeletonExists(0) ||
+             user.getJoint((Joint)0).getWorldPosition() != featExtractor.getSkeleton(0)->getPosition(0) )) {
+                map<int, ofPoint> joints;
+                for (int j = 0; j < user.getNumJoints(); j++) {
+                    joints[j] = user.getJoint((Joint)j).getWorldPosition();
+                }
+                featExtractor.updateSkeleton(0, joints);
             }
-            performingLearningRight = true;
+    }
+    
+    if (featExtractor.skeletonExists(0)) {
+        //Right hand
+        //Gesture being performed when hand moves at higher speed than velocityThreshold
+        if (featExtractor.getSkeleton(0)->getVelocityMean(JOINT_RIGHT_HAND) > velocityThreshold) {
+            if (gvfRight.getState() == ofxGVF::STATE_LEARNING){
+                if (!performingLearningRight) { //init
+                    currentGestureRight.setAutoAdjustRanges(false);
+                    currentGestureRight.setNumberDimensions(3);
+                    currentGestureRight.setMin(-1500.0f, -1500.0f, 0.0f);
+                    currentGestureRight.setMax(1500.0f, 1500.0f, 4000.0f);
+                }
+                performingLearningRight = true;
+                performingFollowingRight = false;
+            } else if (gvfRight.getState() == ofxGVF::STATE_FOLLOWING){
+                if (!performingFollowingRight) { //init
+                    currentGestureRight.setAutoAdjustRanges(false);
+                    currentGestureRight.setNumberDimensions(3);
+                    currentGestureRight.setMin(-1500.0f, -1500.0f, 0.0f);
+                    currentGestureRight.setMax(1500.0f, 1500.0f, 4000.0f);
+                }
+                performingLearningRight = false;
+                performingFollowingRight = true;
+            }
+        } else { //hand "not moving"
+            if (performingLearningRight) {
+                gvfRight.addGestureTemplate(currentGestureRight);
+                currentGestureRight.clear();
+            } else if (performingFollowingRight){
+                currentGestureRight.clear();
+                gvfRight.spreadParticles();
+            }
             performingFollowingRight = false;
-        } else if (gvfRight.getState() == ofxGVF::STATE_FOLLOWING){
-            if (!performingFollowingRight) { //init
-                currentGestureRight.setAutoAdjustRanges(false);
-                currentGestureRight.setNumberDimensions(3);
-                currentGestureRight.setMin(-1500.0f, -1500.0f, 0.0f);
-                currentGestureRight.setMax(1500.0f, 1500.0f, 4000.0f);
-            }
             performingLearningRight = false;
-            performingFollowingRight = true;
         }
-    } else { //hand "not moving"
-        if (performingLearningRight) {
-            gvfRight.addGestureTemplate(currentGestureRight);
-            currentGestureRight.clear();
-        } else if (performingFollowingRight){
-            currentGestureRight.clear();
-            gvfRight.spreadParticles();
-        }
-        performingFollowingRight = false;
-        performingLearningRight = false;
-    }
-    
-    switch(gvfRight.getState()){
-        case ofxGVF::STATE_LEARNING:
-        {
-            if (performingLearningRight){
-                //currentGestureRight.addObservationRaw(featExtractor.getRelativePositionToTorso(JOINT_RIGHT_HAND));
-                ofPoint observation = featExtractor.getPositionFiltered(JOINT_RIGHT_HAND);
-                observation.y = -observation.y;
-                currentGestureRight.addObservationRaw(featExtractor.getPositionFiltered(JOINT_RIGHT_HAND));
+        
+        switch(gvfRight.getState()){
+            case ofxGVF::STATE_LEARNING:
+            {
+                if (performingLearningRight){
+                    //currentGestureRight.addObservationRaw(featExtractor.getRelativePositionToTorso(JOINT_RIGHT_HAND));
+                    ofPoint observation = featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_RIGHT_HAND);
+                    observation.y = -observation.y;
+                    currentGestureRight.addObservationRaw(featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_RIGHT_HAND));
+                }
+                break;
             }
-            break;
-        }
-        case ofxGVF::STATE_FOLLOWING:
-        {
-            if (performingFollowingRight){
-                ofPoint observation = featExtractor.getPositionFiltered(JOINT_RIGHT_HAND);
-                observation.y = -observation.y;
-                currentGestureRight.addObservationRaw(featExtractor.getPositionFiltered(JOINT_RIGHT_HAND));
-                gvfRight.infer(currentGestureRight.getLastRawObservation());
+            case ofxGVF::STATE_FOLLOWING:
+            {
+                if (performingFollowingRight){
+                    ofPoint observation = featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_RIGHT_HAND);
+                    observation.y = -observation.y;
+                    currentGestureRight.addObservationRaw(featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_RIGHT_HAND));
+                    gvfRight.infer(currentGestureRight.getLastRawObservation());
+                }
+                break;
             }
-            break;
+                
+            default:
+                // nothing
+                break;
         }
-            
-        default:
-            // nothing
-            break;
-    }
-    
-    
-    //Left hand
-    //Gesture being performed when hand moves at higher speed than velocityThreshold
-    if (featExtractor.getVelocityMean(JOINT_LEFT_HAND) > velocityThreshold) {
-        if (gvfLeft.getState() == ofxGVF::STATE_LEARNING){
-            if (!performingLearningLeft) { //init
-                currentGestureLeft.setAutoAdjustRanges(false);
-                currentGestureLeft.setNumberDimensions(3);
-                currentGestureLeft.setMin(-1500.0f, -1500.0f, 0.0f);
-                currentGestureLeft.setMax(1500.0f, 1500.0f, 4000.0f);
+        
+        
+        //Left hand
+        //Gesture being performed when hand moves at higher speed than velocityThreshold
+        if (featExtractor.getSkeleton(0)->getVelocityMean(JOINT_LEFT_HAND) > velocityThreshold) {
+            if (gvfLeft.getState() == ofxGVF::STATE_LEARNING){
+                if (!performingLearningLeft) { //init
+                    currentGestureLeft.setAutoAdjustRanges(false);
+                    currentGestureLeft.setNumberDimensions(3);
+                    currentGestureLeft.setMin(-1500.0f, -1500.0f, 0.0f);
+                    currentGestureLeft.setMax(1500.0f, 1500.0f, 4000.0f);
+                }
+                performingLearningLeft = true;
+                performingFollowingLeft = false;
+            } else if (gvfLeft.getState() == ofxGVF::STATE_FOLLOWING){
+                if (!performingFollowingLeft) { //init
+                    currentGestureLeft.setAutoAdjustRanges(false);
+                    currentGestureLeft.setNumberDimensions(3);
+                    currentGestureLeft.setMin(-1500.0f, -1500.0f, 0.0f);
+                    currentGestureLeft.setMax(1500.0f, 1500.0f, 4000.0f);
+                }
+                performingLearningLeft = false;
+                performingFollowingLeft = true;
             }
-            performingLearningLeft = true;
+        } else { //hand "not moving"
+            if (performingLearningLeft) {
+                gvfLeft.addGestureTemplate(currentGestureLeft);
+                currentGestureLeft.clear();
+            } else if (performingFollowingLeft){
+                currentGestureLeft.clear();
+                gvfLeft.spreadParticles();
+            }
             performingFollowingLeft = false;
-        } else if (gvfLeft.getState() == ofxGVF::STATE_FOLLOWING){
-            if (!performingFollowingLeft) { //init
-                currentGestureLeft.setAutoAdjustRanges(false);
-                currentGestureLeft.setNumberDimensions(3);
-                currentGestureLeft.setMin(-1500.0f, -1500.0f, 0.0f);
-                currentGestureLeft.setMax(1500.0f, 1500.0f, 4000.0f);
-            }
             performingLearningLeft = false;
-            performingFollowingLeft = true;
         }
-    } else { //hand "not moving"
-        if (performingLearningLeft) {
-            gvfLeft.addGestureTemplate(currentGestureLeft);
-            currentGestureLeft.clear();
-        } else if (performingFollowingLeft){
-            currentGestureLeft.clear();
-            gvfLeft.spreadParticles();
-        }
-        performingFollowingLeft = false;
-        performingLearningLeft = false;
-    }
-    
-    switch(gvfLeft.getState()){
-        case ofxGVF::STATE_LEARNING:
-        {
-            if (performingLearningLeft){
-                //currentGestureRight.addObservationRaw(featExtractor.getRelativePositionToTorso(JOINT_RIGHT_HAND));
-                ofPoint observation = featExtractor.getPositionFiltered(JOINT_LEFT_HAND);
-                observation.y = -observation.y;
-                currentGestureLeft.addObservationRaw(featExtractor.getPositionFiltered(JOINT_LEFT_HAND));
+        
+        switch(gvfLeft.getState()){
+            case ofxGVF::STATE_LEARNING:
+            {
+                if (performingLearningLeft){
+                    //currentGestureRight.addObservationRaw(featExtractor.getRelativePositionToTorso(JOINT_RIGHT_HAND));
+                    ofPoint observation = featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_LEFT_HAND);
+                    observation.y = -observation.y;
+                    currentGestureLeft.addObservationRaw(featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_LEFT_HAND));
+                }
+                break;
             }
-            break;
-        }
-        case ofxGVF::STATE_FOLLOWING:
-        {
-            if (performingFollowingLeft){
-                ofPoint observation = featExtractor.getPositionFiltered(JOINT_LEFT_HAND);
-                observation.y = -observation.y;
-                currentGestureLeft.addObservationRaw(featExtractor.getPositionFiltered(JOINT_LEFT_HAND));
-                gvfLeft.infer(currentGestureLeft.getLastRawObservation());
+            case ofxGVF::STATE_FOLLOWING:
+            {
+                if (performingFollowingLeft){
+                    ofPoint observation = featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_LEFT_HAND);
+                    observation.y = -observation.y;
+                    currentGestureLeft.addObservationRaw(featExtractor.getSkeleton(0)->getPositionFiltered(JOINT_LEFT_HAND));
+                    gvfLeft.infer(currentGestureLeft.getLastRawObservation());
+                }
+                break;
             }
-            break;
+                
+            default:
+                // nothing
+                break;
         }
-            
-        default:
-            // nothing
-            break;
     }
     
 }
@@ -197,7 +209,7 @@ void ofApp::draw(){
         //gestureTemplate.draw(i * 80.0f, ofGetHeight() - 80.0f, 80.0f, 80.0f);
         gestureTemplate.draw(ofGetWidth() - 220, 20 + i*100, 100.0f, 100.0f);
     }
-
+    
     
     //RH current gesture
     ofMesh gestureRightMesh;
@@ -449,7 +461,7 @@ void ofApp::gotMessage(ofMessage msg){
 }
 
 //--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
+void ofApp::dragEvent(ofDragInfo dragInfo){
     
 }
 

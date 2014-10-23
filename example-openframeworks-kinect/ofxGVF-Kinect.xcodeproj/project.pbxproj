@@ -49,6 +49,7 @@
 		EBD5BB5F19793BB1009B2985 /* tinyxmlerror.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EBD5BB5919793BB1009B2985 /* tinyxmlerror.cpp */; };
 		EBD5BB6019793BB1009B2985 /* tinyxmlparser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EBD5BB5A19793BB1009B2985 /* tinyxmlparser.cpp */; };
 		EBD5BB6119793BB1009B2985 /* ofxXmlSettings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EBD5BB5C19793BB1009B2985 /* ofxXmlSettings.cpp */; };
+		EF4A8A6C19F9550600BEF7A3 /* ofxKinectSkeleton.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF4A8A6A19F9550600BEF7A3 /* ofxKinectSkeleton.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -267,6 +268,8 @@
 		EBD5BB5A19793BB1009B2985 /* tinyxmlparser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = tinyxmlparser.cpp; sourceTree = "<group>"; };
 		EBD5BB5C19793BB1009B2985 /* ofxXmlSettings.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxXmlSettings.cpp; sourceTree = "<group>"; };
 		EBD5BB5D19793BB1009B2985 /* ofxXmlSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxXmlSettings.h; sourceTree = "<group>"; };
+		EF4A8A6A19F9550600BEF7A3 /* ofxKinectSkeleton.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxKinectSkeleton.cpp; sourceTree = "<group>"; };
+		EF4A8A6B19F9550600BEF7A3 /* ofxKinectSkeleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxKinectSkeleton.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -664,10 +667,12 @@
 		EB08F5BD1976AF1C003FB9B3 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				EB08F5BE1976AF1C003FB9B3 /* ofxKinectFeatures.cpp */,
 				EB08F5BF1976AF1C003FB9B3 /* ofxKinectFeatures.h */,
-				EB08F5C01976AF1C003FB9B3 /* ofxMocapElement.cpp */,
+				EB08F5BE1976AF1C003FB9B3 /* ofxKinectFeatures.cpp */,
+				EF4A8A6B19F9550600BEF7A3 /* ofxKinectSkeleton.h */,
+				EF4A8A6A19F9550600BEF7A3 /* ofxKinectSkeleton.cpp */,
 				EB08F5C11976AF1C003FB9B3 /* ofxMocapElement.h */,
+				EB08F5C01976AF1C003FB9B3 /* ofxMocapElement.cpp */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -815,6 +820,7 @@
 				E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */,
 				E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */,
 				EBD5BB5F19793BB1009B2985 /* tinyxmlerror.cpp in Sources */,
+				EF4A8A6C19F9550600BEF7A3 /* ofxKinectSkeleton.cpp in Sources */,
 				EB310CB919B86FF200AF698B /* ofxGVF.cpp in Sources */,
 				EB08F59319769949003FB9B3 /* ofxOpenNITypes.cpp in Sources */,
 				EB08F5C21976AF1C003FB9B3 /* ofxKinectFeatures.cpp in Sources */,
@@ -984,8 +990,6 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_50)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_52)",
-					/Users/asarasua/Documents/of/of_v0.8.3_osx_release/addons/ofxOpenNI/mac/copy_to_data_openni_path/lib,
-					/Users/asarasua/Documents/of/of_v0.8.3_osx_release/addons/ofxOpenNI/win/copy_to_data_openni_path/lib,
 					"$(BUILT_PRODUCTS_DIR)/data/openni/lib",
 				);
 				PRODUCT_NAME = "ofxGVF-KinectDebug";
@@ -1073,8 +1077,6 @@
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_49)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_50)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_FOR_TARGET_51)",
-					/Users/asarasua/Documents/of/of_v0.8.3_osx_release/addons/ofxOpenNI/mac/copy_to_data_openni_path/lib,
-					/Users/asarasua/Documents/of/of_v0.8.3_osx_release/addons/ofxOpenNI/win/copy_to_data_openni_path/lib,
 					"$(BUILT_PRODUCTS_DIR)/data/openni/lib",
 				);
 				PRODUCT_NAME = "ofxGVF-Kinect";
