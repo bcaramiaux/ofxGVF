@@ -104,7 +104,7 @@ outcomes = gvf.getOutcomes();
 Credits
 ---
 
-The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova)
+The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova), in the Real-Time Musical Interaction team led by Frédéric Bevilacqua.
 
 It has been extended at Goldsmiths College, University of London, by Baptiste Caramiaux.
 
