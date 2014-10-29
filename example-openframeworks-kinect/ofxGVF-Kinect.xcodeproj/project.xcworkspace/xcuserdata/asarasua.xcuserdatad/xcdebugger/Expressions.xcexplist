@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "Bar::checkPatternMismatch():bar.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "ofxKinectFeatures::update():ofxKinectFeatures.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "getDistanceToTorso(JOINT_RIGHT_HAND)">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::draw():ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "kinect.getWidth()">
+            </PersistentString>
+            <PersistentString
+               value = "currentGestureRight.getInitialObservationRaw()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "BeatTracker::confirmBeatCandidates():beatTracker.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "bar_.getSignature().getLength() * rBeatCandidate_.getDetectedBarTime()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "double std::accumulate&lt;__gnu_cxx::__normal_iterator&lt;float*, std::vector&lt;float, std::allocator&lt;float&gt; &gt; &gt;, double&gt;(__gnu_cxx::__normal_iterator&lt;float*, std::vector&lt;float, std::allocator&lt;float&gt; &gt; &gt;, __gnu_cxx::__normal_iterator&lt;float*, std::vector&lt;float, std::allocator&lt;float&gt; &gt; &gt;, double):stl_numeric.h">
+      </ContextState>
+      <ContextState
+         contextName = "ofxKinectFeatures::getAccelerationTrajectoyMean(Joint, int):ofxKinectFeatures.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "getElement(j)-&gt;getAccelerationTrajectory().begin()">
+            </PersistentString>
+            <PersistentString
+               value = "getElement(j)-&gt;getAccelerationTrajectory()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::setup():ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "kinect.getWidth()">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>
