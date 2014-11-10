@@ -393,7 +393,7 @@
 						"dependency_cache" : [  ]
 					}
 ,
-					"patching_rect" : [ 229.0, 166.5, 248.0, 20.0 ],
+					"patching_rect" : [ 259.0, 166.5, 248.0, 20.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontname" : "Arial",
 						"fontname" : "Arial",
@@ -1165,7 +1165,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 347.0, 138.5, 70.0, 18.0 ],
+					"patching_rect" : [ 377.0, 138.5, 70.0, 18.0 ],
 					"text" : "loadmess 0.2"
 				}
 
@@ -1178,7 +1178,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 346.0, 138.5, 128.0, 18.0 ],
+					"patching_rect" : [ 376.0, 138.5, 128.0, 18.0 ],
 					"text" : "Tolerance to the difference"
 				}
 
@@ -1191,7 +1191,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 214.0, 101.5, 153.0, 26.0 ],
+					"patching_rect" : [ 244.0, 101.5, 153.0, 26.0 ],
 					"text" : "Config & Parameters"
 				}
 
@@ -1206,7 +1206,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 297.333374, 138.5, 49.0, 19.0 ]
+					"patching_rect" : [ 327.333374, 138.5, 49.0, 19.0 ]
 				}
 
 			}
@@ -1219,7 +1219,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 214.0, 138.5, 77.0, 18.0 ],
+					"patching_rect" : [ 244.0, 138.5, 77.0, 18.0 ],
 					"text" : "tolerance $1",
 					"textcolor" : [ 0.095879, 0.590976, 0.0, 1.0 ]
 				}
@@ -2399,7 +2399,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 71.75, 138.5, 92.0, 18.0 ],
+					"patching_rect" : [ 131.75, 138.5, 92.0, 18.0 ],
 					"text" : "Record templates"
 				}
 
@@ -2788,12 +2788,12 @@
 					"fontname" : "Arial",
 					"fontsize" : 10.0,
 					"id" : "obj-70",
-					"linecount" : 8,
+					"linecount" : 7,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 71.75, 309.5, 223.0, 98.0 ],
-					"text" : "– Press button \"learn\" and draw a shape in \n   the LCD object \n   (you are recording the 1st template)\n– Press \"learn\" again and draw a shape in \n   the LCD object \n   (you are recording the 2nd template)\n– ...\n– Press button \"follow\" to start the recognition"
+					"patching_rect" : [ 71.75, 309.5, 419.0, 87.0 ],
+					"text" : "– Give a number for the template to be recorded \n– Draw a shape in the LCD object \n   (you are recording the 1st template)\n– Give another number (should be previous + 1) and draw a shape in the LCD object \n   (you are recording the 2nd template)\n– ...\n– Press button \"follow\" to start the recognition"
 				}
 
 			}
@@ -3157,7 +3157,7 @@
 					"destination" : [ "obj-101", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 238.5, 429.25, 28.5, 429.25 ],
+					"midpoints" : [ 268.5, 273.25, 28.5, 273.25 ],
 					"source" : [ "obj-26", 0 ]
 				}
 
@@ -3281,7 +3281,7 @@
 					"destination" : [ "obj-101", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 223.5, 430.5, 28.5, 430.5 ],
+					"midpoints" : [ 253.5, 267.5, 28.5, 267.5 ],
 					"source" : [ "obj-6", 0 ]
 				}
 
