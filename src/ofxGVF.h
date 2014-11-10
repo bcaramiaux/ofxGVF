@@ -202,7 +202,6 @@ private:
 	float   nu;                 // degree of freedom for the t-distribution; if 0, use a gaussian
 	float   sp, sv, sr, ss;     // sigma values (actually, their square root)
 	int     resamplingThreshold;// resampling threshol
-    int     ns;                 // ???: what is ns?
 	int     pdim;               // number of state dimension
     int     scale_dim;          // scale state dimension
     int     rotation_dim;       // rotation state dimension

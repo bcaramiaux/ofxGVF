@@ -33,32 +33,39 @@ typedef struct _gvf
 } t_gvf;
 
 ///////////////////////// function prototypes
-//// standard set
+//// NEW / FREE
 void *gvf_new(t_symbol *s, long argc, t_atom *argv);
 void gvf_free(t_gvf *x);
-void gvf_assist(t_gvf *x, void *b, long m, long a, char *s);
 
+//// BASICS
 void gvf_learn           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_follow          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_clear           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_data            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_printme         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_gestureOn       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_gestureOff      (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_restart         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+
+//// CONFIG
+void gvf_translate       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_segmentation    (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+
+//// PARAMETERS
 void gvf_tolerance       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_resampling_threshold (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_means           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_ranges          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_numberOfParticles    (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_resamplingThreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_phaseAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_speedAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_scaleAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_rotationAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+
+//// I/O
 void gvf_savetemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_loadtemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_translate       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_segmentation    (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+
+//// DEPRECATED
+void gvf_gestureOn       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_gestureOff      (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 
 //////////////////////// global class pointer variable
@@ -78,30 +85,40 @@ int C74_EXPORT main(void)
 	c = class_new("gvf", (method)gvf_new, (method)gvf_free, (long)sizeof(t_gvf), 
 				  0L /* leave NULL!! */, A_GIMME, 0);
 	
-	/* you CAN'T call this from the patcher */
-    
+    //  MESSAGES
+
+    // basics
     class_addmethod(c, (method)gvf_learn, "learn", A_GIMME, 0);
     class_addmethod(c, (method)gvf_follow, "follow", A_GIMME, 0);
     class_addmethod(c, (method)gvf_clear, "clear", A_GIMME, 0);
     class_addmethod(c, (method)gvf_data, "data", A_GIMME, 0);
     class_addmethod(c, (method)gvf_printme, "printme", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_gestureOn, "gestureOn", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_gestureOff, "gestureOff", A_GIMME, 0);
     class_addmethod(c, (method)gvf_restart, "restart", A_GIMME, 0);
     
-    class_addmethod(c, (method)gvf_tolerance, "tolerance", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_resampling_threshold, "resampling_threshold", A_GIMME, 0);
+    // config
+    class_addmethod(c, (method)gvf_translate, "translate", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_segmentation, "segmentation", A_GIMME, 0);
     
+    // parameters
+    class_addmethod(c, (method)gvf_tolerance, "tolerance", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_resamplingThreshold, "resamplingThreshold", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_numberOfParticles, "numberOfParticles", A_GIMME,0);
     class_addmethod(c, (method)gvf_adaptation_speed, "adaptation_speed", A_GIMME,0);
     class_addmethod(c, (method)gvf_phaseAdaptation, "phaseAdaptation", A_GIMME,0);
     class_addmethod(c, (method)gvf_speedAdaptation, "speedAdaptation", A_GIMME,0);
     class_addmethod(c, (method)gvf_scaleAdaptation, "scaleAdaptation", A_GIMME,0);
     class_addmethod(c, (method)gvf_rotationAdaptation, "rotationAdaptation", A_GIMME,0);
     
+    // I/O
     class_addmethod(c, (method)gvf_savetemplates, "savetemplates", A_GIMME,0);
     class_addmethod(c, (method)gvf_loadtemplates, "loadtemplates", A_GIMME,0);
-    class_addmethod(c, (method)gvf_translate, "translate", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_segmentation, "segmentation", A_GIMME, 0);
+    
+    
+    // deprecated
+    class_addmethod(c, (method)gvf_gestureOn, "gestureOn", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_gestureOff, "gestureOff", A_GIMME, 0);
+    
+
 	
 	class_register(CLASS_BOX, c); /* CLASS_NOBOX */
 	gvf_class = c;
@@ -111,19 +128,6 @@ int C74_EXPORT main(void)
     
 	return 0;
 }
-
-
-
-void gvf_assist(t_gvf *x, void *b, long m, long a, char *s)
-{
-	if (m == ASSIST_INLET) { // inlet
-		sprintf(s, "I am inlet %ld", a);
-	} 
-	else {	// outlet
-		sprintf(s, "I am outlet %ld", a); 			
-	}
-}
-
 
 
 ///////////////////////////////////////////////////////////
@@ -181,6 +185,10 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
+    
+    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
+        x->bubi->addGestureTemplate(*(x->currentGesture));
+    
     x->bubi->setState(ofxGVF::STATE_LEARNING);
     x->currentGesture->clear();
     post("Learn one gesture...");
@@ -192,6 +200,9 @@ void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
+    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
+        x->bubi->addGestureTemplate(*(x->currentGesture));
+    
     x->bubi->setState(ofxGVF::STATE_FOLLOWING);
     post("Follow gesture...");
 }
@@ -199,18 +210,13 @@ void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 
 void gvf_gestureOn(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-    // nothing
+     error("gestureOn message deprecated: do nothing");
 }
 
 
 void gvf_gestureOff(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-    // add the current gesture to the template if in learning mode and
-    // the current gesture not empty!
-    
-    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
-        x->bubi->addGestureTemplate(*(x->currentGesture));
-    
+     error("gestureOff message deprecated: do nothing");
 }
 
 ///////////////////////////////////////////////////////////
@@ -395,7 +401,7 @@ void gvf_tolerance(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== resampling_threshold
 ///////////////////////////////////////////////////////////
-void gvf_resampling_threshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_resamplingThreshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
     int rtnew = atom_getlong(&argv[0]);
@@ -412,6 +418,26 @@ void gvf_resampling_threshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 
+    
+}
+
+///////////////////////////////////////////////////////////
+//====================== numberOfParticles
+///////////////////////////////////////////////////////////
+void gvf_numberOfParticles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    
+    int nsNew = atom_getlong(&argv[0]);
+    
+    // Get the current parameters
+    x->parameters = x->bubi->getParameters();
+    
+    // Change Resampling threshold
+    x->parameters.numberParticles  = nsNew;
+    
+    // Set the new parameters
+    x->bubi->setParameters(x->parameters);
+    
     
 }
 
@@ -440,6 +466,7 @@ void gvf_spreading_ranges(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv
 void gvf_adaptation_speed(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
+    error("adaptation_speed message deprecated: do nothing");
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
     
@@ -544,11 +571,12 @@ void gvf_segmentation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-    /*
-     char* mpath = atom_getsymbol(argv);
+/*
+     char* mpath = atom_getsym(argv);
      string filename(mpath);
      x->bubi->saveTemplates(filename);
-     */
+ */
+    
 }
 
 

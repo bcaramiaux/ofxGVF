@@ -58,7 +58,7 @@ vector<vector<float> > return_RotationMatrix_3d(float phi, float theta, float ps
 
 //--------------------------------------------------------------
 ofxGVF::ofxGVF(){
-    // nothing?
+    setup();
 }
 
 //--------------------------------------------------------------
@@ -119,8 +119,6 @@ void ofxGVF::setup(ofxGVFConfig _config){
     
     has_learned = false;
     
-    ns = parameters.numberParticles;
-    
     
 #if !BOOSTLIB
     normdist = new std::tr1::normal_distribution<float>();
@@ -131,15 +129,15 @@ void ofxGVF::setup(ofxGVFConfig _config){
     // absolute weights
     abs_weights = vector<float>();
     
-    // Offset for segmentation
-    offS=vector<vector<float> >(ns);
-    for (int k = 0; k < ns; k++)
-    {
-        offS[k] = vector<float>(config.inputDimensions);
-        
-        for (int j = 0; j < config.inputDimensions; j++)
-            offS[k][j] = 0.0;
-    }
+//    // Offset for segmentation
+//    offS=vector<vector<float> >(ns);
+//    for (int k = 0; k < ns; k++)
+//    {
+//        offS[k] = vector<float>(config.inputDimensions);
+//        
+//        for (int j = 0; j < config.inputDimensions; j++)
+//            offS[k][j] = 0.0;
+//    }
     
 
 }
@@ -179,8 +177,6 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     initVariances(scale_dim, rotation_dim);
     
     has_learned = false;
-    
-    ns = parameters.numberParticles;
 
     
 #if !BOOSTLIB
@@ -191,16 +187,6 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     
     // absolute weights
     abs_weights = vector<float>();
-    
-    // Offset for segmentation
-    offS=vector<vector<float> >(ns);
-    for (int k = 0; k < ns; k++)
-    {
-        offS[k] = vector<float>(config.inputDimensions);
-        
-        for (int j = 0; j < config.inputDimensions; j++)
-            offS[k][j] = 0.0;
-    }
     
     parametersSetAsDefault = false;
     
@@ -245,6 +231,15 @@ void ofxGVF::learn(){
         initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
         initVec(g, parameters.numberParticles);                 // Vector of gesture class
         initVec(w, parameters.numberParticles);                 // Weights
+        
+        // Offset for segmentation
+        offS=vector<vector<float> >(parameters.numberParticles);
+        for (int k = 0; k < parameters.numberParticles; k++)
+        {
+            offS[k] = vector<float>(config.inputDimensions);
+            for (int j = 0; j < config.inputDimensions; j++)
+                offS[k][j] = 0.0;
+        }
         
         has_learned = true; // ???: Should there be a verification that learning was successful?
     }
@@ -303,6 +298,7 @@ void ofxGVF::initVariances(int scaleDim, int rotationDim) {
     parameters.speedInitialSpreading = 1.0;
     parameters.scaleInitialSpreading = vector<float> (scaleDim);
     parameters.rotationInitialSpreading = vector<float> (rotationDim);
+    
     // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
     for (int k = 0; k < scaleDim; k++)
         parameters.scaleInitialSpreading[k]=1.0f;
@@ -310,6 +306,8 @@ void ofxGVF::initVariances(int scaleDim, int rotationDim) {
         parameters.rotationInitialSpreading[k]=0.0f;
     
 }
+
+
 
 // Destructor of the class
 ofxGVF::~ofxGVF(){
@@ -470,12 +468,11 @@ string ofxGVF::getStateAsString(){
 //--------------------------------------------------------------
 void ofxGVF::spreadParticles(){
     
-    // use default means and ranges - taken from gvfhandler
     if (has_learned)
     {
         spreadParticles(parameters);
-        //obsOffset.clear();
     }
+    
 }
 
 //--------------------------------------------------------------
@@ -507,7 +504,7 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
     
     // Spread particles using a uniform distribution
 	//for(int i = 0; i < pdim; i++)
-    for(int n = 0; n < ns; n++){
+    for(int n = 0; n < parameters.numberParticles; n++){
         X[n][0] = (rnduni() - 0.5) * spreadRangePhase + _parameters.phaseInitialSpreading;
         X[n][1] = (rnduni() - 0.5) * spreadRange + _parameters.speedInitialSpreading;
         for (int nn=0; nn<scalingCoefficients; nn++)
@@ -526,7 +523,7 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
     //post("ngestures=%i",ngestures);
     
     // Spread uniformly the gesture class among the particles
-	for(int n = 0; n < ns; n++){
+	for(int n = 0; n < parameters.numberParticles; n++){
 		g[n] = n % ngestures;
         
         // offsets are set to 0
@@ -543,10 +540,6 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
 void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     
     
-	// we copy the initial means and ranges to be able to restart the algorithm
-    meansCopy  = means;
-    rangesCopy = ranges;
-    
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
     // deprecated class should use uniform_real_distribution
 #if BOOSTLIB
@@ -561,16 +554,18 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
 	
     // Spread particles using a uniform distribution
 	for(int i = 0; i < pdim; i++)
-		for(int n = 0; n < ns; n++)
+		for(int n = 0; n < parameters.numberParticles; n++)
 			X[n][i] = (rnduni() - 0.5) * ranges[i] + means[i];
     
     // Weights are also uniformly spread
     initweights();
-    //    logW.setConstant(0.0);
+
 	
     // Spread uniformly the gesture class among the particles
-	for(int n = 0; n < ns; n++){
+	for(int n = 0; n < parameters.numberParticles; n++)
+    {
 		g[n] = n % getNumberOfGestureTemplates();
+    
         // offsets are set to 0
         for (int k=0; k < config.inputDimensions; k++)
             offS[n][k]=0.0;
@@ -578,14 +573,16 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     
 }
 
+
 //--------------------------------------------------------------
 // Initialialize the weights of the particles. The initial values of the weights is a
 // unifrom weight over the particles
 void ofxGVF::initweights(){
-    for (int k = 0; k < ns; k++){
-        w[k] = 1.0 / (float) ns;
+    for (int k = 0; k < parameters.numberParticles; k++){
+        w[k] = 1.0 / (float) parameters.numberParticles;
     }
 }
+
 
 //--------------------------------------------------------------
 float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float> w){
@@ -637,7 +634,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
     
     
     // MAIN LOOP: same process for EACH particle (row n in X)
-    for(int n = ns - 1; n >= 0; --n)
+    for(int n = parameters.numberParticles - 1; n >= 0; --n)
     {
         
         // Move the particle
@@ -781,7 +778,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
     //	w /= w.sum();
     //	float neff = 1./w.dot(w);
     float dotProdw = 0.0;
-    for (int k = 0; k < ns; k++){
+    for (int k = 0; k < parameters.numberParticles; k++){
         w[k] /= sumw;
         dotProdw+=w[k]*w[k];
     }
@@ -811,6 +808,8 @@ void ofxGVF::particleFilter(vector<float> & obs){
 void ofxGVF::resampleAccordingToWeights(vector<float> obs)
 {
     
+    int numOfPart = parameters.numberParticles;
+    
 #if BOOSTLIB
     boost::uniform_real<float> ur(0,1);
     boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
@@ -823,26 +822,26 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
     setMat(oldX, X);
     vector<int> oldG;
     setVec(oldG, g);
-    vector<float> c(ns);
+    vector<float> c(numOfPart);
     
     c[0] = 0;
-    for(int i = 1; i < ns; i++)
+    for(int i = 1; i < numOfPart; i++)
         c[i] = c[i-1] + w[i];
     int i = 0;
-    float u0 = rnduni()/ns;
+    float u0 = rnduni()/numOfPart;
     
     
     // defining here the number of particles allocated to reinitialisation
     // used for segmentation
     int free_pool = 0;
     if (config.segmentation)
-        free_pool = round(3*ns/100);
+        free_pool = round(3*numOfPart/100);
     
-    for (int j = 0; j < ns; j++)
+    for (int j = 0; j < numOfPart; j++)
     {
-        float uj = u0 + (j + 0.) / ns;
+        float uj = u0 + (j + 0.) / numOfPart;
         
-        while (uj > c[i] && i < ns - 1){
+        while (uj > c[i] && i < numOfPart - 1){
             i++;
         }
         
@@ -850,17 +849,17 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
             X[j][kk] = oldX[i][kk];
         g[j] = oldG[i];
         
-        w[j] = 1.0/(float)ns;
+        w[j] = 1.0/(float)numOfPart;
     }
     
     for (int j = 0; j < free_pool; j++){
         
-        int index = round(rnduni()*parameters.numberParticles);
+        int index = round(rnduni()*numOfPart);
         
-        if (index == parameters.numberParticles)
+        if (index == numOfPart)
             index = 0;
         
-        w[index] = 1.0/(float)(ns*ns);
+        w[index] = 1.0/(float)(numOfPart * numOfPart);
         
         
         float spreadRange = 0.02;
@@ -887,9 +886,9 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
     if (config.segmentation)
     {
         float sumw = 0.0;
-        for (int j = 0; j < ns; j++)
+        for (int j = 0; j < numOfPart; j++)
             sumw += w[j];
-        for (int j = 0; j < ns; j++)
+        for (int j = 0; j < numOfPart; j++)
             w[j] /= sumw;
     }
     
@@ -907,25 +906,24 @@ void ofxGVF::infer(vector<float> vect){
     
 }
 
+
 void ofxGVF::updateEstimatedStatus(){
     
-    // get the number of gestures in the vocabulary
-    //	unsigned int ngestures = numTemplates+1;
     
-    //    vector< vector<float> > es;
+    int numOfPart = parameters.numberParticles;
+    
+    
     setMat(status, 0.0f, getNumberOfGestureTemplates(), pdim + 1);   // rows are gestures, cols are features + probabilities
-	//printMatf(es);
+	
     
 	// compute the estimated features by computing the expected values
     // sum ( feature values * weights)
-	for(int n = 0; n < ns; n++){
+
+	for(int n = 0; n < numOfPart; n++){
         int gi = g[n];
-        for(int m = 0; m < pdim; m++){
-            //            cout << "S[" << gi << "][" << m << "] " << S[gi][m] << endl;
-            //            cout << "X[" << n << "][" << m << "] " << X[n][m] << endl;
-            //            cout << "ues: w[" << n << "] " << w[n] << endl;
+        for(int m = 0; m < pdim; m++)
             status[gi][m] += X[n][m] * w[n];
-        }
+
 		status[gi][pdim] += w[n]; // probability
     }
 	
@@ -1052,7 +1050,7 @@ vector<float> ofxGVF::getGestureProbabilities()
     
 	vector<float> gp(getNumberOfGestureTemplates());
     setVec(gp, 0.0f);
-	for(int n = 0; n < ns; n++)
+	for(int n = 0; n < parameters.numberParticles; n++)
 		gp[g[n]] += w[n];
     
 	return gp;
@@ -1086,7 +1084,37 @@ ofxGVFConfig ofxGVF::getConfig(){
 
 //--------------------------------------------------------------
 void ofxGVF::setParameters(ofxGVFParameters _parameters){
-    parameters = _parameters;
+    
+    if (_parameters.numberParticles != parameters.numberParticles)
+    {
+        parameters = _parameters;
+        
+        if (parameters.numberParticles < 4)     // minimum number of particles allowed
+            parameters.numberParticles = 4;
+        
+        initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
+        initVec(g, parameters.numberParticles);                 // Vector of gesture class
+        initVec(w, parameters.numberParticles);                 // Weights
+        
+        // Offset for segmentation
+        offS=vector<vector<float> >(parameters.numberParticles);
+        for (int k = 0; k < parameters.numberParticles; k++)
+        {
+            offS[k] = vector<float>(config.inputDimensions);
+            for (int j = 0; j < config.inputDimensions; j++)
+                offS[k][j] = 0.0;
+        }
+        
+        if (parameters.numberParticles <= parameters.resamplingThreshold) {
+            parameters.resamplingThreshold = parameters.numberParticles / 4;
+        }
+        
+        spreadParticles();
+    }
+    else {
+        parameters = _parameters;
+    }
+
 }
 
 ofxGVFParameters ofxGVF::getParameters(){
@@ -1106,13 +1134,13 @@ void ofxGVF::setNumberOfParticles(int numberOfParticles){
 
 //--------------------------------------------------------------
 int ofxGVF::getNumberOfParticles(){
-    return ns; // Return the number of particles
+    return parameters.numberParticles; // Return the number of particles
 }
 
 //--------------------------------------------------------------
 // Update the resampling threshold used to avoid degeneracy problem
 void ofxGVF::setResamplingThreshold(int _resamplingThreshold){
-    if (_resamplingThreshold >= ns) _resamplingThreshold = floor(ns/2.0f); // TODO: we should provide feedback to the GUI!!! maybe a get max resampleThresh func??
+    if (_resamplingThreshold >= parameters.numberParticles) _resamplingThreshold = floor(parameters.numberParticles/2.0f); // TODO: we should provide feedback to the GUI!!! maybe a get max resampleThresh func??
     parameters.resamplingThreshold = _resamplingThreshold;
 }
 
@@ -1142,11 +1170,12 @@ float ofxGVF::getTolerance(){
 //--------------------------------------------------------------
 void ofxGVF::setDistribution(float _distribution){
     nu = _distribution;
+    parameters.distribution = _distribution;
 }
 
 //--------------------------------------------------------------
 float ofxGVF::getDistribution(){
-    return nu;
+    return parameters.distribution;
 }
 
 ////--------------------------------------------------------------
