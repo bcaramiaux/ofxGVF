@@ -1,0 +1,4 @@
+LIBRARY simplemax.mxe
+
+EXPORTS
+	main

@@ -220,11 +220,11 @@ private:
 	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
     
     // gesture 'history'
-//	map<int, vector< vector<float> > > R_single;    // gesture references (1 example)
-//    map<int, vector<float> > R_initial;             // gesture initial data
-//    vector<int> gestureLengths;                     // length of each reference gesture
-//    vector< vector<float> > EmptyTemplate;      // dummy empty template for passing as ref
-//    int     numTemplates;       // number of learned gestures (starts at 0)
+    //	map<int, vector< vector<float> > > R_single;    // gesture references (1 example)
+    //    map<int, vector<float> > R_initial;             // gesture initial data
+    //    vector<int> gestureLengths;                     // length of each reference gesture
+    //    vector< vector<float> > EmptyTemplate;      // dummy empty template for passing as ref
+    //    int     numTemplates;       // number of learned gestures (starts at 0)
     
     vector<float> maxRange;
     vector<float> minRange;

@@ -1,39 +1,45 @@
-GVF - Max/MSP object
+ofxGVF for MaxMSP
 ===
 
-Sources to compile a MaxMSP object using the GVF library. 
-
-The object allows for realtime gesture recognition and variations estimation (such as scale, speed, ...)
+Here is the Xcode project to create the GVF Max/MSP object. 
 
 
-Compiling
-===
+Installation
+---
 
-We provide a Xcode project for compiling the object. The Xcode project is located in 
+Create a folder GVF in the your personal projects in the Max SDK, for instance for Max 6.1.4 SDK it will be in:
 
-projects/gvf
+MaxSDK-6.1.4/examples/myobjects/GVF/
 
-It is called gvf.xcodeproj. The object will be generated in the build/ folder.
+Bote that if the folder "myobjects" does not exsits, create one. 
+
+Then copy the content of this repo in the folder GVF.
 
 
-Installing
-===
+Compilation
+---
 
-Once built, run Max MSP, go to the Menu
+Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you set
+ 
+```
+#define OPENFRAMEWORKS 0
+```
 
-Options -> File Preferences
+Once compiled, the Max/MSP object will be in the "maxexternal" folder. Open the maxhelp patch to see the different messages you can use. 
 
-Add the path to the gvf.mxo object.
 
-Open the help patch gvf.maxhelp in the build/ folder
+
 
 
 Credits
-===
+---
 
-The library itself has been designed and developped at Ircam Centre Pompidou Paris by Baptiste Caramiaux and Nicola Montecchio.It has been extended and realeased at Goldsmiths College, University of London. 
+The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova), in the Real-Time Musical Interaction team led by Frédéric Bevilacqua.
 
-The MaxMSP object uses Maxcpp library by Graham Wakefield. The library is under the permissive MIT License.
+It has been extended at Goldsmiths College, University of London, by Baptiste Caramiaux.
+
+The openFrameworks add-on has been greatly done by Matthew Gingold (https://github.com/gameoverhack) 
+
 
 
 License
@@ -80,7 +86,7 @@ If you modify a copy of the Library, and, in your modifications, a facility refe
 - b) under the GNU GPL, with none of the additional permissions of this License applicable to that copy.
 
 3. Object Code Incorporating Material from Library Header Files.
---------
+---
 
 The object code form of an Application may incorporate material from a header file that is part of the Library. You may convey such object code under terms of your choice, provided that, if the incorporated material is not limited to numerical parameters, data structure layouts and accessors, or small macros, inline functions and templates (ten or fewer lines in length), you do both of the following:
 
@@ -88,7 +94,7 @@ The object code form of an Application may incorporate material from a header fi
 - b) Accompany the object code with a copy of the GNU GPL and this license document.
 
 4. Combined Works.
---------
+---
 
 You may convey a Combined Work under terms of your choice that, taken together, effectively do not restrict modification of the portions of the Library contained in the Combined Work and reverse engineering for debugging such modifications, if you also do each of the following:
 
@@ -101,7 +107,7 @@ You may convey a Combined Work under terms of your choice that, taken together, 
 - e) Provide Installation Information, but only if you would otherwise be required to provide such information under section 6 of the GNU GPL, and only to the extent that such information is necessary to install and execute a modified version of the Combined Work produced by recombining or relinking the Application with a modified version of the Linked Version. (If you use option 4d0, the Installation Information must accompany the Minimal Corresponding Source and Corresponding Application Code. If you use option 4d1, you must provide the Installation Information in the manner specified by section 6 of the GNU GPL for conveying Corresponding Source.)
 
 5. Combined Libraries.
---------
+---
 
 You may place library facilities that are a work based on the Library side by side in a single library together with other library facilities that are not Applications and are not covered by this License, and convey such a combined library under terms of your choice, if you do both of the following:
 
@@ -109,7 +115,7 @@ You may place library facilities that are a work based on the Library side by si
 - b) Give prominent notice with the combined library that part of it is a work based on the Library, and explaining where to find the accompanying uncombined form of the same work.
 
 6. Revised Versions of the GNU Lesser General Public License.
---------
+---
 
 The Free Software Foundation may publish revised and/or new versions of the GNU Lesser General Public License from time to time. Such new versions will be similar in spirit to the present version, but may differ in detail to address new problems or concerns.
 
