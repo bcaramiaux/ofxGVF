@@ -218,12 +218,13 @@ void ofxGVF::learn(){
         // ---------------------------
         
         featVariances.clear();
-        
+        //post("%i",gestureTemplates[0].getTemplateRaw()[0].size() );
         config.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
         
         // Set Scale and Rotation dimensions, according to input dimensions
         
         setStateDimensions(config.inputDimensions);
+
         
         // Initialize Variances
         initVariances(scale_dim, rotation_dim);
@@ -263,15 +264,13 @@ void ofxGVF::setStateDimensions(int input_dim) {
         
         // state space dimension = 8
         // phase, speed, scale (1d), rotation (3d)
-        
         scale_dim = 3;
         rotation_dim = 3;
-        
     }
     else {
         
         scale_dim = 1;
-        rotation_dim = 0;
+        rotation_dim = 1;
         
     }
     
@@ -280,10 +279,11 @@ void ofxGVF::setStateDimensions(int input_dim) {
 }
 
 void ofxGVF::initVariances(int scaleDim, int rotationDim) {
-    
+
     assert(parameters.scaleVariance.size() == scale_dim);
     assert(parameters.rotationVariance.size() == rotation_dim);
     
+
     featVariances = vector<float> (pdim);
     
     featVariances[0] = sqrt(parameters.phaseVariance);
@@ -304,6 +304,7 @@ void ofxGVF::initVariances(int scaleDim, int rotationDim) {
         parameters.scaleInitialSpreading[k]=1.0f;
     for (int k = 0;k < rotationDim; k++)
         parameters.rotationInitialSpreading[k]=0.0f;
+
     
 }
 

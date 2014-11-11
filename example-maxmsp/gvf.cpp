@@ -27,10 +27,12 @@ typedef struct _gvf
     
     // outlets
     //t_outlet *Position,*Vitesse,*Scaling,*Rotation,*Likelihoods;
-    void *left_outlet;
-    void *right_outlet;
+    void *estimation_outlet;
+    void *likelihoods_outlet;
+    void *info_outlet;
     
 } t_gvf;
+
 
 ///////////////////////// function prototypes
 //// NEW / FREE
@@ -39,9 +41,11 @@ void gvf_free(t_gvf *x);
 
 //// BASICS
 void gvf_learn           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_start           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_stop            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_follow          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_clear           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_data            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_list            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_printme         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_restart         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
@@ -66,7 +70,7 @@ void gvf_loadtemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 void gvf_gestureOn       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_gestureOff      (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-
+void gvf_data            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //////////////////////// global class pointer variable
 void *gvf_class;
@@ -89,9 +93,11 @@ int C74_EXPORT main(void)
 
     // basics
     class_addmethod(c, (method)gvf_learn, "learn", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_start, "start", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_stop, "stop", A_GIMME, 0);
     class_addmethod(c, (method)gvf_follow, "follow", A_GIMME, 0);
     class_addmethod(c, (method)gvf_clear, "clear", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_data, "data", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_list, "list", A_GIMME, 0);
     class_addmethod(c, (method)gvf_printme, "printme", A_GIMME, 0);
     class_addmethod(c, (method)gvf_restart, "restart", A_GIMME, 0);
     
@@ -117,7 +123,7 @@ int C74_EXPORT main(void)
     // deprecated
     class_addmethod(c, (method)gvf_gestureOn, "gestureOn", A_GIMME, 0);
     class_addmethod(c, (method)gvf_gestureOff, "gestureOff", A_GIMME, 0);
-    
+    class_addmethod(c, (method)gvf_data, "data", A_GIMME, 0); // DEPRECATED
 
 	
 	class_register(CLASS_BOX, c); /* CLASS_NOBOX */
@@ -168,8 +174,9 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
         // CREATE THE GESTURE
         x->currentGesture = new ofxGVFGesture();
 
-        x->right_outlet    = outlet_new(x, NULL);
-        x->left_outlet     = outlet_new(x, NULL);
+        x->info_outlet           = outlet_new(x, NULL);
+        x->likelihoods_outlet    = outlet_new(x, NULL);
+        x->estimation_outlet     = outlet_new(x, NULL);
 
     }
 
@@ -179,19 +186,50 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
 
 
 
-
 ///////////////////////////////////////////////////////////
 //====================== LEARN
 ///////////////////////////////////////////////////////////
 void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    
-    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
-        x->bubi->addGestureTemplate(*(x->currentGesture));
-    
     x->bubi->setState(ofxGVF::STATE_LEARNING);
-    x->currentGesture->clear();
-    post("Learn one gesture...");
+    if (argc==0){
+    
+        // output the current ID of the gesture being learned with the prefix "learningGesture"
+        t_atom *outAtoms = new t_atom[1];
+        atom_setlong(&outAtoms[0],x->bubi->getNumberOfGestureTemplates()+1);
+        outlet_anything(x->info_outlet, gensym("learningGesture"), 1, outAtoms);
+        delete[] outAtoms;
+        
+    }
+    else if (argc==1) {
+        
+    }
+    else if (argc==2) {
+        
+    }
+    else {
+        error("wrong number of argument in learn message");
+    }
+}
+
+
+///////////////////////////////////////////////////////////
+//====================== START
+///////////////////////////////////////////////////////////
+void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    if (x->bubi->getState()==ofxGVF::STATE_LEARNING)
+        x->currentGesture->clear();
+}
+
+
+///////////////////////////////////////////////////////////
+//====================== STOP
+///////////////////////////////////////////////////////////
+void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
+            x->bubi->addGestureTemplate(*(x->currentGesture));
 }
 
 
@@ -200,9 +238,11 @@ void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
-        x->bubi->addGestureTemplate(*(x->currentGesture));
-    
+//    if (x->currentGesture->getNumberOfTemplates()!=0) {
+//    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
+//        x->bubi->addGestureTemplate(*(x->currentGesture));
+//    }
+    post("gvf_follow(): %i",x->currentGesture->getTemplate()[0].size());
     x->bubi->setState(ofxGVF::STATE_FOLLOWING);
     post("Follow gesture...");
 }
@@ -217,6 +257,96 @@ void gvf_gestureOn(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 void gvf_gestureOff(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
      error("gestureOff message deprecated: do nothing");
+}
+
+///////////////////////////////////////////////////////////
+//====================== DATA
+///////////////////////////////////////////////////////////
+void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    
+    if(argc == 0)
+    {
+        post("invalid format, points have at least 1 coordinate");
+        return;
+    }
+    if(x->bubi->getState() == ofxGVF::STATE_CLEAR)
+    {
+        post("I'm in a standby (must learn something beforehand)");
+        return;
+    }
+    
+    switch (x->bubi->getState()) {
+        case ofxGVF::STATE_LEARNING:
+        {
+            vector<float> observation_vector(argc);
+            
+            for (int k=0; k<argc; k++)
+                observation_vector[k] = atom_getfloat(&argv[k]);
+            
+            x->currentGesture->addObservation(observation_vector);
+
+            break;
+        }
+        case ofxGVF::STATE_FOLLOWING:
+        {
+            vector<float> observation_vector(argc);
+            for (int k=0; k<argc; k++)
+                observation_vector[k] = atom_getfloat(&argv[k]);
+            
+            x->currentGesture->addObservation(observation_vector);
+            
+            // inference on the last observation
+            x->bubi->infer(x->currentGesture->getLastObservation());
+            
+            
+            // output recognition
+            x->outcomes = x->bubi->getOutcomes();
+            int numberOfTemplates = x->outcomes.estimations.size();
+            
+            t_atom *outAtoms = new t_atom[numberOfTemplates];
+            
+            for(int j = 0; j < numberOfTemplates; j++)
+                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].phase);
+            outlet_anything(x->estimation_outlet, gensym("phase"), numberOfTemplates, outAtoms);
+            delete[] outAtoms;
+            
+            outAtoms = new t_atom[numberOfTemplates];
+            for(int j = 0; j < numberOfTemplates; j++)
+                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].speed);
+            outlet_anything(x->estimation_outlet, gensym("speed"), numberOfTemplates, outAtoms);
+            delete[] outAtoms;
+            
+            outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].scale.size()];
+            for(int j = 0; j < numberOfTemplates; j++)
+                for(int jj = 0; jj < x->outcomes.estimations[0].scale.size(); jj++)
+                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].scale[jj]);
+            outlet_anything(x->estimation_outlet, gensym("scale"), numberOfTemplates * x->outcomes.estimations[0].scale.size(), outAtoms);
+            delete[] outAtoms;
+            
+            outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].rotation.size()];
+            for(int j = 0; j < numberOfTemplates; j++)
+                for(int jj = 0; jj < x->outcomes.estimations[0].rotation.size(); jj++)
+                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].rotation[jj]);
+            outlet_anything(x->estimation_outlet, gensym("angle"), numberOfTemplates * x->outcomes.estimations[0].rotation.size(), outAtoms);
+            delete[] outAtoms;
+
+            
+            outAtoms = new t_atom[numberOfTemplates];
+            for(int j = 0; j < numberOfTemplates; j++)
+                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].probability);
+            outlet_anything(x->likelihoods_outlet, gensym("weights"), numberOfTemplates, outAtoms);
+            delete[] outAtoms;
+            
+            
+            break;
+        }
+            
+        default:
+            // nothing
+            break;
+    }
+    
 }
 
 ///////////////////////////////////////////////////////////
@@ -240,11 +370,11 @@ void gvf_data(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         case ofxGVF::STATE_LEARNING:
         {
             vector<float> observation_vector(argc);
+            
             for (int k=0; k<argc; k++)
                 observation_vector[k] = atom_getfloat(&argv[k]);
             
             x->currentGesture->addObservation(observation_vector);
-            //post("IN: %f %f", observation_vector[0], observation_vector[1]);
             
             break;
         }
@@ -268,34 +398,34 @@ void gvf_data(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
             
             for(int j = 0; j < numberOfTemplates; j++)
                 atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].phase);
-            outlet_anything(x->left_outlet, gensym("phase"), numberOfTemplates, outAtoms);
+            outlet_anything(x->estimation_outlet, gensym("phase"), numberOfTemplates, outAtoms);
             delete[] outAtoms;
             
             outAtoms = new t_atom[numberOfTemplates];
             for(int j = 0; j < numberOfTemplates; j++)
                 atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].speed);
-            outlet_anything(x->left_outlet, gensym("speed"), numberOfTemplates, outAtoms);
+            outlet_anything(x->estimation_outlet, gensym("speed"), numberOfTemplates, outAtoms);
             delete[] outAtoms;
             
             outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].scale.size()];
             for(int j = 0; j < numberOfTemplates; j++)
                 for(int jj = 0; jj < x->outcomes.estimations[0].scale.size(); jj++)
                     atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].scale[jj]);
-            outlet_anything(x->left_outlet, gensym("scale"), numberOfTemplates * x->outcomes.estimations[0].scale.size(), outAtoms);
+            outlet_anything(x->estimation_outlet, gensym("scale"), numberOfTemplates * x->outcomes.estimations[0].scale.size(), outAtoms);
             delete[] outAtoms;
             
             outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].rotation.size()];
             for(int j = 0; j < numberOfTemplates; j++)
                 for(int jj = 0; jj < x->outcomes.estimations[0].rotation.size(); jj++)
                     atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].rotation[jj]);
-            outlet_anything(x->left_outlet, gensym("angle"), numberOfTemplates * x->outcomes.estimations[0].rotation.size(), outAtoms);
+            outlet_anything(x->estimation_outlet, gensym("angle"), numberOfTemplates * x->outcomes.estimations[0].rotation.size(), outAtoms);
             delete[] outAtoms;
-
+            
             
             outAtoms = new t_atom[numberOfTemplates];
             for(int j = 0; j < numberOfTemplates; j++)
                 atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].probability);
-            outlet_anything(x->right_outlet, gensym("weights"), numberOfTemplates, outAtoms);
+            outlet_anything(x->likelihoods_outlet, gensym("weights"), numberOfTemplates, outAtoms);
             delete[] outAtoms;
             
             
@@ -317,7 +447,12 @@ void gvf_data(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 void gvf_clear(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
     x->bubi->clear();
-    post("Clear!");
+
+    // output 0 for the number of learned gesture
+    t_atom *outAtoms = new t_atom[1];
+    atom_setlong(&outAtoms[0],0);
+    outlet_anything(x->info_outlet, gensym("learningGesture"), 1, outAtoms);
+    delete[] outAtoms;
 }
 
 
@@ -357,7 +492,11 @@ void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         
         for(int j = 0; j < tplt.size(); j++)
         {
-            post("%02.4f  %02.4f", tplt[j][0], tplt[j][1]);
+            std::ostringstream ss;
+            for(int k = 0; k < tplt[0].size(); k++){
+                ss << tplt[j][k] << " ";
+            }
+            post("%s", ss.str().c_str());
         }
     }
 }

@@ -13,6 +13,7 @@
 #include <assert.h>
 
 
+
 /* Macros for min/max. */
 #ifndef MIN
 #define	MIN(a,b) (((a)<(b))?(a):(b))
@@ -37,16 +38,12 @@ public:
     };
     
     ofxGVFGesture(){
+        
         inputDimensions = 2; // default to 2D
         type = GEOMETRIC; // default to a geometric shape
-    
-//        bAutoAdjustNormalRange = true;
-//        bIsRangeMinSet = false;
-//        bIsRangeMaxSet = false;
 
         setAutoAdjustRanges(true);
 
-        
         //added
         templatesRaw    = vector<vector<vector<float > > >();
         templatesNormal = vector<vector<vector<float > > >();
@@ -217,7 +214,7 @@ public:
     void addObservationRaw(vector<float> observation, int templateIndex = 0){
         
         //post("%i %i",templateIndex,templateInitialRaw.size());
-        
+
         
         // check we have a valid templateIndex and correct number of input dimensions
         assert(templateIndex <= templatesRaw.size());
@@ -243,10 +240,13 @@ public:
         
         // store the raw observation
         templatesRaw[templateIndex].push_back(observation);
+//        templatesRaw[templateIndex][templatesRaw[templateIndex].size()-1].resize(observation.size());
+//        templatesRaw[templateIndex][templatesRaw[templateIndex].size()-1]=observation;
         
-        //post("SIZE RAW %i",templatesRaw[0].size());
+        //post("SIZE RAW %i | %i | %i | obs %i",templatesRaw[0].size(), templateIndex, templatesRaw[templateIndex][0].size(), observation.size());
         
         // if set let's auto size the range for normalising
+        //TODO!!!!!
         if(bAutoAdjustNormalRange) autoAdjustMinMax(observation);
         
         normalise();
