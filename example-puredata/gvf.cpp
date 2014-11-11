@@ -7,7 +7,7 @@
 //  Copyright (C) 2014 Baptiste Caramiaux, Goldsmiths College, University of London
 //
 //  The GVF library is under the GNU Lesser General Public License (LGPL v3)
-//  version: 05-2014
+//  version: 11-2014
 //
 ///////////////////////////////////////////////////////////////////////
 
