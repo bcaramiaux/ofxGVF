@@ -1,10 +1,18 @@
-/**
-	@file
-	gvf - a max object shell
-	jeremy bernstein - jeremy@bootsquad.com	
+///////////////////////////////////////////////////////////////////////
+//
+//  GVF - Gesture Variation Follower Max/MSP Object
+//
+//
+//  Copyright (C) 2014 Baptiste Caramiaux, Goldsmiths College, University of London
+//
+//  The GVF library is under the GNU Lesser General Public License (LGPL v3)
+//  version: 11-2014
+//
+///////////////////////////////////////////////////////////////////////
 
-	@ingroup	examples	
-*/
+
+
+
 
 #include "ext.h"							// standard Max include, always required
 #include "ext_obex.h"						// required for new style Max object
@@ -55,12 +63,12 @@ void gvf_segmentation    (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 
 //// PARAMETERS
 void gvf_tolerance       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_numberOfParticles    (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_resamplingThreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_phaseAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_speedAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_scaleAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_rotationAdaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_numberparticles    (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_resamplingthreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_phaseadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_speedadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_scaleadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_rotationadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 
 //// I/O
 void gvf_savetemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -107,13 +115,12 @@ int C74_EXPORT main(void)
     
     // parameters
     class_addmethod(c, (method)gvf_tolerance, "tolerance", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_resamplingThreshold, "resamplingThreshold", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_numberOfParticles, "numberOfParticles", A_GIMME,0);
-    class_addmethod(c, (method)gvf_adaptation_speed, "adaptation_speed", A_GIMME,0);
-    class_addmethod(c, (method)gvf_phaseAdaptation, "phaseAdaptation", A_GIMME,0);
-    class_addmethod(c, (method)gvf_speedAdaptation, "speedAdaptation", A_GIMME,0);
-    class_addmethod(c, (method)gvf_scaleAdaptation, "scaleAdaptation", A_GIMME,0);
-    class_addmethod(c, (method)gvf_rotationAdaptation, "rotationAdaptation", A_GIMME,0);
+    class_addmethod(c, (method)gvf_resamplingthreshold, "resamplingthreshold", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_numberparticles, "numberparticles", A_GIMME,0);
+    class_addmethod(c, (method)gvf_phaseadaptation, "phaseadaptation", A_GIMME,0);
+    class_addmethod(c, (method)gvf_speedadaptation, "speedadaptation", A_GIMME,0);
+    class_addmethod(c, (method)gvf_scaleadaptation, "scaleadaptation", A_GIMME,0);
+    class_addmethod(c, (method)gvf_rotationadaptation, "rotationadaptation", A_GIMME,0);
     
     // I/O
     class_addmethod(c, (method)gvf_savetemplates, "savetemplates", A_GIMME,0);
@@ -124,7 +131,8 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_gestureOn, "gestureOn", A_GIMME, 0);
     class_addmethod(c, (method)gvf_gestureOff, "gestureOff", A_GIMME, 0);
     class_addmethod(c, (method)gvf_data, "data", A_GIMME, 0); // DEPRECATED
-
+    class_addmethod(c, (method)gvf_adaptation_speed, "adaptation_speed", A_GIMME,0);
+    
 	
 	class_register(CLASS_BOX, c); /* CLASS_NOBOX */
 	gvf_class = c;
@@ -242,9 +250,9 @@ void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 //    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
 //        x->bubi->addGestureTemplate(*(x->currentGesture));
 //    }
-    post("gvf_follow(): %i",x->currentGesture->getTemplate()[0].size());
+
     x->bubi->setState(ofxGVF::STATE_FOLLOWING);
-    post("Follow gesture...");
+    
 }
 
 
@@ -260,7 +268,7 @@ void gvf_gestureOff(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 }
 
 ///////////////////////////////////////////////////////////
-//====================== DATA
+//====================== LIST
 ///////////////////////////////////////////////////////////
 void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
@@ -540,7 +548,7 @@ void gvf_tolerance(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== resampling_threshold
 ///////////////////////////////////////////////////////////
-void gvf_resamplingThreshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_resamplingthreshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
     int rtnew = atom_getlong(&argv[0]);
@@ -563,7 +571,7 @@ void gvf_resamplingThreshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *a
 ///////////////////////////////////////////////////////////
 //====================== numberOfParticles
 ///////////////////////////////////////////////////////////
-void gvf_numberOfParticles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_numberparticles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
     int nsNew = atom_getlong(&argv[0]);
@@ -620,7 +628,7 @@ void gvf_adaptation_speed(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv
 ///////////////////////////////////////////////////////////
 //====================== phaseAdaptation / scaleAdaptation / speedAdaptation / angleAdaptation
 ///////////////////////////////////////////////////////////
-void gvf_phaseAdaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_phaseadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -631,7 +639,7 @@ void gvf_phaseAdaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_speedAdaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_speedadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -642,7 +650,7 @@ void gvf_speedAdaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_scaleAdaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_scaleadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -660,7 +668,7 @@ void gvf_scaleAdaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_rotationAdaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_rotationadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();

@@ -65,12 +65,12 @@ static void gvf_segmentation    (t_gvf *x,const t_symbol *sss,int argc, t_atom *
 
 //// PARAMETERS
 static void gvf_tolerance       (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
-static void gvf_numberOfParticles       (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
-static void gvf_resamplingThreshold     (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
-static void gvf_phaseAdaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
-static void gvf_speedAdaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
-static void gvf_scaleAdaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
-static void gvf_rotationAdaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
+static void gvf_numberparticles       (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
+static void gvf_resamplingthreshold     (t_gvf *x,const t_symbol *sss,int argc, t_atom *argv);
+static void gvf_phaseadaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
+static void gvf_speedadaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
+static void gvf_scaleadaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
+static void gvf_rotationadaptation (t_gvf *x,const t_symbol *sss, int argc, t_atom *argv);
 
 
 //// I/O
@@ -553,7 +553,7 @@ static void gvf_tolerance(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== resampling_threshold
 ///////////////////////////////////////////////////////////
-static void gvf_resamplingThreshold(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
+static void gvf_resamplingthreshold(t_gvf *x,const t_symbol *sss,int argc, t_atom *argv)
 {
     int rtnew = atom_getint(&argv[0]);
     int cNS = x->bubi->getNumberOfParticles();
@@ -574,7 +574,7 @@ static void gvf_resamplingThreshold(t_gvf *x,const t_symbol *sss,int argc, t_ato
 ///////////////////////////////////////////////////////////
 //====================== numberOfParticles
 ///////////////////////////////////////////////////////////
-void gvf_numberOfParticles(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
+void gvf_numberparticles(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
 {
     
     int nsNew = atom_getint(&argv[0]);
@@ -611,7 +611,7 @@ static void gvf_adaptation_speed(t_gvf *x,const t_symbol *sss,int argc, t_atom *
 ///////////////////////////////////////////////////////////
 //====================== phaseAdaptation / scaleAdaptation / speedAdaptation / angleAdaptation
 ///////////////////////////////////////////////////////////
-void gvf_phaseAdaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
+void gvf_phaseadaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -622,7 +622,7 @@ void gvf_phaseAdaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_speedAdaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
+void gvf_speedadaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -633,7 +633,7 @@ void gvf_speedAdaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_scaleAdaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
+void gvf_scaleadaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -651,7 +651,7 @@ void gvf_scaleAdaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_rotationAdaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
+void gvf_rotationadaptation(t_gvf *x,const t_symbol *sss, int argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -717,12 +717,12 @@ extern "C"
     
         // parameters
         class_addmethod(gvf_class, (t_method)gvf_tolerance,gensym("tolerance"), A_GIMME, 0);
-        class_addmethod(gvf_class, (t_method)gvf_resamplingThreshold,gensym("resamplingThreshold"), A_GIMME, 0);
-        class_addmethod(gvf_class, (t_method)gvf_numberOfParticles, gensym("numberOfParticles"), A_GIMME,0);
-        class_addmethod(gvf_class, (t_method)gvf_phaseAdaptation, gensym("phaseAdaptation"), A_GIMME,0);
-        class_addmethod(gvf_class, (t_method)gvf_speedAdaptation, gensym("speedAdaptation"), A_GIMME,0);
-        class_addmethod(gvf_class, (t_method)gvf_scaleAdaptation, gensym("scaleAdaptation"), A_GIMME,0);
-        class_addmethod(gvf_class, (t_method)gvf_rotationAdaptation, gensym("rotationAdaptation"), A_GIMME,0);
+        class_addmethod(gvf_class, (t_method)gvf_resamplingthreshold,gensym("resamplingthreshold"), A_GIMME, 0);
+        class_addmethod(gvf_class, (t_method)gvf_numberparticles, gensym("numberparticles"), A_GIMME,0);
+        class_addmethod(gvf_class, (t_method)gvf_phaseadaptation, gensym("phaseadaptation"), A_GIMME,0);
+        class_addmethod(gvf_class, (t_method)gvf_speedadaptation, gensym("speedadaptation"), A_GIMME,0);
+        class_addmethod(gvf_class, (t_method)gvf_scaleadaptation, gensym("scaleadaptation"), A_GIMME,0);
+        class_addmethod(gvf_class, (t_method)gvf_rotationadaptation, gensym("rotationadaptation"), A_GIMME,0);
         
         // I/O
         class_addmethod(gvf_class,(t_method)gvf_savetemplates,gensym("savetemplates"),A_GIMME,0);
