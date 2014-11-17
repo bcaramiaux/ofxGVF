@@ -26,7 +26,6 @@
 #include <sstream>
 #include <tr1/memory>
 #include <unistd.h>
-#include "ext.h"
 
 
 using namespace std;
@@ -1182,8 +1181,6 @@ void ofxGVF::setParameters(ofxGVFParameters _parameters){
         if (parameters.numberParticles <= parameters.resamplingThreshold) {
             parameters.resamplingThreshold = parameters.numberParticles / 4;
         }
-        
-        post("Nb of part set to %d",parameters.numberParticles);
         
         spreadParticles();
     }
