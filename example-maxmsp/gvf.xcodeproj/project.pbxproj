@@ -8,18 +8,18 @@
 
 /* Begin PBXBuildFile section */
 		2117E51F1A0E7A01004A9857 /* gvf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2117E51E1A0E7A01004A9857 /* gvf.cpp */; };
-		215EE6CA1A0E7B4300CCB9D8 /* ofxGVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 215EE6C61A0E7B4300CCB9D8 /* ofxGVF.cpp */; };
-		215EE6CB1A0E7B4300CCB9D8 /* ofxGVF.h in Headers */ = {isa = PBXBuildFile; fileRef = 215EE6C71A0E7B4300CCB9D8 /* ofxGVF.h */; };
-		215EE6CC1A0E7B4300CCB9D8 /* ofxGVFGesture.h in Headers */ = {isa = PBXBuildFile; fileRef = 215EE6C81A0E7B4300CCB9D8 /* ofxGVFGesture.h */; };
-		215EE6CD1A0E7B4300CCB9D8 /* ofxGVFTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 215EE6C91A0E7B4300CCB9D8 /* ofxGVFTypes.h */; };
+		216CF28A1A1A3B5300443E8A /* ofxGVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 216CF2861A1A3B5300443E8A /* ofxGVF.cpp */; };
+		216CF28B1A1A3B5300443E8A /* ofxGVF.h in Headers */ = {isa = PBXBuildFile; fileRef = 216CF2871A1A3B5300443E8A /* ofxGVF.h */; };
+		216CF28C1A1A3B5300443E8A /* ofxGVFGesture.h in Headers */ = {isa = PBXBuildFile; fileRef = 216CF2881A1A3B5300443E8A /* ofxGVFGesture.h */; };
+		216CF28D1A1A3B5300443E8A /* ofxGVFTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 216CF2891A1A3B5300443E8A /* ofxGVFTypes.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		2117E51E1A0E7A01004A9857 /* gvf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gvf.cpp; sourceTree = "<group>"; };
-		215EE6C61A0E7B4300CCB9D8 /* ofxGVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxGVF.cpp; sourceTree = "<group>"; };
-		215EE6C71A0E7B4300CCB9D8 /* ofxGVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVF.h; sourceTree = "<group>"; };
-		215EE6C81A0E7B4300CCB9D8 /* ofxGVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVFGesture.h; sourceTree = "<group>"; };
-		215EE6C91A0E7B4300CCB9D8 /* ofxGVFTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVFTypes.h; sourceTree = "<group>"; };
+		216CF2861A1A3B5300443E8A /* ofxGVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxGVF.cpp; sourceTree = "<group>"; };
+		216CF2871A1A3B5300443E8A /* ofxGVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVF.h; sourceTree = "<group>"; };
+		216CF2881A1A3B5300443E8A /* ofxGVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVFGesture.h; sourceTree = "<group>"; };
+		216CF2891A1A3B5300443E8A /* ofxGVFTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVFTypes.h; sourceTree = "<group>"; };
 		22CF10220EE984600054F513 /* maxmspsdk.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = maxmspsdk.xcconfig; path = ../../maxmspsdk.xcconfig; sourceTree = SOURCE_ROOT; };
 		2FBBEAE508F335360078DB84 /* gvf.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = gvf.mxo; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -40,7 +40,7 @@
 			children = (
 				22CF10220EE984600054F513 /* maxmspsdk.xcconfig */,
 				2117E51E1A0E7A01004A9857 /* gvf.cpp */,
-				215EE6C51A0E7B4300CCB9D8 /* src */,
+				216CF2851A1A3B5300443E8A /* src */,
 				19C28FB4FE9D528D11CA2CBB /* Products */,
 			);
 			name = iterator;
@@ -54,13 +54,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		215EE6C51A0E7B4300CCB9D8 /* src */ = {
+		216CF2851A1A3B5300443E8A /* src */ = {
 			isa = PBXGroup;
 			children = (
-				215EE6C61A0E7B4300CCB9D8 /* ofxGVF.cpp */,
-				215EE6C71A0E7B4300CCB9D8 /* ofxGVF.h */,
-				215EE6C81A0E7B4300CCB9D8 /* ofxGVFGesture.h */,
-				215EE6C91A0E7B4300CCB9D8 /* ofxGVFTypes.h */,
+				216CF2861A1A3B5300443E8A /* ofxGVF.cpp */,
+				216CF2871A1A3B5300443E8A /* ofxGVF.h */,
+				216CF2881A1A3B5300443E8A /* ofxGVFGesture.h */,
+				216CF2891A1A3B5300443E8A /* ofxGVFTypes.h */,
 			);
 			name = src;
 			path = ../../../../Github/ofxGVF/src;
@@ -73,9 +73,9 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				215EE6CD1A0E7B4300CCB9D8 /* ofxGVFTypes.h in Headers */,
-				215EE6CC1A0E7B4300CCB9D8 /* ofxGVFGesture.h in Headers */,
-				215EE6CB1A0E7B4300CCB9D8 /* ofxGVF.h in Headers */,
+				216CF28D1A1A3B5300443E8A /* ofxGVFTypes.h in Headers */,
+				216CF28C1A1A3B5300443E8A /* ofxGVFGesture.h in Headers */,
+				216CF28B1A1A3B5300443E8A /* ofxGVF.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -150,7 +150,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2117E51F1A0E7A01004A9857 /* gvf.cpp in Sources */,
-				215EE6CA1A0E7B4300CCB9D8 /* ofxGVF.cpp in Sources */,
+				216CF28A1A1A3B5300443E8A /* ofxGVF.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
