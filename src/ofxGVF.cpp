@@ -26,10 +26,12 @@
 #include <sstream>
 #include <tr1/memory>
 #include <unistd.h>
-
+#include "ext.h"
 
 
 using namespace std;
+
+
 
 vector<vector<float> > return_RotationMatrix_3d(float phi, float theta, float psi);
 
@@ -82,6 +84,7 @@ void ofxGVF::setup(){
     defaultConfig.inputDimensions   = 2;
     defaultConfig.translate         = true;
     defaultConfig.segmentation      = false;
+    defaultConfig.normalization     = false;
     
     setup(defaultConfig);
 }
@@ -95,7 +98,7 @@ void ofxGVF::setup(ofxGVFConfig _config){
     //    input dimensions
     //    translate flag
     //    translate flag
-    config = _config;
+    config          = _config;
     
     // default parameters
     parameters.numberParticles = 2000;
@@ -155,7 +158,6 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     //    translate flag
     config = _config;
     
-    
     // Set variances for variation tracking:
     //    num of particles
     //    tolerance
@@ -192,6 +194,54 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     
 }
 
+////////////////////////////////////////////////////////////////
+//
+// ADD & FILL TEMPLATES FOR GESTURES
+//
+////////////////////////////////////////////////////////////////
+
+//--------------------------------------------------------------
+void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
+    
+    //int inputDimension = gestureTemplate.getTemplateRaw(0)[0].size(); //TODO Define a method instead!!!
+    int inputDimension = gestureTemplate.getNumberDimensions();
+    config.inputDimensions = inputDimension;
+    
+    if(minRange.size() == 0){
+        minRange.resize(inputDimension);
+        maxRange.resize(inputDimension);
+    }
+    
+    for(int j = 0; j < inputDimension; j++){
+        minRange[j] = INFINITY;
+        maxRange[j] = -INFINITY;
+    }
+    
+    // compute min/max from the data
+    for(int i = 0; i < gestureTemplates.size(); i++){
+        ofxGVFGesture& tGestureTemplate = gestureTemplates[i];
+        vector<float>& tMinRange = tGestureTemplate.getMinRange();
+        vector<float>& tMaxRange = tGestureTemplate.getMaxRange();
+        for(int j = 0; j < inputDimension; j++){
+            if(tMinRange[j] < minRange[j]) minRange[j] = tMinRange[j];
+            if(tMaxRange[j] > maxRange[j]) maxRange[j] = tMaxRange[j];
+        }
+    }
+    
+    for(int i = 0; i < gestureTemplates.size(); i++){
+        ofxGVFGesture& tGestureTemplate = gestureTemplates[i];
+        tGestureTemplate.setMinRange(minRange);
+        tGestureTemplate.setMaxRange(maxRange);
+    }
+    
+    
+    gestureTemplates.push_back(gestureTemplate);
+    abs_weights.resize(gestureTemplates.size());
+    
+    learn();
+    
+}
+
 
 //----------------------------------------------
 //
@@ -218,20 +268,23 @@ void ofxGVF::learn(){
         // ---------------------------
         
         featVariances.clear();
-        //post("%i",gestureTemplates[0].getTemplateRaw()[0].size() );
+
+        
         config.inputDimensions = gestureTemplates[0].getTemplateRaw()[0].size(); //TODO - checked if good! need method!!
         
         // Set Scale and Rotation dimensions, according to input dimensions
-        
         setStateDimensions(config.inputDimensions);
 
-        
         // Initialize Variances
         initVariances(scale_dim, rotation_dim);
         
         initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
         initVec(g, parameters.numberParticles);                 // Vector of gesture class
         initVec(w, parameters.numberParticles);                 // Weights
+        
+//        initMat(w2, parameters.numberParticles, pdim);           // Matrix of NS particles
+//        initweights2();
+        
         
         // Offset for segmentation
         offS=vector<vector<float> >(parameters.numberParticles);
@@ -242,19 +295,33 @@ void ofxGVF::learn(){
                 offS[k][j] = 0.0;
         }
         
+        
+        // NORMALIZATION
+        if (config.normalization) {     // update the global normaliation factor
+            globalNormalizationFactor = -1.0;
+            // loop on previous gestures already learned
+            // take the max of all the gesture learned ...
+            for (int k=0; k<getNumberOfGestureTemplates() ; k++){
+                for(int j = 0; j < config.inputDimensions; j++){
+                    float rangetmp = fabs(getGestureTemplate(k).getMaxRange()[j]-getGestureTemplate(k).getMinRange()[j]);
+                    if (rangetmp > globalNormalizationFactor)
+                        globalNormalizationFactor=rangetmp;
+                }
+            }
+        }
+
+        
         has_learned = true; // ???: Should there be a verification that learning was successful?
+         
     }
-    
 }
 
 void ofxGVF::setStateDimensions(int input_dim) {
     
     if (input_dim == 2){
         
-        //post(" dim 2 -> pdim 4");
-        
-        // state space dimension = 4
-        // phase, speed, scale, rotation
+        // scale uniformly on the 2 dimensions
+        // rotate by a 2-d rotation matrix depending on 1 angle
         
         scale_dim = 1;
         rotation_dim = 1;
@@ -262,10 +329,12 @@ void ofxGVF::setStateDimensions(int input_dim) {
     }
     else if (input_dim == 3){
         
-        // state space dimension = 8
-        // phase, speed, scale (1d), rotation (3d)
+        // scale non-uniformaly on the 3 dimensions (3 scaling coef)
+        // 3-d rotation matrix with 3 angles
+        
         scale_dim = 3;
         rotation_dim = 3;
+        
     }
     else {
         
@@ -274,14 +343,21 @@ void ofxGVF::setStateDimensions(int input_dim) {
         
     }
     
+    parameters.scaleVariance.resize(scale_dim);
+    parameters.rotationVariance.resize(rotation_dim);
+    
     pdim = 2 + scale_dim + rotation_dim;
+    
+    //post("setStateDimensions(): %i %i %i", input_dim, pdim, scale_dim);
     
 }
 
 void ofxGVF::initVariances(int scaleDim, int rotationDim) {
 
-    assert(parameters.scaleVariance.size() == scale_dim);
-    assert(parameters.rotationVariance.size() == rotation_dim);
+  
+//
+    assert(parameters.scaleVariance.size() == scaleDim);
+    assert(parameters.rotationVariance.size() == rotationDim);
     
 
     featVariances = vector<float> (pdim);
@@ -294,7 +370,7 @@ void ofxGVF::initVariances(int scaleDim, int rotationDim) {
         featVariances[2+scaleDim+k] = sqrt(parameters.rotationVariance[k]);
     
     // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
-    parameters.phaseInitialSpreading = 0.1;
+    parameters.phaseInitialSpreading = 0.0;
     parameters.speedInitialSpreading = 1.0;
     parameters.scaleInitialSpreading = vector<float> (scaleDim);
     parameters.rotationInitialSpreading = vector<float> (rotationDim);
@@ -304,7 +380,6 @@ void ofxGVF::initVariances(int scaleDim, int rotationDim) {
         parameters.scaleInitialSpreading[k]=1.0f;
     for (int k = 0;k < rotationDim; k++)
         parameters.rotationInitialSpreading[k]=0.0f;
-
     
 }
 
@@ -327,49 +402,7 @@ ofxGVF::~ofxGVF(){
     
 }
 
-////////////////////////////////////////////////////////////////
-//
-// ADD & FILL TEMPLATES FOR GESTURES
-//
-////////////////////////////////////////////////////////////////
 
-//--------------------------------------------------------------
-void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
-    
-    //int inputDimension = gestureTemplate.getTemplateRaw(0)[0].size(); //TODO Define a method instead!!!
-    int inputDimension = gestureTemplate.getNumberDimensions();
-    
-    
-    if(minRange.size() == 0){
-        minRange.resize(inputDimension);
-        maxRange.resize(inputDimension);
-    }
-    
-    for(int j = 0; j < inputDimension; j++){
-        minRange[j] = INFINITY;
-        maxRange[j] = -INFINITY;
-    }
-    
-    for(int i = 0; i < gestureTemplates.size(); i++){
-        ofxGVFGesture& tGestureTemplate = gestureTemplates[i];
-        vector<float>& tMinRange = tGestureTemplate.getMinRange();
-        vector<float>& tMaxRange = tGestureTemplate.getMaxRange();
-        for(int j = 0; j < inputDimension; j++){
-            if(tMinRange[j] < minRange[j]) minRange[j] = tMinRange[j];
-            if(tMaxRange[j] > maxRange[j]) maxRange[j] = tMaxRange[j];
-        }
-    }
-    
-    for(int i = 0; i < gestureTemplates.size(); i++){
-        ofxGVFGesture& tGestureTemplate = gestureTemplates[i];
-        tGestureTemplate.setMinRange(minRange);
-        tGestureTemplate.setMaxRange(maxRange);
-    }
-    
-    gestureTemplates.push_back(gestureTemplate);
-    abs_weights.resize(gestureTemplates.size());
-    
-}
 
 
 //--------------------------------------------------------------
@@ -495,7 +528,7 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
 	
 	unsigned int ngestures = gestureTemplates.size();// numTemplates+1;
     
-    float spreadRangePhase = 0.3;
+    float spreadRangePhase = 0.1;
     float spreadRange = 0.1;
     int scalingCoefficients  = _parameters.scaleInitialSpreading.size();
     int numberRotationAngles = _parameters.rotationInitialSpreading.size();
@@ -519,9 +552,7 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
     
     // Weights are also uniformly spread
     initweights();
-    //    logW.setConstant(0.0);
-	
-    //post("ngestures=%i",ngestures);
+    //initweights2();
     
     // Spread uniformly the gesture class among the particles
 	for(int n = 0; n < parameters.numberParticles; n++){
@@ -560,6 +591,7 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
     
     // Weights are also uniformly spread
     initweights();
+    initweights2();
 
 	
     // Spread uniformly the gesture class among the particles
@@ -572,6 +604,7 @@ void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
             offS[n][k]=0.0;
     }
     
+    
 }
 
 
@@ -582,7 +615,21 @@ void ofxGVF::initweights(){
     for (int k = 0; k < parameters.numberParticles; k++){
         w[k] = 1.0 / (float) parameters.numberParticles;
     }
+    
 }
+
+
+//--------------------------------------------------------------
+// Initialialize the weights of the particles. The initial values of the weights is a
+// unifrom weight over the particles
+void ofxGVF::initweights2(){
+    for (int k = 0; k < parameters.numberParticles; k++){
+        for (int l = 0; l < X[0].size(); l++){
+            w2[k][l] = 1.0 / (float) parameters.numberParticles;
+        }
+    }
+}
+
 
 
 //--------------------------------------------------------------
@@ -592,7 +639,7 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
     if (count <= 0)
         return 0;
     
-    float dist = 0;
+    float dist = 0.0;
     for(int k = 0; k < count; k++){
         dist += w[k] * pow((x[k] - y[k]), 2);
     }
@@ -631,18 +678,18 @@ void ofxGVF::particleFilter(vector<float> & obs){
     particlesPositions.clear();
     
     float sumw = 0.0;
+    vector<float> sumw2(pdim,0.0);
     
-    
+
     
     // MAIN LOOP: same process for EACH particle (row n in X)
-    for(int n = parameters.numberParticles - 1; n >= 0; --n)
+    for(int n = 0; n<parameters.numberParticles; n++)
     {
+        
         
         // Move the particle
         // Position respects a first order dynamic: p = p + v/L
-        //cout << X[n][0] << " " << featVariances[0] << " " << X[n][1] << " " << featVariances[1] << " " << g[n] << " " << gestureTemplates[g[n]].getTemplateLength() << endl;
         X[n][0] += (*rndnorm)() * featVariances[0] + X[n][1]/gestureTemplates[g[n]].getTemplateLength(); //gestureLengths[g[n]];
-        
         
         
 		// Move the other state elements according a gaussian noise
@@ -656,6 +703,7 @@ void ofxGVF::particleFilter(vector<float> & obs){
         //        if (!config.segmentation){ ???
         if(x_n[0] < 0.0 || x_n[0] > 1.0) {
             w[n] = 0.0;
+
         }
         else {       // ...otherwise we propagate the particle's values and update its weight
             
@@ -669,6 +717,11 @@ void ofxGVF::particleFilter(vector<float> & obs){
             // given the index, return the gesture template value at this index
             vector<float> vref(config.inputDimensions);
             setVec(vref, gestureTemplates[pgi].getTemplate()[frameindex]);
+
+            // if normalization
+            if (config.normalization)
+                for (int kk=0; kk<vref.size(); kk++)
+                    vref[kk] = vref[kk] / globalNormalizationFactor;
             
             //setVec(vref, R_single[pgi][frameindex]);
             
@@ -680,6 +733,10 @@ void ofxGVF::particleFilter(vector<float> & obs){
             else
                 setVec(vobs, obs);
             
+            // if normalization
+            if (config.normalization)
+                for (int kk=0; kk<vobs.size(); kk++)
+                    vobs[kk] = vobs[kk] / globalNormalizationFactor;
             
             
             // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
@@ -760,7 +817,12 @@ void ofxGVF::particleFilter(vector<float> & obs){
                 //                cout << "Dist is " << dist << endl;
                 //                cout << "exp(-dist) " << exp(-dist) << endl;
                 w[n]   *= exp(-dist);
+                
+//                for (int kk=0; kk<pdim; kk++)
+//                    w2[n][kk] *= exp(-dist);
+                
                 abs_weights[g[n]] += exp(-dist);
+
                 //    cout << n << "- " << g[n] << " -- " << vref[0] << "," << vobs[0] << " | " << vref[1]
                 //        << "," << vobs[1] << " | " << offS[n][0] << " " << offS[n][1] << " " << dist << "," << w[n] << " " << X[n][0] << endl;
             }
@@ -769,9 +831,14 @@ void ofxGVF::particleFilter(vector<float> & obs){
                 w[n]   *= pow(dist/nu + 1, -nu/2 - 1);    // dimension is 2 .. pay attention if editing]
             }
             
+            
+            
         }
         
         sumw += w[n];
+//        for (int kk=0; kk<pdim; kk++)
+//            sumw2[kk] += w2[n][kk];
+        
     }
     //    }
     
@@ -779,9 +846,15 @@ void ofxGVF::particleFilter(vector<float> & obs){
     //	w /= w.sum();
     //	float neff = 1./w.dot(w);
     float dotProdw = 0.0;
+    vector<float> dotProdw2(pdim,0.0);
     for (int k = 0; k < parameters.numberParticles; k++){
         w[k] /= sumw;
         dotProdw+=w[k]*w[k];
+        
+//        for (int kk=0; kk<pdim; kk++){
+//            w2[k][kk] /= sumw2[kk];
+//            dotProdw2[kk]+=w2[k][kk]*w2[k][kk];
+//        }
     }
     float neff = 1./dotProdw;
     
@@ -919,13 +992,13 @@ void ofxGVF::updateEstimatedStatus(){
     
 	// compute the estimated features by computing the expected values
     // sum ( feature values * weights)
-
 	for(int n = 0; n < numOfPart; n++){
         int gi = g[n];
         for(int m = 0; m < pdim; m++)
             status[gi][m] += X[n][m] * w[n];
-
-		status[gi][pdim] += w[n]; // probability
+        
+        // compute probability
+		status[gi][pdim] += w[n];
     }
 	
     // calculate most probable index during scaling...
@@ -1109,6 +1182,8 @@ void ofxGVF::setParameters(ofxGVFParameters _parameters){
         if (parameters.numberParticles <= parameters.resamplingThreshold) {
             parameters.resamplingThreshold = parameters.numberParticles / 4;
         }
+        
+        post("Nb of part set to %d",parameters.numberParticles);
         
         spreadParticles();
     }
@@ -1343,6 +1418,9 @@ void ofxGVF::saveTemplates(string filename){
     //    file_write.close();
 }
 
+
+
+
 //--------------------------------------------------------------
 // Load function. This function is used by applications to load a vocabulary
 // given by filename (filename is also the complete path + filename)
@@ -1413,6 +1491,13 @@ void ofxGVF::loadTemplates(string filename){
     infile.close();
 }
 
+
+float ofxGVF::getGlobalNormalizationFactor(){
+    return globalNormalizationFactor;
+}
+
+
+
 //--------------------------------------------------------------
 string ofxGVF::getStateAsString(ofxGVFState state){
     switch(state){
@@ -1430,6 +1515,8 @@ string ofxGVF::getStateAsString(ofxGVFState state){
             break;
     }
 }
+
+
 
 
 ///////// ROTATION MATRIX

@@ -213,13 +213,9 @@ public:
     
     void addObservationRaw(vector<float> observation, int templateIndex = 0){
         
-        //post("%i %i",templateIndex,templateInitialRaw.size());
-
-        
         // check we have a valid templateIndex and correct number of input dimensions
         assert(templateIndex <= templatesRaw.size());
         assert(observation.size() == inputDimensions);
-        //assert(bAutoAdjustNormalRange || (bIsRangeMaxSet && bIsRangeMinSet));
         
         // if the template index is same as the number of temlates make a new template
         if(templateIndex == templatesRaw.size()){ // make a new template
@@ -235,23 +231,17 @@ public:
 
         for(int j = 0; j < observation.size(); j++)
             observation[j] = observation[j] - templateInitialRaw[j];
-
-        //            cout << "THEN " << observation.size() << " | " << observation[0] << " " << observation[1] << " " << templateInitialRaw[0] << " " << templateInitialRaw[1] << endl;
         
         // store the raw observation
         templatesRaw[templateIndex].push_back(observation);
-//        templatesRaw[templateIndex][templatesRaw[templateIndex].size()-1].resize(observation.size());
-//        templatesRaw[templateIndex][templatesRaw[templateIndex].size()-1]=observation;
         
-        //post("SIZE RAW %i | %i | %i | obs %i",templatesRaw[0].size(), templateIndex, templatesRaw[templateIndex][0].size(), observation.size());
         
         // if set let's auto size the range for normalising
         //TODO!!!!!
-        if(bAutoAdjustNormalRange) autoAdjustMinMax(observation);
+        //if(bAutoAdjustNormalRange)
+        autoAdjustMinMax(observation);
         
         normalise();
-         
-        
     }
     
 

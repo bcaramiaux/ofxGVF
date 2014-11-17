@@ -24,6 +24,7 @@
 #include "ofxGVFGesture.h"
 #include <math.h>
 
+
 using namespace std;
 
 // Recognizes gesture and tracks the variations. A set of gesture templates
@@ -180,6 +181,8 @@ public:
     void loadTemplates(string filename);
     
     string getStateAsString(ofxGVFState state);
+    
+    float getGlobalNormalizationFactor();
 	
 
     
@@ -192,8 +195,6 @@ private:
     ofxGVFParameters    parameters;
     ofxGVFOutcomes      outcomes;
     
-    bool parametersSetAsDefault;
-    
     
 //    ofxGVFVarianceCoefficents coefficents;
 //    ofxGVFInitialSpreadingParameters spreadingParameters;
@@ -205,7 +206,10 @@ private:
 	int     pdim;               // number of state dimension
     int     scale_dim;          // scale state dimension
     int     rotation_dim;       // rotation state dimension
+    
     bool    has_learned;        // true if gesture templates have been learned
+    bool    parametersSetAsDefault;
+    float   globalNormalizationFactor;
     
     int mostProbableIndex;                      // cached most probable index
     vector<float> mostProbableStatus;           // cached most probable status [phase, speed, scale[, rotation], probability]
@@ -213,10 +217,12 @@ private:
 	vector< vector<float> > X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]
+    vector<vector<float> >  w2;                 // weight of each particle, one vector per state 
     vector< vector<float> > offS;               // translation offset
 	vector<float>           featVariances;      // vector of variances
 	vector<float>           means;              // vector of means for particles initial spreading
 	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
+    
     
     // gesture 'history'
     //	map<int, vector< vector<float> > > R_single;    // gesture references (1 example)
@@ -262,6 +268,7 @@ private:
     
     // private functions
     void initweights();                         // initialize weights
+    void initweights2();
     
     void setStateDimensions(int input_dim);
     void initVariances(int scaleDim, int rotationRim);

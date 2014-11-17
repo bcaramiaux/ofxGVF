@@ -41,6 +41,7 @@ typedef struct{
     bool    translate;
     bool    normalization;
     bool    segmentation;
+    bool    logOn;
 } ofxGVFConfig;
 
 // ofxGVFParameters

@@ -60,6 +60,7 @@ void gvf_restart         (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 //// CONFIG
 void gvf_translate       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_segmentation    (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_normalize       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// PARAMETERS
 void gvf_tolerance       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -73,6 +74,7 @@ void gvf_rotationadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *a
 //// I/O
 void gvf_savetemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_loadtemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_logging         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// DEPRECATED
 void gvf_gestureOn       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -85,11 +87,7 @@ void *gvf_class;
 
 
 int C74_EXPORT main(void)
-{	
-	// object initialization, OLD STYLE
-	// setup((t_messlist **)&gvf_class, (method)gvf_new, (method)gvf_free, (short)sizeof(t_gvf), 
-	//		0L, A_GIMME, 0);
-    // addmess((method)gvf_assist,			"assist",		A_CANT, 0);  
+{
 	
 	// object initialization, NEW STYLE
 	t_class *c;
@@ -112,6 +110,7 @@ int C74_EXPORT main(void)
     // config
     class_addmethod(c, (method)gvf_translate, "translate", A_GIMME, 0);
     class_addmethod(c, (method)gvf_segmentation, "segmentation", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_normalize, "normalize", A_GIMME, 0);
     
     // parameters
     class_addmethod(c, (method)gvf_tolerance, "tolerance", A_GIMME, 0);
@@ -125,7 +124,7 @@ int C74_EXPORT main(void)
     // I/O
     class_addmethod(c, (method)gvf_savetemplates, "savetemplates", A_GIMME,0);
     class_addmethod(c, (method)gvf_loadtemplates, "loadtemplates", A_GIMME,0);
-    
+    class_addmethod(c, (method)gvf_logging, "logging", A_GIMME,0);
     
     // deprecated
     class_addmethod(c, (method)gvf_gestureOn, "gestureOn", A_GIMME, 0);
@@ -238,6 +237,7 @@ void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
             x->bubi->addGestureTemplate(*(x->currentGesture));
+    
 }
 
 
@@ -246,12 +246,13 @@ void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-//    if (x->currentGesture->getNumberOfTemplates()!=0) {
-//    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
-//        x->bubi->addGestureTemplate(*(x->currentGesture));
-//    }
-
     x->bubi->setState(ofxGVF::STATE_FOLLOWING);
+    
+    // output the value of the "learned" tolerance
+    t_atom *outAtoms = new t_atom[1];
+    atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
+    outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
+    delete[] outAtoms;
     
 }
 
@@ -470,27 +471,35 @@ void gvf_clear(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     post("======================");
-    post("Number of particles: %d", x->bubi->getNumberOfParticles());
-    post("Resampling Threshold: %d", x->bubi->getResamplingThreshold());
-    post("Tolerance: %.2f", x->bubi->getParameters().tolerance);
-    post("Adaptation parameters:");
-    post("  phase: %.7f", x->bubi->getParameters().phaseVariance);
-    post("  speed: %.7f", x->bubi->getParameters().speedVariance);
-    string scale_str = "scale: ";
+    post("CONFIGURATION");
+    post("  Segmentation: %d", x->bubi->getConfig().segmentation);
+    post("  Normalization: %d", x->bubi->getConfig().normalization);
+    if (x->bubi->getConfig().normalization)
+    post("  Global normalization factor: %f", x->bubi->getGlobalNormalizationFactor());
+    post("PARAMETERS");
+    post("  Number of particles: %d", x->bubi->getNumberOfParticles());
+    post("  Resampling Threshold: %d", x->bubi->getResamplingThreshold());
+    post("  Tolerance: %.2f", x->bubi->getParameters().tolerance);
+    post("  Adaptation parameters:");
+    post("      phase: %.7f", x->bubi->getParameters().phaseVariance);
+    post("      speed: %.7f", x->bubi->getParameters().speedVariance);
+    string scale_str = "      scale: ";
     for (int k=0; k<x->bubi->getParameters().scaleVariance.size(); k++) {
         std::ostringstream ss;
         ss << x->bubi->getParameters().scaleVariance[k];
         scale_str = scale_str + ss.str() + " ";
     }
     post("  %s", scale_str.c_str());
-    scale_str = "rotation: ";
+    scale_str = "      rotation: ";
     for (int k=0; k<x->bubi->getParameters().rotationVariance.size(); k++) {
         std::ostringstream ss;
         ss << x->bubi->getParameters().rotationVariance[k];
         scale_str = scale_str + ss.str() + " ";
     }
     post("  %s", scale_str.c_str());
-    post("Number of recorded templates: %d", x->bubi->getNumberOfGestureTemplates());
+    post("TEMPLATES");
+    post("  Number of recorded templates: %d", x->bubi->getNumberOfGestureTemplates());
+    post("  Number of dimensions: %d", x->bubi->getConfig().inputDimensions);
     post("======================");
     for(int i = 0; i < x->bubi->getNumberOfGestureTemplates(); i++)
     {
@@ -502,7 +511,10 @@ void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         {
             std::ostringstream ss;
             for(int k = 0; k < tplt[0].size(); k++){
-                ss << tplt[j][k] << " ";
+                if (x->bubi->getConfig().normalization)
+                    ss << tplt[j][k]/x->bubi->getGlobalNormalizationFactor() << " ";
+                else
+                    ss << tplt[j][k] << " ";
             }
             post("%s", ss.str().c_str());
         }
@@ -530,8 +542,8 @@ void gvf_restart(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 void gvf_tolerance(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     float stdnew = atom_getfloat(argv);
-    if (stdnew == 0.0)
-        stdnew = 0.1;
+    if (stdnew <= 0.0)
+        stdnew = 1.0;
     
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
@@ -702,7 +714,7 @@ void gvf_translate(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 }
 
 ///////////////////////////////////////////////////////////
-//====================== translate
+//====================== segmentation
 ///////////////////////////////////////////////////////////
 void gvf_segmentation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
@@ -714,16 +726,37 @@ void gvf_segmentation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 }
 
 ///////////////////////////////////////////////////////////
+//====================== normalize
+///////////////////////////////////////////////////////////
+void gvf_normalize(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    
+    x->config = x->bubi->getConfig();
+    x->config.normalization = (atom_getlong(&argv[0])==0)? false : true;
+    x->bubi->setConfig(x->config);
+    
+}
+
+///////////////////////////////////////////////////////////
+//====================== normalize
+///////////////////////////////////////////////////////////
+void gvf_logging(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    
+    x->config = x->bubi->getConfig();
+    x->config.logOn = (atom_getlong(&argv[0])==0)? false : true;
+    x->bubi->setConfig(x->config);
+    
+}
+
+///////////////////////////////////////////////////////////
 //====================== SAVE_VOCABULARY
 ///////////////////////////////////////////////////////////
 void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-/*
-     char* mpath = atom_getsym(argv);
-     string filename(mpath);
+     t_symbol* mpath = atom_getsym(argv);
+     string filename(mpath->s_name);
      x->bubi->saveTemplates(filename);
- */
-    
 }
 
 
