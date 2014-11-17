@@ -393,6 +393,10 @@ public:
     int getTemplateLength(int templateIndex = 0){
         return templatesRaw[templateIndex].size();
     }
+    
+    int getTemplateDimension(int templateIndex = 0){
+        return templatesRaw[templateIndex][0].size();
+    }
 
     vector<float>& getLastObservation(int templateIndex = 0){
         return templatesRaw[templateIndex][templatesRaw[templateIndex].size() - 1];

@@ -236,6 +236,12 @@ private:
     
     vector<ofxGVFGesture> gestureTemplates;
 
+    //////////////
+    // MODELING
+    //////////////
+    void initStateSpace();
+    void initParticleFilter();
+    
     
     //in order to output particles
     vector< vector<float> > particlesPositions;
@@ -270,8 +276,7 @@ private:
     void initweights();                         // initialize weights
     void initweights2();
     
-    void setStateDimensions(int input_dim);
-    void initVariances(int scaleDim, int rotationRim);
+
     
     void UpdateOutcomes();
     
