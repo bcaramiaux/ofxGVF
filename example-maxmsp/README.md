@@ -2,6 +2,7 @@ ofxGVF for MaxMSP
 ===
 
 Here is the Xcode project to create the GVF Max/MSP object. 
+Compiled with Max SDK 6.1.4, tested in Max 7 on Mac OSX!
 
 
 Installation
