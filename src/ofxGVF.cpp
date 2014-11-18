@@ -26,7 +26,7 @@
 #include <sstream>
 #include <tr1/memory>
 #include <unistd.h>
-
+#include "ext.h"
 
 using namespace std;
 
@@ -104,12 +104,8 @@ void ofxGVF::setup(ofxGVFConfig _config){
     defaultParameters.resamplingThreshold = 500;
     defaultParameters.distribution = 0.0f;
     defaultParameters.phaseVariance = 0.000001;
-    defaultParameters.speedVariance = 0.001;
-    defaultParameters.scaleVariance = vector<float>(1, 0.00001); // TODO: Check that default works like this.
-    defaultParameters.rotationVariance = vector<float>(1, 0.00000);
-    
-    // MARK: DEPRECATED parametersSetAsDefault
-    // parametersSetAsDefault = true;
+    defaultParameters.dynamicsVariance = vector<float>(1,0.00001f);
+    defaultParameters.scalingsVariance = vector<float>(1,0.00001f);
     
     setup(_config,  defaultParameters);
 
@@ -118,35 +114,29 @@ void ofxGVF::setup(ofxGVFConfig _config){
 //--------------------------------------------------------------
 void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     
-    
     clear(); // just in case
     
     // Set configuration and parameters
     config      = _config;
     parameters  = _parameters;
-    
-    // setStateDimensions(config.inputDimensions);
-    
-//    // Adjust to dimensions necessary (added by AVZ)
-//    parameters.scaleVariance = vector<float>(scale_dim, parameters.scaleVariance[0]);
-//    parameters.rotationVariance = vector<float>(rotation_dim, parameters.rotationVariance[0]);
-    
 
-#if !BOOSTLIB
-    normdist = new std::tr1::normal_distribution<float>();
-    unifdist = new std::tr1::uniform_real<float>();
-    rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
-#endif
-    
     // absolute weights
     abs_weights = vector<float>();
-    
-    // MARK: DEPRECATED parametersSetAsDefault
-    //parametersSetAsDefault = false;
-    
+
+    // flag
     has_learned = false;
 }
 
+
+//--------------------------------------------------------------
+void ofxGVF::restart(){
+
+    // TODO: switch to learn maybe? or initStateValues + initPrior?
+    spreadParticles();
+    
+    // and maybe more after...
+    
+}
 
 
 ////////////////////////////////////////////////////////////////
@@ -189,7 +179,7 @@ void ofxGVF::clear(){
     gestureTemplates.clear();
     
     mostProbableIndex = -1;
-    mostProbableStatus.clear();
+
 
 }
 
@@ -275,19 +265,27 @@ void ofxGVF::learn(){
         // get the number of dimension in templates
         config.inputDimensions = gestureTemplates[0].getTemplateDimension();
         
-        // Set Scale and Rotation dimensions, according to input dimensions and init variances
-        initStateSpace();
-        initParticleFilter();
+        dynamicsDim = 2;    // speed + acceleration
+        scalingsDim = config.inputDimensions;
+        
+        // Init state space
+        initVec(classes, parameters.numberParticles);                 // Vector of gesture class
+        initVec(alignment, parameters.numberParticles);                 // Vector of phase values (alignment)
+        initMat(dynamics, parameters.numberParticles, dynamicsDim);               // Order 2
+        initMat(scalings, parameters.numberParticles, scalingsDim);  // Matrix of scaling
+        initMat(offsets,parameters.numberParticles, config.inputDimensions);
+        initVec(weights, parameters.numberParticles);                 // Weights
+        
+        
+        initStateValues();      // allocate partcles meoru  and compute init values
+        initPrior();            // prior on init state values
+        initNoiseParameters();  // init noise parameters (transition and likelihood)
         
 
-        // Offset for segmentation
-        offS=vector<vector<float> >(parameters.numberParticles);
-        for (int k = 0; k < parameters.numberParticles; k++)
-        {
-            offS[k] = vector<float>(config.inputDimensions);
-            for (int j = 0; j < config.inputDimensions; j++)
-                offS[k][j] = 0.0;
-        }
+        // weighted dimensions in case: default is not weighted
+        dimWeights = vector<float> (config.inputDimensions);
+        for(int k = 0; k < config.inputDimensions; k++) dimWeights[k] = 1.0 / config.inputDimensions;
+
         
         // NORMALIZATION
         if (config.normalization) {     // update the global normaliation factor
@@ -308,70 +306,108 @@ void ofxGVF::learn(){
 }
 
 
-//--------------------------------------------------------------
-void ofxGVF::initStateSpace() {
-    
-    int input_dim = config.inputDimensions;
-    // input dimension here defines the number of dimensions of the state space
-    if (input_dim == 2){
-        // scale uniformly on the 2 dimensions
-        // rotate by a 2-d rotation matrix depending on 1 angle
-        scale_dim = 1;
-        rotation_dim = 1;
-    }
-    else if (input_dim == 3){
-        // scale non-uniformaly on the 3 dimensions (3 scaling coef)
-        // 3-d rotation matrix with 3 angles
-        scale_dim = 3;
-        rotation_dim = 3;
-    }
-    else {
-        scale_dim = 1;
-        rotation_dim = 1;
-    }
-    
-    // pdim = state space dimension
-    pdim = 2 + scale_dim + rotation_dim;
-    
-    
-    // init the dynamics of the states
-    // dynamics are goven by the gaussian variances as:
-    //      x_t = A x_{t-1} + v_t
-    // where v_t is the gaussian noise, x_t the state space at t
-    parameters.scaleVariance.resize(scale_dim);
-    parameters.rotationVariance.resize(rotation_dim);
 
-    featVariances.clear();
-    featVariances = vector<float> (pdim);
+
+
+//--------------------------------------------------------------
+// INIT VALUES OF STATES
+//=========================================================
+void ofxGVF::initStateValues() {
     
-    featVariances[0] = sqrt(parameters.phaseVariance);
-    featVariances[1] = sqrt(parameters.speedVariance);
-    for (int k = 0; k < scale_dim; k++)
-        featVariances[2+k] = sqrt(parameters.scaleVariance[k]);
-    for (int k = 0; k < rotation_dim; k++)
-        featVariances[2+scale_dim+k] = sqrt(parameters.rotationVariance[k]);
     
-    // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
-    parameters.phaseInitialSpreading = 0.0;
-    parameters.speedInitialSpreading = 1.0;
-    parameters.scaleInitialSpreading = vector<float> (scale_dim);
-    parameters.rotationInitialSpreading = vector<float> (rotation_dim);
+#if BOOSTLIB
+	boost::uniform_real<float> ur(0,1);
+	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
+#else
+    std::tr1::uniform_real<float> ur(0,1);
+    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+#endif
     
-    // Spreading parameters: initial value for each variation (e.g. speed start at 1.0 [i.e. original speed])
-    for (int k = 0; k < scale_dim; k++)
-        parameters.scaleInitialSpreading[k]=1.0f;
-    for (int k = 0;k < rotation_dim; k++)
-        parameters.rotationInitialSpreading[k]=0.0f;
+    // Spread particles using a uniform distribution
+    float spreadRange = 0.1;
+    for(int n = 0; n < parameters.numberParticles; n++)
+    {
+        classes[n]   = n % gestureTemplates.size();
+        alignment[n] = (rnduni() - 0.5) * spreadRange + 0.0;    // spread phase
+
+        for(int l = 0; l < dynamics[n].size(); l++) dynamics[n][l] = (rnduni() - 0.5) * spreadRange + 1.0;    // spread dynamics
+        for(int l = 0; l < scalings[n].size(); l++) scalings[n][l] = (rnduni() - 0.5) * spreadRange + 1.0;    // spread scalings
+        for(int l = 0; l < offsets[n].size(); l++) offsets[n][l] = 0.0;
+    }
+    
+}
+
+//--------------------------------------------------------------
+void ofxGVF::initStateValues(int particleIndex) {
+    
+#if BOOSTLIB
+	boost::uniform_real<float> ur(0,1);
+	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
+#else
+    std::tr1::uniform_real<float> ur(0,1);
+    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+#endif
+    
+    int     n = particleIndex;
+    float   spreadRange = 0.1;    // can be passed in argument
+    
+    classes[n]   = n % gestureTemplates.size();
+    alignment[n] = (rnduni() - 0.5) * spreadRange + 0.0;    // spread phase
+    
+    for(int l = 0; l < dynamics[n].size(); l++) dynamics[n][l] = (rnduni() - 0.5) * spreadRange + 1.0;    // spread dynamics
+    for(int l = 0; l < scalings[n].size(); l++) scalings[n][l] = (rnduni() - 0.5) * spreadRange + 1.0;    // spread scalings
+    for(int l = 0; l < offsets[n].size(); l++) offsets[n][l] = 0.0;
+    
+}
+
+//--------------------------------------------------------------
+void ofxGVF::initPrior() {
+    for (int k = 0; k < parameters.numberParticles; k++){
+        weights[k] = 1.0 / (float) parameters.numberParticles;
+    }
+}
+
+//--------------------------------------------------------------
+void ofxGVF::initPrior(int particleIndex) {
+    weights[particleIndex] = 1.0 / (float) parameters.numberParticles;
 }
 
 
 //--------------------------------------------------------------
-void ofxGVF::initParticleFilter() {
+void ofxGVF::initNoiseParameters() {
     
-    // Init Particle Filter
-    initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
-    initVec(g, parameters.numberParticles);                 // Vector of gesture class
-    initVec(w, parameters.numberParticles);                 // Weights
+    
+    //
+    // NOISE (ADDITIVE GAUSSIAN NOISE)
+    //=========================================================
+    
+    if (parameters.dynamicsVariance.size() != dynamicsDim) {
+        float variance = parameters.dynamicsVariance[0];
+        parameters.dynamicsVariance.resize(dynamicsDim);
+        for (int k=0; k<dynamicsDim; k++) parameters.dynamicsVariance[k] = variance;
+    }
+    if (parameters.scalingsVariance.size() != scalingsDim) {
+        float variance = parameters.scalingsVariance[0];
+        parameters.scalingsVariance.resize(scalingsDim);
+        for (int k=0; k<scalingsDim; k++) parameters.scalingsVariance[k] = variance;
+    }
+
+    
+    //    if (featVariances.size() != pdim) featVariances.resize(pdim);
+//    
+//    
+//    // init the dynamics of the states
+//    // dynamics are goven by the gaussian variances as:
+//    //      x_t = A x_{t-1} + v_t
+//    // where v_t is the gaussian noise, x_t the state space at t
+//    
+//    featVariances[0] = sqrt(parameters.phaseVariance);
+//    featVariances[1] = sqrt(parameters.speedVariance);
+//    for (int k = 0; k < scale_dim; k++)
+//        featVariances[2+k] = sqrt(parameters.scaleVariance[k]);
+//    for (int k = 0; k < rotation_dim; k++)
+//        featVariances[2+scale_dim+k] = sqrt(parameters.rotationVariance[k]);
+    
     
     
     // ADAPTATION OF THE TOLERANCE IF DEFAULT PARAMTERS
@@ -389,6 +425,7 @@ void ofxGVF::initParticleFilter() {
     
     //}
     // ---------------------------
+    
 }
 
 
@@ -422,6 +459,7 @@ void ofxGVF::removeAllGestureTemplates(){
 
 
 
+
 ////////////////////////////////////////////////////////////////
 //
 // STATE SET & GET - eg., clear, learn, follow
@@ -441,10 +479,7 @@ void ofxGVF::setState(ofxGVFState _state){
             state = _state;
             // if following and some templates have laready been recorded start learning
             if (gestureTemplates.size() > 0)
-            {
                 learn();
-                spreadParticles();
-            }
             break;
     }
 }
@@ -469,28 +504,28 @@ string ofxGVF::getStateAsString(){
     }
 }
 
+
+int ofxGVF::getDynamicsDim(){
+    return dynamicsDim;
+}
+int ofxGVF::getScalingsDim(){
+    return scalingsDim;
+}
+
+
+
 ////////////////////////////////////////////////////////////////
 //
 // CORE FUNCTIONS & MATH
 //
 ////////////////////////////////////////////////////////////////
 
+
 //--------------------------------------------------------------
+// Spread the particles by sampling values from intervals given my their means and ranges.
+// Note that the current implemented distribution for sampling the particles is the uniform distribution
 void ofxGVF::spreadParticles(){
     
-    if (has_learned)
-    {
-        spreadParticles(parameters);
-    }
-    // ???: else
-}
-
-//--------------------------------------------------------------
-// Spread the particles by sampling values from intervals given my their means and ranges.
-// Note that the current implemented distribution for sampling the particles is the uniform distribution
-//void GVF::spreadParticles(vector<float> & means, vector<float> & ranges){
-void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
-    
     
     // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
     // deprecated class should use uniform_real_distribution
@@ -501,107 +536,31 @@ void ofxGVF::spreadParticles(ofxGVFParameters _parameters){
     std::tr1::uniform_real<float> ur(0,1);
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
-	
-	unsigned int ngestures = gestureTemplates.size();// numTemplates+1;
     
-    float spreadRangePhase = 0.1;
-    float spreadRange = 0.1;
-    int scalingCoefficients  = _parameters.scaleInitialSpreading.size();
-    int numberRotationAngles = _parameters.rotationInitialSpreading.size();
-    
-    
-    // Spread particles using a uniform distribution
-	//for(int i = 0; i < pdim; i++)
-    for(int n = 0; n < parameters.numberParticles; n++){
-        X[n][0] = (rnduni() - 0.5) * spreadRangePhase + _parameters.phaseInitialSpreading;
-        X[n][1] = (rnduni() - 0.5) * spreadRange + _parameters.speedInitialSpreading;
-        for (int nn=0; nn<scalingCoefficients; nn++)
-            X[n][2+nn] = (rnduni() - 0.5) * spreadRange
-            + _parameters.scaleInitialSpreading[nn];
-        for (int nn=0; nn<numberRotationAngles; nn++)
-            X[n][2+scalingCoefficients+nn] = (rnduni() - 0.5) * _parameters.rotationInitialSpreading[nn] //spreadRange/2
-            + 0.0;
-    }
-    
-    
-    // Weights are also uniformly spread
-    initweights();
-    
-    // Spread uniformly the gesture class among the particles
-	for(int n = 0; n < parameters.numberParticles; n++){
-		g[n] = n % ngestures;
+    if (has_learned){
+
+        // INIT VALUES OF STATES
+        //=========================================================
         
-        // offsets are set to 0
-        for (int k=0; k < config.inputDimensions; k++)
-            offS[n][k] = 0.0;
-    }
-    
-}
-
-
-//--------------------------------------------------------------
-// Spread the particles by sampling values from intervals given my their means and ranges.
-// Note that the current implemented distribution for sampling the particles is the uniform distribution
-void ofxGVF::spreadParticles(vector<float> & means, vector<float> & ranges){
-    
-    
-    // USE BOOST FOR UNIFORM DISTRIBUTION!!!!
-    // deprecated class should use uniform_real_distribution
-#if BOOSTLIB
-	boost::uniform_real<float> ur(0,1);
-	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
-#else
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
-#endif
-	
-    //	unsigned int ngestures = numTemplates+1;
-	
-    // Spread particles using a uniform distribution
-	for(int i = 0; i < pdim; i++)
-		for(int n = 0; n < parameters.numberParticles; n++)
-			X[n][i] = (rnduni() - 0.5) * ranges[i] + means[i];
-    
-    // Weights are also uniformly spread
-    initweights();
-    initweights2();
-
-	
-    // Spread uniformly the gesture class among the particles
-	for(int n = 0; n < parameters.numberParticles; n++)
-    {
-		g[n] = n % getNumberOfGestureTemplates();
-    
-        // offsets are set to 0
-        for (int k=0; k < config.inputDimensions; k++)
-            offS[n][k]=0.0;
-    }
-    
-    
-}
-
-
-//--------------------------------------------------------------
-// Initialialize the weights of the particles. The initial values of the weights is a
-// unifrom weight over the particles
-void ofxGVF::initweights(){
-    for (int k = 0; k < parameters.numberParticles; k++){
-        w[k] = 1.0 / (float) parameters.numberParticles;
-    }
-    
-}
-
-
-//--------------------------------------------------------------
-// Initialialize the weights of the particles. The initial values of the weights is a
-// unifrom weight over the particles
-void ofxGVF::initweights2(){
-    for (int k = 0; k < parameters.numberParticles; k++){
-        for (int l = 0; l < X[0].size(); l++){
-            w2[k][l] = 1.0 / (float) parameters.numberParticles;
+        float spreadRange = 0.1;
+        for(int n = 0; n < parameters.numberParticles; n++)
+        {
+            classes[n]   = n % gestureTemplates.size();
+            alignment[n] = (rnduni() - 0.5) * spreadRange + 0.0;    // spread phase
+            
+            for(int l = 0; l < dynamics[n].size(); l++) dynamics[n][l] = (rnduni() - 0.5) * spreadRange + 1.0;    // spread dynamics
+            for(int l = 0; l < scalings[n].size(); l++) scalings[n][l] = (rnduni() - 0.5) * spreadRange + 1.0;    // spread scalings
+            for(int l = 0; l < offsets[n].size(); l++) offsets[n][l] = 0.0;
         }
+ 
+        // PRIOR
+        //=========================================================
+        initPrior();
+        
     }
 }
+
+
 
 
 
@@ -619,6 +578,9 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
     return dist;
 }
 
+
+
+
 //--------------------------------------------------------------
 // Performs the inference based on a given new observation. This is the core algorithm: does
 // one step of inference using particle filtering. It is the optimized version of the
@@ -629,223 +591,135 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 // plus a possible configuration of the features (value of speec, scale,...)
 void ofxGVF::particleFilter(vector<float> & obs){
     
-    
-    // random generators
-#if BOOSTLIB
-	boost::uniform_real<float> ur(0,1);
-	boost::variate_generator<boost::mt19937&, boost::uniform_real<float> > rnduni(rng, ur);
-#else
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
-#endif
-    
-    
-    
+
     // zero abs weights
     for(int i = 0 ; i < getNumberOfGestureTemplates(); i++){
         abs_weights[i] = 0.0;
     }
     
-    // clear any previous information about the particles' positions
-    // (this is used for possible visualization but not in the inference)
-    particlesPositions.clear();
-    
     float sumw = 0.0;
-    vector<float> sumw2(pdim,0.0);
-    
 
-    
     // MAIN LOOP: same process for EACH particle (row n in X)
     for(int n = 0; n<parameters.numberParticles; n++)
     {
-        
-        
-        // Move the particle
-        // Position respects a first order dynamic: p = p + v/L
-        X[n][0] += (*rndnorm)() * featVariances[0] + X[n][1]/gestureTemplates[g[n]].getTemplateLength(); //gestureLengths[g[n]];
-        
-        
-		// Move the other state elements according a gaussian noise
-        // featVariances vector of variances
-        for(int l= 1; l < X[n].size(); l++)
-			X[n][l] += (*rndnorm)() * featVariances[l];
-        
-		vector<float> x_n = X[n];
-        
-        
-        //        if (!config.segmentation){ ???
-        if(x_n[0] < 0.0 || x_n[0] > 1.0) {
-            w[n] = 0.0;
 
-        }
-        else {       // ...otherwise we propagate the particle's values and update its weight
-            
-            
-            int pgi = g[n];
-            
-            // given the phase between 0 and 1 (first value of the particle x),
-            // return the index of the corresponding gesture, given by g(n)
-            int frameindex = min((int)(gestureTemplates[pgi].getTemplateLength() - 1),(int)(floor(x_n[0] * gestureTemplates[pgi].getTemplateLength() ) ) ); //min((int)(gestureLengths[pgi]-1),(int)(floor(x_n[0] * gestureLengths[pgi])));
-            
-            // given the index, return the gesture template value at this index
-            vector<float> vref(config.inputDimensions);
-            setVec(vref, gestureTemplates[pgi].getTemplate()[frameindex]);
-
-            // if normalization
-            if (config.normalization)
-                for (int kk=0; kk<vref.size(); kk++)
-                    vref[kk] = vref[kk] / globalNormalizationFactor;
-            
-            //setVec(vref, R_single[pgi][frameindex]);
-            
-            
-            vector<float> vobs(config.inputDimensions);
-            if (config.translate)
-                for (int j=0; j < config.inputDimensions; j++)
-                    vobs[j]=obs[j]-offS[n][j];
-            else
-                setVec(vobs, obs);
-            
-            // if normalization
-            if (config.normalization)
-                for (int kk=0; kk<vobs.size(); kk++)
-                    vobs[kk] = vobs[kk] / globalNormalizationFactor;
-            
-            
-            // If incoming data is 2-dimensional: we estimate phase, speed, scale, angle
-            if (config.inputDimensions == 2){
-                
-                // scaling
-                for (int k=0;k < config.inputDimensions;k++)
-                    vref[k] *= x_n[2];
-                
-                // rotation
-                float alpha = x_n[3];
-                float tmp0=vref[0]; float tmp1=vref[1];
-                vref[0] = cos(alpha)*tmp0 - sin(alpha)*tmp1;
-                vref[1] = sin(alpha)*tmp0 + cos(alpha)*tmp1;
-                
-                // put the positions into vector
-                // [used for visualization]
-                std::vector<float> temp;
-                temp.push_back(vref[0]);
-                temp.push_back(vref[1]);
-                particlesPositions.push_back(temp);
-                
-            }
-            // If incoming data is 3-dimensional
-            else if (config.inputDimensions == 3){
-                
-                // Scale template sample according to the estimated scaling coefficients
-                int numberScaleCoefficients = parameters.scaleInitialSpreading.size();
-                for (int k = 0; k < numberScaleCoefficients; k++)
-                    vref[k] *= x_n[2+k];
-                
-                // Rotate template sample according to the estimated angles of rotations (3d)
-                vector<vector< float> > RotMatrix = return_RotationMatrix_3d(x_n[2+numberScaleCoefficients],
-                                                                             x_n[2+numberScaleCoefficients+1],
-                                                                             x_n[2+numberScaleCoefficients+2]);
-                vref = multiplyMat(RotMatrix, vref);
-                
-                // put the positions into vector
-                // [used for visualization]
-                std::vector<float> temp;
-                for (int ndi=0; ndi < config.inputDimensions; ndi++)
-                    temp.push_back(vref[ndi]);
-                particlesPositions.push_back(temp);
-                
-            }
-            else {
-                
-                // sca1ing
-                for (int k=0;k < config.inputDimensions; k++)
-                    vref[k] *= x_n[2];
-                
-                // put the positions into vector
-                // [used for visualization]
-                std::vector<float> temp;
-                for (int ndi=0; ndi < config.inputDimensions; ndi++)
-                    temp.push_back(vref[ndi]);
-                particlesPositions.push_back(temp);
-                
-            }
-            
-            
-            
-            // compute distance between estimation given the current particle values
-            // and the incoming observation
-            
-            // define weights here on the dimension if needed
-            vector<float> dimWeights(config.inputDimensions);
-            for(int k = 0; k < config.inputDimensions; k++) dimWeights[k] = 1.0 / config.inputDimensions;
-            
-            // observation likelihood and update weights
-            float dist = distance_weightedEuclidean(vref,vobs,dimWeights) * 1 / (parameters.tolerance * parameters.tolerance);
-            
-            
-            //cout << "n="<< n << " " << dist << " " << distance_weightedEuclidean(vref,obs,dimWeights) << " " << parameters.tolerance << endl;
-            
-            if(parameters.distribution == 0.0f)    // Gaussian distribution
-            {
-                //                cout << "Dist is " << dist << endl;
-                //                cout << "exp(-dist) " << exp(-dist) << endl;
-                w[n]   *= exp(-dist);
-                
-//                for (int kk=0; kk<pdim; kk++)
-//                    w2[n][kk] *= exp(-dist);
-                
-                abs_weights[g[n]] += exp(-dist);
-
-                //    cout << n << "- " << g[n] << " -- " << vref[0] << "," << vobs[0] << " | " << vref[1]
-                //        << "," << vobs[1] << " | " << offS[n][0] << " " << offS[n][1] << " " << dist << "," << w[n] << " " << X[n][0] << endl;
-            }
-            else            // Student's distribution
-            {
-                w[n]   *= pow(dist/nu + 1, -nu/2 - 1);    // dimension is 2 .. pay attention if editing]
-            }
-            
-            
-            
-        }
+        updatePrior(n);             // update particle values in X[n]
+		updateLikelihood(obs, n);   // update likelihood: here the weight of the particle n given by w[n]
         
-        sumw += w[n];
-//        for (int kk=0; kk<pdim; kk++)
-//            sumw2[kk] += w2[n][kk];
-        
+        sumw += weights[n];   // sum weights
     }
-    //    }
     
-    // normalize weights and compute criterion for degeneracy
-    //	w /= w.sum();
-    //	float neff = 1./w.dot(w);
+    // normalize the weights and compute the resampling criterion
     float dotProdw = 0.0;
-    vector<float> dotProdw2(pdim,0.0);
     for (int k = 0; k < parameters.numberParticles; k++){
-        w[k] /= sumw;
-        dotProdw+=w[k]*w[k];
-        
-//        for (int kk=0; kk<pdim; kk++){
-//            w2[k][kk] /= sumw2[kk];
-//            dotProdw2[kk]+=w2[k][kk]*w2[k][kk];
-//        }
+        weights[k] /= sumw;
+        dotProdw   += weights[k] * weights[k];
     }
-    float neff = 1./dotProdw;
-    
-    
-    
+
     // avoid degeneracy (no particles active, i.e. weights = 0) by resampling
     // around the active particles
-    //cout << "resamplingThreshold: " << resamplingThreshold << " " << neff << endl;
-	if(neff < parameters.resamplingThreshold)
+	if( (1./dotProdw) < parameters.resamplingThreshold)
     {
-        //    post("resampling");
-        //cout << "Resampling" << endl;
         resampleAccordingToWeights(obs);
-        initweights();
+        initPrior();
     }
+
+}
+
+
+//--------------------------------------------------------------
+void ofxGVF::updatePrior(int particleIndex) {
+
     
+    rndnorm = new tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> >(rng, *normdist);
+    
+    // convenient ...
+    int n = particleIndex;
+    
+    // Position respects a first order dynamic: p = p + v/L + a
+    alignment[n] += (*rndnorm)() * sqrt(parameters.phaseVariance) +
+        dynamics[n][0]/gestureTemplates[classes[n]].getTemplateLength();
+    
+    // Move dynamics
+    for(int l= 0; l < dynamics[n].size(); l++)
+        dynamics[n][l] += (*rndnorm)() * parameters.dynamicsVariance[l];
+
+    // Move scalings
+    for(int l= 0; l < scalings[n].size(); l++)
+        scalings[n][l] += (*rndnorm)() * parameters.scalingsVariance[l];
     
 }
+
+
+//--------------------------------------------------------------
+void ofxGVF::updateLikelihood(vector<float> obs, int particleIndex) {
+    
+    // convenient stuff ...
+    int n = particleIndex;
+    vector<float> x_n = X[n];
+    
+
+    // Test if the particle's phase is > 1 or < 0
+    if(alignment[n] < 0.0 || alignment[n] > 1.0)
+    {
+        weights[n] = 0.0;
+        
+    }
+    else {       // ...otherwise we propagate the particle's values and update its weight
+        
+        
+        // vref is value in the template given by the phase of the particle at particleIndex
+        vector<float> vref(config.inputDimensions);
+        
+        int frameindex = min((int)(gestureTemplates[classes[n]].getTemplateLength() - 1),
+                             (int)(floor(alignment[n] * gestureTemplates[classes[n]].getTemplateLength() ) ) );
+
+        setVec(vref, gestureTemplates[classes[n]].getTemplate()[frameindex]);
+        
+        
+        // SCALING
+        for (int k=0;k < config.inputDimensions; k++) {
+            if (config.normalization){
+                vref[k] = vref[k] / globalNormalizationFactor;
+            }
+            vref[k] *= scalings[n][k];
+        }
+        
+        vector<float> vobs(config.inputDimensions);
+        if (config.translate)
+            for (int j=0; j < config.inputDimensions; j++)
+                vobs[j]=obs[j]-offsets[n][j];
+        else
+            setVec(vobs, obs);
+        
+        
+        // if normalization
+        if (config.normalization)
+            for (int kk=0; kk<vobs.size(); kk++)
+                vobs[kk] = vobs[kk] / globalNormalizationFactor;
+        
+        
+        // define weights here on the dimension if needed and compute the distance
+        float dist = distance_weightedEuclidean(vref,vobs,dimWeights) * 1 / (parameters.tolerance * parameters.tolerance);
+        
+        
+        if(parameters.distribution == 0.0f){    // Gaussian distribution
+            weights[n]   *= exp(-dist);
+            abs_weights[classes[n]] += exp(-dist);
+        }
+        else {            // Student's distribution
+            weights[n]   *= pow(dist/nu + 1, -nu/2 - 1);    // dimension is 2 .. pay attention if editing]
+        }
+        
+        
+    }
+
+}
+
+
+
+
+
 
 //--------------------------------------------------------------
 // Resampling function. The function resamples the particles based on the weights.
@@ -865,15 +739,21 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
     std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
 #endif
     
-    vector< vector<float> > oldX;
-    setMat(oldX, X);
-    vector<int> oldG;
-    setVec(oldG, g);
+    vector<float>           oldClasses;
+    vector<float>           oldAlignment;
+    vector< vector<float> > oldDynamics;
+    vector< vector<float> > oldScalings;
+    
+    setVec(oldClasses,   classes);
+    setVec(oldAlignment, alignment);
+    setMat(oldDynamics,  dynamics);
+    setMat(oldScalings,  scalings);
+
     vector<float> c(numOfPart);
     
     c[0] = 0;
     for(int i = 1; i < numOfPart; i++)
-        c[i] = c[i-1] + w[i];
+        c[i] = c[i-1] + weights[i];
     int i = 0;
     float u0 = rnduni()/numOfPart;
     
@@ -881,6 +761,7 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
     // defining here the number of particles allocated to reinitialisation
     // used for segmentation
     int free_pool = 0;
+    
     if (config.segmentation)
         free_pool = round(3*numOfPart/100);
     
@@ -892,51 +773,53 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
             i++;
         }
         
-        for (int kk=0;kk<X[0].size();kk++)
-            X[j][kk] = oldX[i][kk];
-        g[j] = oldG[i];
+        for (int l=0;l<dynamicsDim;l++)
+            dynamics[j][l] = oldDynamics[i][l];
         
-        w[j] = 1.0/(float)numOfPart;
+        for (int l=0;l<scalingsDim;l++)
+            scalings[j][l] = oldScalings[i][l];
+
+        classes[j] = oldClasses[i];
+        
+        weights[j] = 1.0/(float)numOfPart;
     }
+    
     
     for (int j = 0; j < free_pool; j++){
         
         int index = round(rnduni()*numOfPart);
+        if (index == numOfPart) index = 0;
+
+        initStateValues(index);
+        weights[index] = 1.0/(float)(numOfPart * numOfPart);
         
-        if (index == numOfPart)
-            index = 0;
-        
-        w[index] = 1.0/(float)(numOfPart * numOfPart);
-        
-        
-        float spreadRange = 0.02;
-        int scalingCoefficients  = parameters.scaleInitialSpreading.size();
-        int numberRotationAngles = parameters.rotationInitialSpreading.size();
-        // Spread particles using a uniform distribution
-        X[index][0] = (rnduni() - 0.5) * spreadRange + parameters.phaseInitialSpreading;
-        X[index][1] = (rnduni() - 0.5) * spreadRange + parameters.speedInitialSpreading;
-        for (int nn=0; nn<scalingCoefficients; nn++)
-            X[index][2+nn] = (rnduni() - 0.5) * spreadRange + parameters.scaleInitialSpreading[nn];
-        for (int nn=0; nn<numberRotationAngles; nn++)
-            X[index][2+scalingCoefficients+nn] = (rnduni() - 0.5) * 0.0 + parameters.rotationInitialSpreading[nn];
+//        float spreadRange = 0.02;
+//        int scalingCoefficients  = parameters.scaleInitialSpreading.size();
+//        int numberRotationAngles = parameters.rotationInitialSpreading.size();
+//        // Spread particles using a uniform distribution
+//        X[index][0] = (rnduni() - 0.5) * spreadRange + parameters.phaseInitialSpreading;
+//        X[index][1] = (rnduni() - 0.5) * spreadRange + parameters.speedInitialSpreading;
+//        for (int nn=0; nn<scalingCoefficients; nn++)
+//            X[index][2+nn] = (rnduni() - 0.5) * spreadRange + parameters.scaleInitialSpreading[nn];
+//        for (int nn=0; nn<numberRotationAngles; nn++)
+//            X[index][2+scalingCoefficients+nn] = (rnduni() - 0.5) * 0.0 + parameters.rotationInitialSpreading[nn];
         
         if (config.translate)
-        {
-            for (int jj=0; jj<config.inputDimensions; jj++)
-                offS[index][jj]=obs[jj];
-        }
+            for (int jj=0; jj<config.inputDimensions; jj++) offsets[index][jj]=obs[jj];
         
-        g[index] = index % getNumberOfGestureTemplates(); // distribute particles across templates
+        classes[index] = index % getNumberOfGestureTemplates(); // distribute particles across templates
+        
     }
-    //initweights();
+    
+
     
     if (config.segmentation)
     {
         float sumw = 0.0;
         for (int j = 0; j < numOfPart; j++)
-            sumw += w[j];
+            sumw += weights[j];
         for (int j = 0; j < numOfPart; j++)
-            w[j] /= sumw;
+            weights[j] /= sumw;
     }
     
     
@@ -946,53 +829,52 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
 // Step function is the function called outside for inference. It
 // has been originally created to be able to infer on a new observation or
 // a set of observation.
-void ofxGVF::infer(vector<float> vect){
+void ofxGVF::infer(vector<float> obs){
 
-    particleFilter(vect);
+    particleFilter(obs);
     updateEstimatedStatus();
     
 }
 
 
 void ofxGVF::updateEstimatedStatus(){
-    
+  
     
     int numOfPart = parameters.numberParticles;
     
+    setVec(estimatedAlignment, 0.0f, getNumberOfGestureTemplates());            // rows are gestures
+    setMat(estimatedDynamics,  0.0f, getNumberOfGestureTemplates(), dynamicsDim);  // rows are gestures, cols are features + probabilities
+    setMat(estimatedScalings,  0.0f, getNumberOfGestureTemplates(), scalingsDim);   // rows are gestures, cols are features + probabilities
+    setVec(likelihoods, 0.0f, getNumberOfGestureTemplates());            // rows are gestures
     
-    setMat(status, 0.0f, getNumberOfGestureTemplates(), pdim + 1);   // rows are gestures, cols are features + probabilities
-	
-    
-	// compute the estimated features by computing the expected values
-    // sum ( feature values * weights)
-	for(int n = 0; n < numOfPart; n++){
-        int gi = g[n];
-        for(int m = 0; m < pdim; m++)
-            status[gi][m] += X[n][m] * w[n];
-        
-        // compute probability
-		status[gi][pdim] += w[n];
+	// compute the estimated features and likelihoods
+	for(int n = 0; n < numOfPart; n++)
+    {
+        estimatedAlignment[classes[n]] += alignment[n] * weights[n];
+        for(int m = 0; m < dynamicsDim; m++) estimatedDynamics[classes[n]][m] += dynamics[n][m] * weights[n];
+        for(int m = 0; m < scalingsDim; m++) estimatedScalings[classes[n]][m] += scalings[n][m] * weights[n];
+		likelihoods[classes[n]] += weights[n];
     }
 	
     // calculate most probable index during scaling...
     float maxProbability = 0.0f;
     mostProbableIndex = -1;
     
-	for(int gi = 0; gi < getNumberOfGestureTemplates(); gi++){
-        for(int m = 0; m < pdim; m++){
-            status[gi][m] /= status[gi][pdim];
+	for(int gi = 0; gi < getNumberOfGestureTemplates(); gi++)
+    {
+        estimatedAlignment[gi] /= likelihoods[gi];
+        for(int m = 0; m < dynamicsDim; m++) estimatedDynamics[gi][m] /= likelihoods[gi];
+        for(int m = 0; m < scalingsDim; m++) estimatedScalings[gi][m] /= likelihoods[gi];
+        
+        if(likelihoods[gi] > maxProbability){
+            maxProbability      = likelihoods[gi];
+            mostProbableIndex   = gi;
         }
-        if(status[gi][pdim] > maxProbability){
-            maxProbability = status[gi][pdim];
-            mostProbableIndex = gi;
-        }
-		//es.block(gi,0,1,pdim) /= es(gi,pdim);
 	}
     
-    if(mostProbableIndex > -1)
-        mostProbableStatus = status[mostProbableIndex];
-    
+    // update outcomes
     UpdateOutcomes();
+
 }
 
 ////////////////////////////////////////////////////////////////
@@ -1001,56 +883,37 @@ void ofxGVF::updateEstimatedStatus(){
 //
 ////////////////////////////////////////////////////////////////
 
-// GESTURE PROBABILITIES + POSITIONS
+
 
 //--------------------------------------------------------------
 // Returns the index of the currently recognized gesture
-// NOW CACHED DURING 'infer' see updateEstimatedStatus()
 int ofxGVF::getMostProbableGestureIndex(){
     return mostProbableIndex;
 }
 
 //--------------------------------------------------------------
-// Returns the estimates features. It calls status to refer to the status of the state
-// space which comprises the features to be adapted. If features are phase, speed, scale and angle,
-// the function will return these estimateed features for each gesture, plus their probabilities.
-// The returned matrix is nxm
-//   rows correspond to the gestures in the vocabulary
-//   cols correspond to the features (the last column is the [conditionnal] probability of each gesture)
-// The output matrix is an Eigen matrix
-// NOW CACHED DURING 'infer' see updateEstimatedStatus()
-vector< vector<float> > ofxGVF::getEstimatedStatus(){
-    return status;
-}
-
+// Returns the estimates features.
 ofxGVFOutcomes ofxGVF::getOutcomes() {
     return outcomes;
 }
 
+//--------------------------------------------------------------
 void ofxGVF::UpdateOutcomes() {
     
+    // most probable gesture index
     outcomes.most_probable = mostProbableIndex;
     
-    outcomes.estimations.clear(); // FIXME: edit later to only clear when necessary
-    
     // Fill estimation for each gesture
-    for (int i = 0; i < gestureTemplates.size(); ++i) {
+    for (int gi = 0; gi < gestureTemplates.size(); ++gi) {
+        
         ofxGVFEstimation estimation;
         
-        estimation.phase = status[i][0];
+        estimation.probability = likelihoods[gi];
+        estimation.alignment = alignment[gi];
+        for (int j = 0; j < dynamicsDim; ++j) estimation.dynamics[j] = estimatedDynamics[gi][j];
+        for (int j = 0; j < scalingsDim; ++j) estimation.scalings[j] = estimatedScalings[gi][j];
         
-        estimation.speed = status[i][1];
-        
-        estimation.scale = vector<float> (scale_dim);
-        for (int j = 0; j < scale_dim; ++j)
-            estimation.scale[j] = status[i][2 + j];
-        
-        estimation.rotation = vector<float> (rotation_dim);
-        for (int j = 0; j < rotation_dim; ++j)
-            estimation.rotation[j] = status[i][2 + scale_dim + j];
-        
-        estimation.probability = status[i][status[0].size() - 1]; // !!!: Probability is last in list (counter-intuitive!)
-        
+        // push estimation for gesture gi in outcomes
         outcomes.estimations.push_back(estimation);
     }
     
@@ -1098,7 +961,7 @@ vector<float> ofxGVF::getGestureProbabilities()
 	vector<float> gp(getNumberOfGestureTemplates());
     setVec(gp, 0.0f);
 	for(int n = 0; n < parameters.numberParticles; n++)
-		gp[g[n]] += w[n];
+		gp[classes[n]] += weights[n];
     
 	return gp;
 }
@@ -1132,6 +995,7 @@ ofxGVFConfig ofxGVF::getConfig(){
 //--------------------------------------------------------------
 void ofxGVF::setParameters(ofxGVFParameters _parameters){
     
+    // if the number of particles has changed, we have to re-allocate matrices
     if (_parameters.numberParticles != parameters.numberParticles)
     {
         parameters = _parameters;
@@ -1139,28 +1003,30 @@ void ofxGVF::setParameters(ofxGVFParameters _parameters){
         if (parameters.numberParticles < 4)     // minimum number of particles allowed
             parameters.numberParticles = 4;
         
-        initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
-        initVec(g, parameters.numberParticles);                 // Vector of gesture class
-        initVec(w, parameters.numberParticles);                 // Weights
-        
-        // Offset for segmentation
-        offS=vector<vector<float> >(parameters.numberParticles);
-        for (int k = 0; k < parameters.numberParticles; k++)
-        {
-            offS[k] = vector<float>(config.inputDimensions);
-            for (int j = 0; j < config.inputDimensions; j++)
-                offS[k][j] = 0.0;
-        }
+//        initMat(X, parameters.numberParticles, pdim);           // Matrix of NS particles
+//        initVec(g, parameters.numberParticles);                 // Vector of gesture class
+//        initVec(w, parameters.numberParticles);                 // Weights
+//        
+//        // Offset for segmentation
+//        offS=vector<vector<float> >(parameters.numberParticles);
+//        for (int k = 0; k < parameters.numberParticles; k++)
+//        {
+//            offS[k] = vector<float>(config.inputDimensions);
+//            for (int j = 0; j < config.inputDimensions; j++)
+//                offS[k][j] = 0.0;
+//        }
+
+        learn();
         
         if (parameters.numberParticles <= parameters.resamplingThreshold) {
             parameters.resamplingThreshold = parameters.numberParticles / 4;
         }
         
-        spreadParticles();
+        //spreadParticles();
     }
-    else {
+    else
         parameters = _parameters;
-    }
+    
 
 }
 
@@ -1171,12 +1037,18 @@ ofxGVFParameters ofxGVF::getParameters(){
 //--------------------------------------------------------------
 // Update the number of particles
 void ofxGVF::setNumberOfParticles(int numberOfParticles){
-    particlesPositions.clear();
-    initMat(X, numberOfParticles, pdim);          // Matrix of NS particles
-    initVec(g, numberOfParticles);               // Vector of gesture class
-    initVec(w, numberOfParticles);               // Weights
-    //    logW = VectorXf(newNs);
-    spreadParticles();
+  
+    parameters.numberParticles = numberOfParticles;
+    
+    if (parameters.numberParticles < 4)     // minimum number of particles allowed
+        parameters.numberParticles = 4;
+    
+    learn();
+    
+    if (parameters.numberParticles <= parameters.resamplingThreshold) {
+        parameters.resamplingThreshold = parameters.numberParticles / 4;
+    }
+
 }
 
 //--------------------------------------------------------------
@@ -1187,7 +1059,8 @@ int ofxGVF::getNumberOfParticles(){
 //--------------------------------------------------------------
 // Update the resampling threshold used to avoid degeneracy problem
 void ofxGVF::setResamplingThreshold(int _resamplingThreshold){
-    if (_resamplingThreshold >= parameters.numberParticles) _resamplingThreshold = floor(parameters.numberParticles/2.0f); // TODO: we should provide feedback to the GUI!!! maybe a get max resampleThresh func??
+    if (_resamplingThreshold >= parameters.numberParticles)
+        _resamplingThreshold = floor(parameters.numberParticles/2.0f);
     parameters.resamplingThreshold = _resamplingThreshold;
 }
 
@@ -1203,9 +1076,7 @@ int ofxGVF::getResamplingThreshold(){
 // low value: less tolerant so more precise but can diverge
 // high value: more tolerant so less precise but converge more easily
 void ofxGVF::setTolerance(float _tolerance){
-    if (_tolerance == 0.0) _tolerance = 0.1; // TODO: we should provide feedback to the GUI!!!
-    //_tolerance = 1.0f / (_tolerance * _tolerance);
-	//tolerance = _tolerance > 0.0f ? _tolerance : tolerance;
+    if (_tolerance <= 0.0) _tolerance = 0.1;
     parameters.tolerance = _tolerance;
 }
 
@@ -1236,118 +1107,56 @@ float ofxGVF::getDistribution(){
 //    return kGestureType;
 //}
 
-// VARIANCE COEFFICIENTS
 
+// VARIANCE COEFFICIENTS: PHASE
 //--------------------------------------------------------------
 void ofxGVF::setPhaseVariance(float phaseVariance){
     parameters.phaseVariance = phaseVariance;
-    featVariances[0] = sqrt(phaseVariance);
 }
-
 //--------------------------------------------------------------
 float ofxGVF::getPhaseVariance(){
     return parameters.phaseVariance;
 }
 
+
+// VARIANCE COEFFICIENTS: DYNAMICS
 //--------------------------------------------------------------
-void ofxGVF::setSpeedVariance(float speedVariance){
-    parameters.speedVariance = speedVariance;
-    featVariances[1] = sqrt(speedVariance);
+void ofxGVF::setDynamicsVariance(float dynVariance, int dim){
+    // here dim should start at 1!!!
+    if (dim<parameters.dynamicsVariance.size())
+        parameters.dynamicsVariance[dim-1] = dynVariance;
+}
+//--------------------------------------------------------------
+void ofxGVF::setDynamicsVariance(vector<float> dynVariance){
+    parameters.dynamicsVariance = dynVariance;
+}
+//--------------------------------------------------------------
+vector<float> ofxGVF::getDynamicsVariance(){
+    return parameters.dynamicsVariance;
 }
 
+
+// VARIANCE COEFFICIENTS: SCALINGS
 //--------------------------------------------------------------
-float ofxGVF::getSpeedVariance(){
-    return parameters.speedVariance;
+void ofxGVF::setScalingsVariance(float scaleVariance, int dim){
+    // here dim should start at 1!!!
+    if (dim<parameters.scalingsVariance.size())
+        parameters.scalingsVariance[dim-1] = scaleVariance;
+}
+//--------------------------------------------------------------
+void ofxGVF::setScalingsVariance(vector<float> scaleVariance){
+     parameters.scaleVariance = scaleVariance;
+}
+//--------------------------------------------------------------
+vector<float> ofxGVF::getScalingsVariance(){
+    return parameters.scalingsVariance;
 }
 
-//--------------------------------------------------------------
-void ofxGVF::setScaleVariance(float scaleVariance, int dim){
-    
-    vector<float> scale_variance = parameters.scaleVariance;
-    
-    scale_variance[dim] = scaleVariance;
-    
-    setScaleVariance(scale_variance);
-}
 
-//--------------------------------------------------------------
-void ofxGVF::setScaleVariance(vector<float> scaleVariance){
-    parameters.scaleVariance = scaleVariance;
-//    initVariances(scale_dim, rotation_dim);
-    for (int k = 0; k < scale_dim; k++)
-        featVariances[2+k] = sqrt(parameters.scaleVariance[k]);
-}
 
-//--------------------------------------------------------------
-vector<float> ofxGVF::getScaleVariance(){
-    return parameters.scaleVariance;
-}
 
-//--------------------------------------------------------------
-void ofxGVF::setRotationVariance(float rotationVariance, int dim){
-    
-    vector<float> rotation_variance = parameters.rotationVariance;
-    
-    rotation_variance[dim] = rotationVariance;
-    
-    setRotationVariance(rotation_variance);
-}
 
-//--------------------------------------------------------------
-void ofxGVF::setRotationVariance(vector<float> rotationVariance){
-    
-    parameters.rotationVariance = rotationVariance;
-    //initVariances(scale_dim, rotation_dim);
-    for (int k = 0; k < rotation_dim; k++)
-        featVariances[2+scale_dim+k] = sqrt(parameters.rotationVariance[k]);
-    
-}
 
-//--------------------------------------------------------------
-vector<float> ofxGVF::getRotationVariance(){
-    return parameters.rotationVariance;
-}
-
-// MATHS
-
-//--------------------------------------------------------------
-// Return the standard deviation of the observation likelihood
-float ofxGVF::getObservationStandardDeviation(){
-    return parameters.tolerance;
-}
-
-//--------------------------------------------------------------
-// Return the particle data (each row is a particle)
-vector< vector<float> > ofxGVF::getX(){
-    return X;
-}
-
-//--------------------------------------------------------------
-// Return the gesture index for each particle
-vector<int> ofxGVF::getG(){
-    return g;
-}
-
-//--------------------------------------------------------------
-// Return particles' weights
-vector<float> ofxGVF::getW(){
-    return w;
-}
-
-// MISC
-
-//--------------------------------------------------------------
-// Get a vector of Offsets corresponging to each particle's
-// assigned offset
-vector<vector<float> > ofxGVF::getIndividualOffset() {
-    return offS;
-}
-
-//--------------------------------------------------------------
-// Get the offset for a specific particle
-vector<float> ofxGVF::getIndividualOffset(int particleIndex) {
-    return offS[particleIndex];
-}
 
 
 // UTILITIES
@@ -1373,20 +1182,7 @@ void ofxGVF::saveTemplates(string filename){
         }
     }
     file_write.close();
-    
-    //    std::string directory = filename;
-    //
-    //    std::ofstream file_write(directory.c_str());
-    //    for(int i=0; i<R_single.size(); i++){
-    //        file_write << "template " << i << " " << inputDim << endl;
-    //        for(int j=0; j<R_single[i].size(); j++)
-    //        {
-    //            for(int k=0; k<inputDim; k++)
-    //                file_write << R_single[i][j][k] << " ";
-    //            file_write << endl;
-    //        }
-    //    }
-    //    file_write.close();
+
 }
 
 

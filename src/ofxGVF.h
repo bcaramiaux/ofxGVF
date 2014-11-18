@@ -53,51 +53,34 @@ public:
         STATE_FOLLOWING
     };
     
-	// constructor of the gvf instance
+    
+    
+    ///////////////////////////////
+    // Constructors / Destructor //
+	///////////////////////////////
+    
 	ofxGVF(); // use default config and parameters
     ofxGVF(ofxGVFConfig _config); // use default parameters
 	ofxGVF(ofxGVFConfig _config, ofxGVFParameters _parameters);
     
 	// destructor
     ~ofxGVF();
+
+    
+    
+    /////////////
+    // Set-Ups //
+	/////////////
 	
     void setup(); // use default config and parameters
     void setup(ofxGVFConfig _config); // default parameters
     void setup(ofxGVFConfig _config, ofxGVFParameters _parameters);
-    void learn();
-	// spread particles
-	void spreadParticles();         // use default parameter values
-	void spreadParticles(vector<float> & means, vector<float> & ranges);
-    void spreadParticles(ofxGVFParameters _parameters);
-	// inference
-    void particleFilter(vector<float> & obs);
-	
-    // resample particles according to the proba distrib given by the weights
-    void resampleAccordingToWeights(vector<float> obs);
-	
-    // makes the inference by calling particleFilteringOptim
-	void infer(vector<float> data);   // rename to update?
-	void updateEstimatedStatus();       // should be private?
+
+    
     
     //////////////////////////
     // Gestures & Templates //
 	//////////////////////////
-    
-    // GESTURE PROBABILITIES + POSITIONS
-    
-    int getMostProbableGestureIndex();
- 
-    ofxGVFOutcomes getOutcomes();
-    ofxGVFEstimation getTemplateRecogInfo(int templateNumber);
-    ofxGVFEstimation getRecogInfoOfMostProbable(); // !!!: bad naming
-    
-    // !!!: Now unecessary
-    vector< vector<float> > getEstimatedStatus();
-    
-    vector<float> getGestureProbabilities();
-    vector< vector<float> > getParticlesPositions();
-    
-    // TEMPLATES
     
     void addGestureTemplate(ofxGVFGesture & gestureTemplate);
     ofxGVFGesture & getGestureTemplate(int index);
@@ -110,8 +93,64 @@ public:
     // TODO: clearTemplate by given ID
     void clearTemplate(int id);
     
-	// reset ofxGVF
-	void clear();
+    
+    // TODO: some methods below (not implemented) to handle multi-examples for a gesture
+    void addGestureExamples(vector<ofxGVFGesture> & gestureExamples);   // add examples of one gesture to the Vocabulary
+    vector<ofxGVFGesture> & getGestureExamples(int gestureIndex);       // get all the examples of a given gesture
+    ofxGVFGesture & getGestureExample(int gestureIndex, int exampleIndex = 0);   // get one example of a given gesture (default: the first one)
+    int getNumberOfGestures();                          // return the number of gesture classes (not counting the examples)
+    int getNumberOfGestureExamples(int gestureIndex);   // return the number of examples for a given gesture
+    
+    
+    
+    /////////////////////
+    // Particle Filter //
+	/////////////////////
+
+    void learn();               // learn parameters from the gesture examples
+	void spreadParticles();     // use default parameter values
+    void spreadParticles(ofxGVFParameters _parameters);     // use other parameters
+    void particleFilter(vector<float> & obs);               // incremental step of filtering given the obs
+    void resampleAccordingToWeights(vector<float> obs);     // resampling process
+    
+    
+    
+    ///////////////
+    // Inference //
+	///////////////
+
+	void infer(vector<float> obs);     // call the inference method on the observation
+    void updateEstimatedStatus();       // update estimated outcome
+    
+    
+    
+    //////////////////////////
+    // OUTCOMES //
+	//////////////////////////
+    
+    int getMostProbableGestureIndex();
+ 
+    ofxGVFOutcomes getOutcomes();
+    ofxGVFEstimation getTemplateRecogInfo(int templateNumber);
+    ofxGVFEstimation getRecogInfoOfMostProbable(); // !!!: bad naming
+    
+    
+    vector<float> getGestureProbabilities();
+    vector< vector<float> > getParticlesPositions();
+    
+
+    
+    /////////////////////
+    // System Function //
+	/////////////////////
+    
+    int getDynamicsDim();
+    int getScalingsDim();
+    
+    void restart();     // restart the GVF
+	void clear();       // clear templates etc.
+    
+    
     
     ///////////////////////
     // Getters & Setters //
@@ -151,6 +190,16 @@ public:
     void setPhaseVariance(float phaseVariance);
     float getPhaseVariance();
     
+    void setScalingsVariance(float scaleVariance, int dim);
+    void setScalingsVariance(vector<float> scaleVariance);
+    vector<float> getScalingsVariance();
+    
+    void setDynamicsVariance(float dynVariance, int dim);
+    void setDynamicsVariance(vector<float> dynVariance);
+    vector<float> getDynamicsVariance();
+    
+    
+    // oldies
     void setSpeedVariance(float speedVariance);
     float getSpeedVariance();
     
@@ -163,8 +212,6 @@ public:
     vector<float> getRotationVariance();
     
     // MATHS
-    
-    float   getObservationStandardDeviation();
     
     vector< vector<float> > getX();
 	vector<int>    getG();
@@ -183,6 +230,7 @@ public:
     string getStateAsString(ofxGVFState state);
     
     float getGlobalNormalizationFactor();
+    
 	
 
     
@@ -195,6 +243,8 @@ private:
     ofxGVFParameters    parameters;
     ofxGVFOutcomes      outcomes;
     
+    // TOOD: to be put in parameters?
+    vector<float> dimWeights;
     
 //    ofxGVFVarianceCoefficents coefficents;
 //    ofxGVFInitialSpreadingParameters spreadingParameters;
@@ -206,6 +256,9 @@ private:
 	int     pdim;               // number of state dimension
     int     scale_dim;          // scale state dimension
     int     rotation_dim;       // rotation state dimension
+    int     dynamicsDim;          // scale state dimension
+    int     scalingsDim;       // rotation state dimension
+    
     
     bool    has_learned;        // true if gesture templates have been learned
     bool    parametersSetAsDefault;
@@ -217,11 +270,33 @@ private:
 	vector< vector<float> > X;                  // each row is a particle
 	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
 	vector<float>           w;                  // weight of each particle [w is ns x 1]
-    vector<vector<float> >  w2;                 // weight of each particle, one vector per state 
+
     vector< vector<float> > offS;               // translation offset
+
 	vector<float>           featVariances;      // vector of variances
 	vector<float>           means;              // vector of means for particles initial spreading
 	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
+    
+    
+    // --- new stuff
+	vector<int>             classes;            // gesture index for each particle [g is ns x 1]
+	vector<float >          alignment;          // each row is a sample of dynamical features
+	vector<vector<float> >  dynamics;           // each row is a sample of dynamical features
+	vector<vector<float> >  scalings;           // each row is a sample of dynamical features
+    
+	vector<float>           weights;            // weight of each particle [w is ns x 1]
+    vector<vector<float> >  offsets;            // translation offset
+    
+    // estimations
+    vector<float>           estimatedGesture;   // ..
+    vector<float>           estimatedAlignment; // ..
+    vector<vector<float> >  estimatedDynamics;  // ..
+    vector<vector<float> >  estimatedScalings;  // ..
+    vector<float>           likelihoods;        // ..
+    vector<float>           absoluteLikelihoods;// ..
+    
+    // keep track of the estimation for the recognized gesture
+//    vector<float>           mostProbableStatus; // cached most probable status [phase, speed, scale[, rotation], probability]
     
     
     // gesture 'history'
@@ -236,12 +311,21 @@ private:
     
     vector<ofxGVFGesture> gestureTemplates;
 
+    
     //////////////
     // MODELING
     //////////////
     void initStateSpace();
-    void initParticleFilter();
+    void initStateValues();
+    void initStateValues(int particleIndex);
+    void initPrior();
+    void initPrior(int particleIndex);
+    void initNoiseParameters();
     
+
+    
+    void updatePrior(int particleIndex);
+    void updateLikelihood(vector<float> obs, int particleIndex);
     
     //in order to output particles
     vector< vector<float> > particlesPositions;
@@ -257,8 +341,9 @@ private:
     tr1::mt19937 rng;
     tr1::normal_distribution<float> *normdist;
     tr1::uniform_real<float> *unifdist;
-	tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm;//(rng, *normdist);
+	tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm; //(rng, *normdist);
 #endif
+    
     vector<float> obsOffset;
 	// Segmentation variables
 	vector<float> abs_weights;
@@ -271,11 +356,6 @@ private:
     vector<float> rangesCopy;
     vector<float> origin;
     vector<float> *offset;
-    
-    // private functions
-    void initweights();                         // initialize weights
-    void initweights2();
-    
 
     
     void UpdateOutcomes();
