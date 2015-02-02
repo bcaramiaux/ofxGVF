@@ -51,7 +51,7 @@ typedef struct{
     float           tolerance;
     int             resamplingThreshold;
     float           distribution;
-    float           phaseVariance;
+    float           alignmentVariance;
     float           speedVariance;
     vector<float>   scaleVariance;
     vector<float>   rotationVariance;
@@ -61,6 +61,7 @@ typedef struct{
     float           speedInitialSpreading;
     vector<float>   scaleInitialSpreading;
     vector<float>   rotationInitialSpreading;
+    int             predictionLoops;
 } ofxGVFParameters;
 
 

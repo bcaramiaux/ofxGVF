@@ -11,7 +11,9 @@
 
 #include "ofxGVFTypes.h"
 #include <assert.h>
-
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 
 /* Macros for min/max. */
@@ -397,7 +399,7 @@ public:
     int getTemplateDimension(int templateIndex = 0){
         return templatesRaw[templateIndex][0].size();
     }
-
+    
     vector<float>& getLastObservation(int templateIndex = 0){
         return templatesRaw[templateIndex][templatesRaw[templateIndex].size() - 1];
     }
@@ -438,6 +440,31 @@ public:
     vector<float>& getInitialObservationNormal(){
         return templateInitialNormal;
     }
+    
+    
+    vector<vector<float> >& loadGestureFromFile(string filename) {
+        string line;
+        ifstream myfile(filename.c_str());
+        vector<vector<float> > gestureData;
+        vector<float> vectmp;
+        if (myfile.is_open()) {
+            while (getline(myfile, line))
+            {
+                std::istringstream ss(line);
+                float f;
+                while ((ss >> f)){
+                    vectmp.push_back(f);
+                }
+                if (vectmp.size()>0){
+                        addObservation(vectmp);
+                    vectmp.clear();
+                }
+            }
+        }
+    }
+    
+    
+    
     
     void deleteTemplate(int templateIndex = 0){
         assert(templateIndex < templatesRaw.size());

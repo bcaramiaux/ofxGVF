@@ -87,6 +87,8 @@ public:
     vector<ofxGVFGesture> & getAllGestureTemplates();
     int getNumberOfGestureTemplates();
     
+    vector<float>& getGestureTemplateSample(int gestureIndex, float cursor);
+    
     void removeGestureTemplate(int index);
     void removeAllGestureTemplates();
     
@@ -108,9 +110,9 @@ public:
 	/////////////////////
 
     void learn();               // learn parameters from the gesture examples
-	void spreadParticles();     // use default parameter values
-    void spreadParticles(ofxGVFParameters _parameters);     // use other parameters
-    void particleFilter(vector<float> & obs);               // incremental step of filtering given the obs
+
+    void update(vector<float> & obs);               // incremental step of filtering given the obs
+    void estimates();       // update estimated outcome
     void resampleAccordingToWeights(vector<float> obs);     // resampling process
     
     
@@ -120,7 +122,7 @@ public:
 	///////////////
 
 	void infer(vector<float> obs);     // call the inference method on the observation
-    void updateEstimatedStatus();       // update estimated outcome
+
     
     
     
@@ -174,6 +176,9 @@ public:
     
     void setNumberOfParticles(int numberOfParticles);
     int getNumberOfParticles();
+
+    void setPredictionLoops(int predictionLoops);
+    int getPredictionLoops();
     
 	void setResamplingThreshold(int resamplingThreshold);
     int getResamplingThreshold();
@@ -187,8 +192,8 @@ public:
     
     // VARIANCE COEFFICENTS (in PARAMETERS)
     
-    void setPhaseVariance(float phaseVariance);
-    float getPhaseVariance();
+    void setAlignmentVariance(float alignmentVariance);
+    float getAlignmentVariance();
     
     void setScalingsVariance(float scaleVariance, int dim);
     void setScalingsVariance(vector<float> scaleVariance);
@@ -212,6 +217,22 @@ public:
     vector<float> getRotationVariance();
     
     // MATHS
+    
+    vector<int> getClasses();
+    vector<float> getAlignment();
+    vector<float> getEstimatedAlignment();
+    vector< vector<float> > getDynamics();
+    vector< vector<float> > getEstimatedDynamics();
+    vector< vector<float> > getScalings();
+    vector< vector<float> > getEstimatedScalings();
+    vector<float> getEstimatedLikelihoods();
+    vector<float> getWeights();
+    vector<float> getPrior();
+    
+    // only fo rlogs
+    vector<vector<float> >  getVecRef();
+    vector<float>           getVecObs();
+    vector<float>           getStateNoiseDist();
     
     vector< vector<float> > getX();
 	vector<int>    getG();
@@ -285,6 +306,9 @@ private:
 	vector<vector<float> >  scalings;           // each row is a sample of dynamical features
     
 	vector<float>           weights;            // weight of each particle [w is ns x 1]
+    vector<float>           prior;              // weight of each particle [w is ns x 1]
+    vector<float>           posterior;          // weight of each particle [w is ns x 1]
+    vector<float>           likelihood;
     vector<vector<float> >  offsets;            // translation offset
     
     // estimations
@@ -292,7 +316,7 @@ private:
     vector<float>           estimatedAlignment; // ..
     vector<vector<float> >  estimatedDynamics;  // ..
     vector<vector<float> >  estimatedScalings;  // ..
-    vector<float>           likelihoods;        // ..
+    vector<float>           estimatedLikelihoods;        // ..
     vector<float>           absoluteLikelihoods;// ..
     
     // keep track of the estimation for the recognized gesture
@@ -317,15 +341,19 @@ private:
     //////////////
     void initStateSpace();
     void initStateValues();
-    void initStateValues(int particleIndex);
+    void initStateValues(int pf_n, float range);
     void initPrior();
-    void initPrior(int particleIndex);
+    void initPrior(int pf_n);
+    //void initPrior(int pf_n, float range = 0.1);
     void initNoiseParameters();
     
 
     
-    void updatePrior(int particleIndex);
-    void updateLikelihood(vector<float> obs, int particleIndex);
+    void updateStateSpace(int n);
+    void updateLikelihood(vector<float> obs, int n);
+    void updatePrior(int n);
+    void updatePosterior(int n);
+    
     
     //in order to output particles
     vector< vector<float> > particlesPositions;
@@ -344,6 +372,10 @@ private:
 	tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm; //(rng, *normdist);
 #endif
     
+//    typedef tr1::mt19937 pseudorandom;
+//    typedef tr1::normal_distribution<float> normaldist;
+//    typedef tr1::variate_generator<pseudorandom, normaldist> generator;
+    
     vector<float> obsOffset;
 	// Segmentation variables
 	vector<float> abs_weights;
@@ -359,6 +391,14 @@ private:
 
     
     void UpdateOutcomes();
+    
+    
+    // only for logs
+    vector<vector<float> >  vecRef;
+    vector<float>           vecObs;
+    vector<float>           stateNoiseDist;
+    
+    
     
 };
 
