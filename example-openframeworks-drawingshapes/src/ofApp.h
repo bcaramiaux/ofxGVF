@@ -2,6 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxGVF.h"
+#include "ofxUI.h"
+#include <math.h>
 
 class ofApp : public ofBaseApp{
 
@@ -19,7 +21,11 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
-		
+    
+        void setupGVFGui();
+        ofxUISuperCanvas *GVFGui;
+        void guiEvent(ofxUIEventArgs &e);
+    
         ofxGVF gvf;
         ofxGVFGesture       currentGesture;
         ofxGVFConfig        config;

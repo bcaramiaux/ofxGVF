@@ -1,5 +1,6 @@
 #include "ofApp.h"
 
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     
@@ -26,6 +27,8 @@ void ofApp::setup(){
 		gvf.loadTemplates(templateFile);
 	}
      */
+    
+    setupGVFGui();
 }
 
 //--------------------------------------------------------------
@@ -296,4 +299,60 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
+}
+
+
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+//
+//      BELOW: GUI
+//
+//--------------------------------------------------------------
+//--------------------------------------------------------------
+
+
+//--------------------------------------------------------------
+void ofApp::setupGVFGui()
+{
+    float guiWidth = 200;
+    float guiHeight = 500;
+    
+    GVFGui = new ofxUISuperCanvas("Parameters",15,100,200,300);
+
+    GVFGui->addSpacer();
+    GVFGui->addLabel("TOLERANCE", OFX_UI_FONT_SMALL);
+    GVFGui->addSlider("Tolerance", 1.0, 200.0, 100.0); //gvf.getTolerance());
+    
+    GVFGui->addSpacer();
+    GVFGui->addLabel("ADAPTATION VAR (log)", OFX_UI_FONT_SMALL);
+    GVFGui->addSlider("Scale", -7.0, 0.0, -5.0); // log(gvf.getScaleVariance()[0]));
+    GVFGui->addSlider("Speed", -7.0, 0.0, -3.5); // log(gvf.getSpeedVariance()));
+    
+    GVFGui->autoSizeToFitWidgets();
+    ofAddListener(GVFGui->newGUIEvent,this,&ofApp::guiEvent);
+    GVFGui->loadSettings("guiSettings.xml");
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::guiEvent(ofxUIEventArgs &e)
+{
+    string name = e.widget->getName();
+	int kind = e.widget->getKind();
+	
+	if(name == "Tolerance")
+	{
+		ofxUISlider *slider = (ofxUISlider *) e.widget;
+        gvf.setTolerance(slider->getScaledValue());
+	}
+    if(name == "Scale")
+	{
+		ofxUISlider *slider = (ofxUISlider *) e.widget;
+        gvf.setScaleVariance((float)powf(10.0,(float)slider->getScaledValue()));
+	}
+    if(name == "Speed")
+	{
+		ofxUISlider *slider = (ofxUISlider *) e.widget;
+        gvf.setSpeedVariance((float)powf(10.0,(float)slider->getScaledValue()));
+	}
 }
