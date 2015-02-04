@@ -22,7 +22,7 @@
 #include <sstream>
 
 ////////////////////////// object struct
-typedef struct _gvf
+typedef struct _gvf 
 {
 	t_object					ob;			// the object itself (must be first)
     
@@ -82,8 +82,6 @@ void gvf_gestureOff      (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_data            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
-
-
 //////////////////////// global class pointer variable
 void *gvf_class;
 
@@ -94,7 +92,7 @@ int C74_EXPORT main(void)
 	// object initialization, NEW STYLE
 	t_class *c;
 	
-	c = class_new("gvf", (method)gvf_new, (method)gvf_free, (long)sizeof(t_gvf),
+	c = class_new("gvf", (method)gvf_new, (method)gvf_free, (long)sizeof(t_gvf), 
 				  0L /* leave NULL!! */, A_GIMME, 0);
 	
     //  MESSAGES
@@ -175,8 +173,6 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
         x->config.translate        = true;
         x->config.segmentation     = false;
         
-        x->config.logOn = true;
-        
         // PARAMETERS are set by default
         
         // CREATE the corresponding GVF
@@ -231,7 +227,6 @@ void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     if (x->bubi->getState()==ofxGVF::STATE_LEARNING)
         x->currentGesture->clear();
-
 }
 
 
@@ -253,11 +248,12 @@ void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     x->bubi->setState(ofxGVF::STATE_FOLLOWING);
     
-    // output the current ID of the gesture being learned with the prefix "learningGesture"
+    // output the value of the "learned" tolerance
     t_atom *outAtoms = new t_atom[1];
     atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
     outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
     delete[] outAtoms;
+    
 }
 
 
@@ -770,7 +766,7 @@ void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_loadtemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-    /*
+    
      char* mpath = atom_string(argv);
      int i=0;
      while ( *(mpath+i)!='/' )
@@ -778,6 +774,6 @@ void gvf_loadtemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
      mpath = mpath+i;
      string filename(mpath);
      x->bubi->loadTemplates(filename);
-     */
+    
 }
 
