@@ -11,17 +11,17 @@
 	<key>CFBundleIdentifier</key>
 	<string>com.cycling74.gvf</string>
 	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.1.4</string>
+	<string>0.2.1</string>
 	<key>CFBundleLongVersionString</key>
-	<string>gvf 6.1.4, Copyright 2013 Cycling '74</string>
+	<string>gvf 0.2.1, Copyright 2013 Cycling '74</string>
 	<key>CFBundlePackageType</key>
 	<string>iLaX</string>
 	<key>CFBundleShortVersionString</key>
-	<string>6.1.4</string>
+	<string>0.2.1</string>
 	<key>CFBundleSignature</key>
 	<string>max2</string>
 	<key>CFBundleVersion</key>
-	<string>6.1.4</string>
+	<string>0.2.1</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 	<key>DTCompiler</key>

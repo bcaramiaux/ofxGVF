@@ -11,7 +11,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
-#include <tr1/random>
+#include <random> //tr1/random
 #include <iostream>
 #include <math.h>
 #include <assert.h>

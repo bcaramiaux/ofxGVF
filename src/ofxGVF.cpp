@@ -26,7 +26,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <tr1/memory>
+#include <memory> //tr1/memory
 #include <unistd.h>
 
 
@@ -128,9 +128,14 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     config      = _config;
     parameters  = _parameters;
 
-    normdist = new std::tr1::normal_distribution<float>();
-    unifdist = new std::tr1::uniform_real<float>();
-    rndnorm  = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
+    //normdist = new std::tr1::normal_distribution<float>();
+    //unifdist = new std::tr1::uniform_real<float>();
+    //rndnorm = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
+
+    normgen = std::mt19937(rd());
+    rndnorm = new std::normal_distribution<float>(0.0,1.0);
+    unifgen = std::default_random_engine(rd());
+    rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
     
     // flag
     has_learned = false;
@@ -155,10 +160,10 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
 ofxGVF::~ofxGVF(){
 
 #if !BOOSTLIB
-    if(normdist != NULL)
-        delete (normdist);
-    if(unifdist != NULL)
-        delete (unifdist);
+    // if(normdist != NULL)
+    //     delete (normdist);
+    // if(unifdist != NULL)
+    //     delete (unifdist);
 #endif
     
     if (rndnorm != NULL)
@@ -365,14 +370,14 @@ void ofxGVF::initPrior(int pf_n) {
     float range = 0.1;
     
     // random generators
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+    //std::tr1::uniform_real<float> ur(0,1);
+    //std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
     
     classes[pf_n]   = pf_n % gestureTemplates.size();
-    alignment[pf_n] = (rnduni() - 0.5) * range;    // spread phase
+    alignment[pf_n] = ((*rndunif)(unifgen) - 0.5) * range;    // spread phase
     
-    for(int l = 0; l < dynamics[pf_n].size(); l++) dynamics[pf_n][l] = (rnduni() - 0.5) * range * 3 + 1.0;    // spread dynamics
-    for(int l = 0; l < scalings[pf_n].size(); l++) scalings[pf_n][l] = (rnduni() - 0.5) * range * 3 + 1.0;    // spread scalings
+    for(int l = 0; l < dynamics[pf_n].size(); l++) dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0;    // spread dynamics
+    for(int l = 0; l < scalings[pf_n].size(); l++) scalings[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0;    // spread scalings
     
     for(int l = 0; l < offsets[pf_n].size(); l++) offsets[pf_n][l] = 0.0;
     
@@ -562,11 +567,11 @@ void ofxGVF::restart(){
 void ofxGVF::updatePrior(int n) {
     
     // Update alignment / dynamics / scalings
-    alignment[n] += (*rndnorm)() * parameters.alignmentVariance + dynamics[n][0]/gestureTemplates[classes[n]].getTemplateLength();
+    alignment[n] += (*rndnorm)(normgen) * parameters.alignmentVariance + dynamics[n][0]/gestureTemplates[classes[n]].getTemplateLength();
     
     
-    for(int l= 0; l < dynamics[n].size(); l++)  dynamics[n][l] += (*rndnorm)() * parameters.dynamicsVariance[l];
-    for(int l= 0; l < scalings[n].size(); l++)  scalings[n][l] += (*rndnorm)() * parameters.scalingsVariance[l];
+    for(int l= 0; l < dynamics[n].size(); l++)  dynamics[n][l] += (*rndnorm)(normgen) * parameters.dynamicsVariance[l];
+    for(int l= 0; l < scalings[n].size(); l++)  scalings[n][l] += (*rndnorm)(normgen) * parameters.scalingsVariance[l];
  
     // update prior (bayesian incremental inference)
     prior[n] = posterior[n];
@@ -707,8 +712,8 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
 {
     
     // random generator: uniform distribution
-    std::tr1::uniform_real<float> ur(0,1);
-    std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
+    // std::tr1::uniform_real<float> ur(0,1);
+    // std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
     
     // covennient
     int numOfPart = parameters.numberParticles;
@@ -732,7 +737,7 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
     for(int i = 1; i < numOfPart; i++) c[i] = c[i-1] + posterior[i];
     
     
-    float u0 = rnduni()/numOfPart;
+    float u0 = (*rndunif)(unifgen)/numOfPart;
     
     int i = 0;
     for (int j = 0; j < numOfPart; j++)
@@ -765,7 +770,7 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
         
         for (int j = 0; j < free_pool; j++)
         {
-            int index = round(rnduni()*numOfPart);
+            int index = round((*rndunif)(unifgen)*numOfPart);
             if (index == numOfPart) index = 0;
             
             initPrior(index);
@@ -1311,4 +1316,37 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
     for(int k = 0; k < count; k++) dist += w[k] * pow((x[k] - y[k]), 2);
     return dist;
 }
+
+
+
+
+void ofxGVF::testRndNum(){
+
+
+    std::map<int, int> hist;
+    cout << "===== UNIFORM" << endl;
+    for(int n=0; n<10000; ++n) {
+        ++hist[std::round((*rndunif)(unifgen)*5.0)];
+        cout << (*rndunif)(unifgen) << endl;
+    }
+    for(auto p : hist) {
+        std::cout << std::fixed << std::setprecision(1) << std::setw(2)
+                  << p.first << ' ' << std::string(p.second/200, '*') << '\n';
+    }
+    cout << "===== NORMAL" << endl;
+    hist.clear();
+    for(int n=0; n<10000; ++n) {
+        ++hist[std::round((*rndnorm)(normgen)*5.0)];
+    }
+    for(auto p : hist) {
+        std::cout << std::fixed << std::setprecision(1) << std::setw(2)
+                  << p.first << ' ' << std::string(p.second/200, '*') << '\n';
+    }
+    
+}
+
+
+
+
+
 

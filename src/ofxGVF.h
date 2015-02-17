@@ -22,7 +22,14 @@
 
 #include "ofxGVFTypes.h"
 #include "ofxGVFGesture.h"
-#include <math.h>
+//#include <math.h>
+#include <random>
+#include <iostream>
+#include <iomanip>
+#include <string>
+#include <map>
+#include <random>
+#include <cmath>
 
 
 using namespace std;
@@ -252,7 +259,7 @@ public:
     
     float getGlobalNormalizationFactor();
     
-	
+	void testRndNum();
 
     
 private:
@@ -366,10 +373,23 @@ private:
 	boost::mt19937 rng;
 	boost::normal_distribution<float> normdist;
 #else
-    tr1::mt19937 rng;
-    tr1::normal_distribution<float> *normdist;
-    tr1::uniform_real<float> *unifdist;
-	tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm; //(rng, *normdist);
+    //tr1::mt19937 rng;
+    //tr1::normal_distribution<float> *normdist;
+    //tr1::uniform_real<float> *unifdist;
+    //tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm; //(rng, *normdist);
+
+    // std::random_device           rd;
+    // std::mt19937                 gen(rd());
+    // std::normal_distribution<>  *normalDist;
+    
+    std::random_device      rd;
+
+    std::mt19937            normgen;
+    std::normal_distribution<float>         *rndnorm;
+
+    std::default_random_engine unifgen;
+    std::uniform_real_distribution<float>   *rndunif;
+
 #endif
     
 //    typedef tr1::mt19937 pseudorandom;

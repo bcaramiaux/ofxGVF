@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "2FBBEAD608F335360078DB84"
-               BuildableName = "gvf.bundle"
+               BuildableName = "gvf.mxo"
                BlueprintName = "max-external"
                ReferencedContainer = "container:gvf.xcodeproj">
             </BuildableReference>

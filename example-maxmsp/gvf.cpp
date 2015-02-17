@@ -20,6 +20,11 @@
 #include "ofxGVFGesture.h"
 #include <iostream>
 #include <sstream>
+#include <fstream>
+
+
+
+
 
 ////////////////////////// object struct
 typedef struct _gvf
@@ -63,25 +68,29 @@ void gvf_segmentation    (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 void gvf_normalize       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// PARAMETERS
-void gvf_tolerance       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_numberparticles    (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_tolerance           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_studentnu           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_numberparticles     (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_resamplingthreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_phaseadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_speedadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_scaleadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_rotationadaptation (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_alignment           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_dynamics            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_scalings            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_anticipate           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// I/O
 void gvf_savetemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_loadtemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_logging         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_log         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// DEPRECATED
 void gvf_gestureOn       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_gestureOff      (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_data            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
+
+
+int idfile = 0;
+void logGVF(t_gvf *x);
 
 
 //////////////////////// global class pointer variable
@@ -116,29 +125,25 @@ int C74_EXPORT main(void)
     
     // parameters
     class_addmethod(c, (method)gvf_tolerance, "tolerance", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_studentnu, "studentnu", A_GIMME, 0);
     class_addmethod(c, (method)gvf_resamplingthreshold, "resamplingthreshold", A_GIMME, 0);
     class_addmethod(c, (method)gvf_numberparticles, "numberparticles", A_GIMME,0);
-    class_addmethod(c, (method)gvf_phaseadaptation, "phaseadaptation", A_GIMME,0);
-    class_addmethod(c, (method)gvf_speedadaptation, "speedadaptation", A_GIMME,0);
-    class_addmethod(c, (method)gvf_scaleadaptation, "scaleadaptation", A_GIMME,0);
-    class_addmethod(c, (method)gvf_rotationadaptation, "rotationadaptation", A_GIMME,0);
+    class_addmethod(c, (method)gvf_alignment, "alignment", A_GIMME,0);
+    class_addmethod(c, (method)gvf_dynamics, "dynamics", A_GIMME,0);
+    class_addmethod(c, (method)gvf_scalings, "scalings", A_GIMME,0);
+    class_addmethod(c, (method)gvf_anticipate, "anticipate", A_GIMME,0);
+    
     
     // I/O
     class_addmethod(c, (method)gvf_savetemplates, "savetemplates", A_GIMME,0);
     class_addmethod(c, (method)gvf_loadtemplates, "loadtemplates", A_GIMME,0);
-    class_addmethod(c, (method)gvf_logging, "logging", A_GIMME,0);
-    
-    // deprecated
-    class_addmethod(c, (method)gvf_gestureOn, "gestureOn", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_gestureOff, "gestureOff", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_data, "data", A_GIMME, 0); // DEPRECATED
-    class_addmethod(c, (method)gvf_adaptation_speed, "adaptation_speed", A_GIMME,0);
+    class_addmethod(c, (method)gvf_log, "log", A_GIMME,0);
     
 	
 	class_register(CLASS_BOX, c); /* CLASS_NOBOX */
 	gvf_class = c;
 
-    post("gvf - gesture variation follower (version: 11-2014)");
+    post("gvf.beta - gesture variation follower (version: 0.2.1 [feb2015])");
     post("(c) Goldsmiths, University of London and IRCAM - Centre Pompidou");
     
 	return 0;
@@ -174,8 +179,7 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
         x->config.inputDimensions  = 2;
         x->config.translate        = true;
         x->config.segmentation     = false;
-        
-        x->config.logOn = true;
+        x->config.logOn            = false;
         
         // PARAMETERS are set by default
         
@@ -309,139 +313,47 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
             
             x->currentGesture->addObservation(observation_vector);
             
-            // inference on the last observation
-            x->bubi->infer(x->currentGesture->getLastObservation());
+            // log just before inference
+            if (x->bubi->getConfig().logOn)
+                logGVF(x);
             
+            // inference on the last observation
+            x->bubi->update(x->currentGesture->getLastObservation());
+        
             
             // output recognition
             x->outcomes = x->bubi->getOutcomes();
-            int numberOfTemplates = x->outcomes.estimations.size();
+            int numberOfTemplates = x->bubi->getNumberOfGestureTemplates();
             
             t_atom *outAtoms = new t_atom[numberOfTemplates];
             
             for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].phase);
-            outlet_anything(x->estimation_outlet, gensym("phase"), numberOfTemplates, outAtoms);
+                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].alignment);
+            outlet_anything(x->estimation_outlet, gensym("alignment"), numberOfTemplates, outAtoms);
             delete[] outAtoms;
             
-            outAtoms = new t_atom[numberOfTemplates];
+            outAtoms = new t_atom[numberOfTemplates * x->bubi->getDynamicsDim()];
             for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].speed);
-            outlet_anything(x->estimation_outlet, gensym("speed"), numberOfTemplates, outAtoms);
+                for(int jj = 0; jj < x->bubi->getDynamicsDim(); jj++)
+                    atom_setfloat(&outAtoms[j*x->bubi->getDynamicsDim()+jj],x->outcomes.estimations[j].dynamics[jj]);
+            outlet_anything(x->estimation_outlet, gensym("dynamics"), numberOfTemplates * x->bubi->getDynamicsDim(), outAtoms);
             delete[] outAtoms;
             
-            outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].scale.size()];
+            outAtoms = new t_atom[numberOfTemplates * x->bubi->getScalingsDim()];
             for(int j = 0; j < numberOfTemplates; j++)
-                for(int jj = 0; jj < x->outcomes.estimations[0].scale.size(); jj++)
-                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].scale[jj]);
-            outlet_anything(x->estimation_outlet, gensym("scale"), numberOfTemplates * x->outcomes.estimations[0].scale.size(), outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].rotation.size()];
-            for(int j = 0; j < numberOfTemplates; j++)
-                for(int jj = 0; jj < x->outcomes.estimations[0].rotation.size(); jj++)
-                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].rotation[jj]);
-            outlet_anything(x->estimation_outlet, gensym("angle"), numberOfTemplates * x->outcomes.estimations[0].rotation.size(), outAtoms);
+                for(int jj = 0; jj < x->bubi->getScalingsDim(); jj++)
+                    atom_setfloat(&outAtoms[j*x->bubi->getScalingsDim()+jj],x->outcomes.estimations[j].scalings[jj]);
+            outlet_anything(x->estimation_outlet, gensym("scalings"), numberOfTemplates * x->bubi->getScalingsDim(), outAtoms);
             delete[] outAtoms;
 
             
             outAtoms = new t_atom[numberOfTemplates];
             for(int j = 0; j < numberOfTemplates; j++)
                 atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].probability);
-            outlet_anything(x->likelihoods_outlet, gensym("weights"), numberOfTemplates, outAtoms);
+            outlet_anything(x->likelihoods_outlet, gensym("likelihoods"), numberOfTemplates, outAtoms);
             delete[] outAtoms;
             
-            
-            break;
-        }
-            
-        default:
-            // nothing
-            break;
-    }
-    
-}
 
-///////////////////////////////////////////////////////////
-//====================== DATA
-///////////////////////////////////////////////////////////
-void gvf_data(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
-{
-    
-    if(argc == 0)
-    {
-        post("invalid format, points have at least 1 coordinate");
-        return;
-    }
-    if(x->bubi->getState() == ofxGVF::STATE_CLEAR)
-    {
-        post("I'm in a standby (must learn something beforehand)");
-        return;
-    }
-    
-    switch (x->bubi->getState()) {
-        case ofxGVF::STATE_LEARNING:
-        {
-            vector<float> observation_vector(argc);
-            
-            for (int k=0; k<argc; k++)
-                observation_vector[k] = atom_getfloat(&argv[k]);
-            
-            x->currentGesture->addObservation(observation_vector);
-            
-            break;
-        }
-        case ofxGVF::STATE_FOLLOWING:
-        {
-            vector<float> observation_vector(argc);
-            for (int k=0; k<argc; k++)
-                observation_vector[k] = atom_getfloat(&argv[k]);
-            
-            x->currentGesture->addObservation(observation_vector);
-            
-            // inference on the last observation
-            x->bubi->infer(x->currentGesture->getLastObservation());
-            
-            
-            // output recognition
-            x->outcomes = x->bubi->getOutcomes();
-            int numberOfTemplates = x->outcomes.estimations.size();
-            
-            t_atom *outAtoms = new t_atom[numberOfTemplates];
-            
-            for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].phase);
-            outlet_anything(x->estimation_outlet, gensym("phase"), numberOfTemplates, outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[numberOfTemplates];
-            for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].speed);
-            outlet_anything(x->estimation_outlet, gensym("speed"), numberOfTemplates, outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].scale.size()];
-            for(int j = 0; j < numberOfTemplates; j++)
-                for(int jj = 0; jj < x->outcomes.estimations[0].scale.size(); jj++)
-                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].scale[jj]);
-            outlet_anything(x->estimation_outlet, gensym("scale"), numberOfTemplates * x->outcomes.estimations[0].scale.size(), outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[numberOfTemplates * x->outcomes.estimations[0].rotation.size()];
-            for(int j = 0; j < numberOfTemplates; j++)
-                for(int jj = 0; jj < x->outcomes.estimations[0].rotation.size(); jj++)
-                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].rotation[jj]);
-            outlet_anything(x->estimation_outlet, gensym("angle"), numberOfTemplates * x->outcomes.estimations[0].rotation.size(), outAtoms);
-            delete[] outAtoms;
-            
-            
-            outAtoms = new t_atom[numberOfTemplates];
-            for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].probability);
-            outlet_anything(x->likelihoods_outlet, gensym("weights"), numberOfTemplates, outAtoms);
-            delete[] outAtoms;
-            
-            
             break;
         }
             
@@ -479,25 +391,24 @@ void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     post("  Segmentation: %d", x->bubi->getConfig().segmentation);
     post("  Normalization: %d", x->bubi->getConfig().normalization);
     if (x->bubi->getConfig().normalization)
-    post("  Global normalization factor: %f", x->bubi->getGlobalNormalizationFactor());
+        post("  Global normalization factor: %f", x->bubi->getGlobalNormalizationFactor());
     post("PARAMETERS");
     post("  Number of particles: %d", x->bubi->getNumberOfParticles());
     post("  Resampling Threshold: %d", x->bubi->getResamplingThreshold());
     post("  Tolerance: %.2f", x->bubi->getParameters().tolerance);
     post("  Adaptation parameters:");
-    post("      phase: %.7f", x->bubi->getParameters().phaseVariance);
-    post("      speed: %.7f", x->bubi->getParameters().speedVariance);
-    string scale_str = "      scale: ";
-    for (int k=0; k<x->bubi->getParameters().scaleVariance.size(); k++) {
+    post("      phase: %.7f", x->bubi->getParameters().alignmentVariance);
+    string scale_str = "      dynamics: ";
+    for (int k=0; k<x->bubi->getParameters().dynamicsVariance.size(); k++) {
         std::ostringstream ss;
-        ss << x->bubi->getParameters().scaleVariance[k];
+        ss << x->bubi->getParameters().dynamicsVariance[k];
         scale_str = scale_str + ss.str() + " ";
     }
     post("  %s", scale_str.c_str());
-    scale_str = "      rotation: ";
-    for (int k=0; k<x->bubi->getParameters().rotationVariance.size(); k++) {
+    scale_str = "      scalings: ";
+    for (int k=0; k<x->bubi->getParameters().scalingsVariance.size(); k++) {
         std::ostringstream ss;
-        ss << x->bubi->getParameters().rotationVariance[k];
+        ss << x->bubi->getParameters().scalingsVariance[k];
         scale_str = scale_str + ss.str() + " ";
     }
     post("  %s", scale_str.c_str());
@@ -526,6 +437,91 @@ void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 }
 
 
+
+
+void logGVF(t_gvf *x)
+{
+    idfile++;
+    
+    for(int j = 0; j < x->bubi->getNumberOfGestureTemplates(); j++){
+        ostringstream convert; convert << j;
+        string filename = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-template-"+convert.str()+".txt";
+        
+        ofxGVFGesture temp = x->bubi->getGestureTemplate(j);
+        vector<vector<float> > observations = temp.getTemplateRaw();
+        std::ofstream file_writeObs(filename.c_str());
+        for(int j = 0; j < observations.size(); j++){
+            for(int k = 0; k < observations[j].size(); k++)
+                file_writeObs << observations[j][k] << " ";
+            file_writeObs << endl;
+        }
+        file_writeObs.close();
+    }
+    
+    string filename = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-observations.txt";
+    vector<vector<float> > observations = x->currentGesture->getTemplateRaw();
+    std::ofstream file_writeObs(filename.c_str());
+    
+    for(int j = 0; j < observations.size(); j++){
+        for(int k = 0; k < observations[j].size(); k++)
+            file_writeObs << observations[j][k] << " ";
+        file_writeObs << endl;
+    }
+    file_writeObs.close();
+    
+    vector<float> align             = x->bubi->getAlignment();
+    vector<int> classes             = x->bubi->getClasses();
+    vector<vector<float> > dynas    = x->bubi->getDynamics();
+    vector<vector<float> > scals    = x->bubi->getScalings();
+    vector<float> prior             = x->bubi->getPrior();
+    vector<vector<float> > vref     = x->bubi->getVecRef();
+    vector<float> vobs              = x->bubi->getVecObs();
+    
+    
+    ostringstream convert; convert << idfile;
+    std::string directory = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-particles-"+convert.str()+".txt";
+    std::ofstream file_write(directory.c_str());
+    
+    for(int j = 0; j < dynas.size(); j++)
+    {
+        file_write << align[j] << " ";
+        for(int k = 0; k < dynas[j].size(); k++)
+            file_write << dynas[j][k] << " ";
+        for(int k = 0; k < scals[j].size(); k++)
+            file_write << scals[j][k] << " ";
+        file_write << prior[j] << " ";
+        file_write << classes[j] << " ";
+        for(int k = 0; k < vref[j].size(); k++)
+            file_write << vref[j][k] << " ";
+        for(int k = 0; k < vobs.size(); k++)
+            file_write << vobs[k] << " ";
+        file_write << endl;
+    }
+    file_write.close();
+
+    vector<float> estAlign = x->bubi->getEstimatedAlignment();
+    vector< vector<float> > estDynas = x->bubi->getEstimatedDynamics();
+    vector< vector<float> > estScals = x->bubi->getEstimatedScalings();
+    
+    directory = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-estimations-"+convert.str()+".txt";
+    std::ofstream file_write2(directory.c_str());
+    
+    for(int j = 0; j < estAlign.size(); j++)
+    {
+        file_write2 << estAlign[j] << " ";
+        for(int k = 0; k < estDynas[j].size(); k++)
+            file_write2 << estDynas[j][k] << " ";
+        for(int k = 0; k < estScals[j].size(); k++)
+            file_write2 << estScals[j][k] << " ";
+        file_write2 << endl;
+    }
+    file_write2.close();
+
+    
+}
+
+
+
 ///////////////////////////////////////////////////////////
 //====================== RESTART
 ///////////////////////////////////////////////////////////
@@ -533,9 +529,10 @@ void gvf_restart(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
     x->currentGesture->clear();
+    idfile = 0;
     
     if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
-        x->bubi->spreadParticles();
+        x->bubi->restart();
     
 }
 
@@ -558,6 +555,43 @@ void gvf_tolerance(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 
+}
+
+///////////////////////////////////////////////////////////
+//====================== tolerance
+///////////////////////////////////////////////////////////
+void gvf_anticipate(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    int stdnew = atom_getlong(argv);
+    
+    // Get the current parameters
+    x->parameters = x->bubi->getParameters();
+    
+    // Change Tolerance
+    x->parameters.predictionLoops=stdnew;
+    
+    // Set the new parameters
+    x->bubi->setParameters(x->parameters);
+    
+}
+
+/////////////////////////////////////////////////////////////
+////====================== tolerance
+/////////////////////////////////////////////////////////////
+void gvf_studentnu(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    float nu = atom_getfloat(argv);
+    if (nu < 0.0) nu = 1.0;
+    
+    // Get the current parameters
+    x->parameters = x->bubi->getParameters();
+    
+    // Change Tolerance
+    x->parameters.distribution=nu;
+    
+    // Set the new parameters
+    x->bubi->setParameters(x->parameters);
+    
 }
 
 
@@ -605,103 +639,62 @@ void gvf_numberparticles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 }
 
 
-///////////////////////////////////////////////////////////
-//====================== spreading_means
-///////////////////////////////////////////////////////////
-void gvf_spreading_means(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
-{
-    // do something
-}
 
-
-///////////////////////////////////////////////////////////
-//====================== spreading_ranges
-///////////////////////////////////////////////////////////
-void gvf_spreading_ranges(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
-{
-    // do something
-}
-
-
-///////////////////////////////////////////////////////////
-//====================== adaptation_speed
-///////////////////////////////////////////////////////////
-void gvf_adaptation_speed(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
-{
-    
-    error("adaptation_speed message deprecated: do nothing");
-    // Get the current parameters
-    x->parameters = x->bubi->getParameters();
-    
-    // Change ...
-    
-    
-    // Set the new parameters
-    x->bubi->setParameters(x->parameters);
-    
-}
 
 ///////////////////////////////////////////////////////////
 //====================== phaseAdaptation / scaleAdaptation / speedAdaptation / angleAdaptation
 ///////////////////////////////////////////////////////////
-void gvf_phaseadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_alignment(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
     
     // Change phase adaptation variance
-    x->parameters.phaseVariance = atom_getfloat(argv);
+    x->parameters.alignmentVariance = sqrt(atom_getfloat(argv));
     
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_speedadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+
+void gvf_dynamics(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
     
     // Change ...
-    x->parameters.speedVariance = atom_getfloat(argv);
-    
-    // Set the new parameters
-    x->bubi->setParameters(x->parameters);
-}
-void gvf_scaleadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
-{
-    // Get the current parameters
-    x->parameters = x->bubi->getParameters();
-    
-    // Change ...
-    if (argc == x->parameters.scaleVariance.size()) {
+    if (argc == x->bubi->getDynamicsDim()) {
         for (int k=0; k< argc; k++)
-            x->parameters.scaleVariance[k] = atom_getfloat(&argv[k]);
+            x->parameters.dynamicsVariance[k] = sqrt(atom_getfloat(&argv[k]));
     }
     if (argc == 1) {
-        for (int k=0; k< x->parameters.scaleVariance.size(); k++)
-            x->parameters.scaleVariance[k] = atom_getfloat(argv);
+        for (int k=0; k< x->bubi->getDynamicsDim(); k++)
+            x->parameters.dynamicsVariance[k] = sqrt(atom_getfloat(argv));
     }
     
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
-void gvf_rotationadaptation(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+
+void gvf_scalings(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     // Get the current parameters
     x->parameters = x->bubi->getParameters();
     
     // Change ...
-    if (argc == x->parameters.rotationVariance.size()) {
+    if (argc == x->bubi->getScalingsDim()) {
         for (int k=0; k< argc; k++)
-            x->parameters.rotationVariance[k] = atom_getfloat(&argv[k]);
+            x->parameters.scalingsVariance[k] = sqrt(atom_getfloat(&argv[k]));
     }
     if (argc == 1) {
-        for (int k=0; k< x->parameters.rotationVariance.size(); k++)
-            x->parameters.rotationVariance[k] = atom_getfloat(argv);
+        for (int k=0; k< x->bubi->getScalingsDim(); k++)
+            x->parameters.scalingsVariance[k] = sqrt(atom_getfloat(argv));
     }
     
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
 }
+
+
 
 
 
@@ -744,7 +737,7 @@ void gvf_normalize(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== normalize
 ///////////////////////////////////////////////////////////
-void gvf_logging(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_log(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
     x->config = x->bubi->getConfig();
@@ -770,7 +763,7 @@ void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_loadtemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-    /*
+    
      char* mpath = atom_string(argv);
      int i=0;
      while ( *(mpath+i)!='/' )
@@ -778,6 +771,6 @@ void gvf_loadtemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
      mpath = mpath+i;
      string filename(mpath);
      x->bubi->loadTemplates(filename);
-     */
+    
 }
 
