@@ -13,7 +13,7 @@ To compile the object, a Xcode Project (Mac OS) is available.
 
 Instructions:
 * Create a folder GVF in the your personal projects in the Max SDK, for instance for Max 6.1.4 SDK it will be in: MaxSDK-6.1.4/examples/myobjects/GVF/
-  (Note that if the folder "myobjects" does not exsits, create one)
+  (Note that if the folder "myobjects" does not exsit, create one)
 * Copy the all the files to this GVF/ folder
 * In Xcode project, add the src (ofxGVF.cpp, ofxGVF.h, ofxGVFGesture.h, ofxGVFTypes.h) 
 * Make sure that in ofxGVFTypes.h you set `#define OPENFRAMEWORKS 0`
