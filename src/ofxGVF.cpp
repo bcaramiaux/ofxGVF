@@ -579,7 +579,8 @@ void ofxGVF::restart(){
 void ofxGVF::updatePrior(int n) {
     
     // Update alignment / dynamics / scalings
-    alignment[n] += (*rndnorm)(normgen) * parameters.alignmentVariance + dynamics[n][0]/gestureTemplates[classes[n]].getTemplateLength();
+    float L = gestureTemplates[classes[n]].getTemplateLength();
+    alignment[n] += (*rndnorm)(normgen) * parameters.alignmentVariance + dynamics[n][0]/L + dynamics[n][1]/(L*L);
     
     
     for(int l= 0; l < dynamics[n].size(); l++)  dynamics[n][l] += (*rndnorm)(normgen) * parameters.dynamicsVariance[l];
