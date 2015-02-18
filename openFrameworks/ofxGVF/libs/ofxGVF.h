@@ -232,7 +232,6 @@ public:
     vector< vector<float> > getEstimatedDynamics();
     vector< vector<float> > getScalings();
     vector< vector<float> > getEstimatedScalings();
-    vector<float> getEstimatedProbabilities();
     vector<float> getEstimatedLikelihoods();
     vector<float> getWeights();
     vector<float> getPrior();
@@ -324,8 +323,7 @@ private:
     vector<float>           estimatedAlignment; // ..
     vector<vector<float> >  estimatedDynamics;  // ..
     vector<vector<float> >  estimatedScalings;  // ..
-    vector<float>           estimatedProbabilities;        // ..
-    vector<float>           estimatedLikelihoods;
+    vector<float>           estimatedLikelihoods;        // ..
     vector<float>           absoluteLikelihoods;// ..
     
     // keep track of the estimation for the recognized gesture

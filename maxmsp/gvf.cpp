@@ -353,6 +353,23 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
             outlet_anything(x->likelihoods_outlet, gensym("likelihoods"), numberOfTemplates, outAtoms);
             delete[] outAtoms;
             
+            outAtoms = new t_atom[numberOfTemplates];
+            for(int j = 0; j < numberOfTemplates; j++)
+                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].likelihood);
+            outlet_anything(x->likelihoods_outlet, gensym("abslikelihoods"), numberOfTemplates, outAtoms);
+            delete[] outAtoms;
+            
+//            float sumLikelihoods = 0.0f;
+//            for(int k=0; k<x->bubi->getNumberOfGestureTemplates(); k++)
+//                sumLikelihoods += x->outcomes.estimations[k].likelihood;
+//            
+//            if (sumLikelihoods<50.0) {
+//                post("**sumLikelihoods:%f",sumLikelihoods);
+//                x->currentGesture->clear();
+//                idfile = 0;
+//                if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING) x->bubi->restart();
+//            }
+            
 
             break;
         }

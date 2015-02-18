@@ -72,7 +72,6 @@ typedef struct {
     float alignment;
     vector<float> dynamics;
     vector<float> scalings;
-    float likelihood;
 } ofxGVFEstimation;
 
 // ofxGVFVariations
