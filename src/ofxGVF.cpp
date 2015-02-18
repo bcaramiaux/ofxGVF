@@ -611,12 +611,17 @@ void ofxGVF::updateLikelihood(vector<float> obs, int n) {
     
     if(alignment[n] < 0.0)      {
         alignment[n] = fabs(alignment[n]);  // re-spread at the beginning
-        classes[n]   = n % getNumberOfGestureTemplates();
+        if (config.segmentation)
+            classes[n]   = n % getNumberOfGestureTemplates();
     }
     else if(alignment[n] > 1.0) {
-//        alignment[n] = fabs(2.0-alignment[n]); // re-spread at the end
-        alignment[n] = fabs(1.0-alignment[n]); // re-spread at the beginning
-        classes[n]   = n % getNumberOfGestureTemplates();
+        if (config.segmentation){
+            alignment[n] = fabs(1.0-alignment[n]); // re-spread at the beginning
+            classes[n]   = n % getNumberOfGestureTemplates();
+        }
+        else{
+            alignment[n] = fabs(2.0-alignment[n]); // re-spread at the end
+        }
     }
     
     // take vref from template at the given alignment

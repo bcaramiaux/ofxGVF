@@ -8,7 +8,7 @@
 			"architecture" : "x86"
 		}
 ,
-		"rect" : [ -4.0, 44.0, 1118.0, 769.0 ],
+		"rect" : [ 1.0, 44.0, 1119.0, 769.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -36,7 +36,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 17.0, 67.5, 137.0, 25.0 ],
+					"patching_rect" : [ 10.0, 62.5, 137.0, 25.0 ],
 					"text" : "Commands"
 				}
 
@@ -51,7 +51,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 250.0, 448.0, 104.0, 29.0 ],
+					"patching_rect" : [ 243.0, 443.0, 104.0, 29.0 ],
 					"text" : "Number of gestures \nin the vocabulary:"
 				}
 
@@ -65,7 +65,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 742.25, 239.0, 338.0, 18.0 ],
+					"patching_rect" : [ 735.25, 234.0, 338.0, 18.0 ],
 					"text" : "Allow normalization of the data"
 				}
 
@@ -79,7 +79,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 742.25, 219.0, 338.0, 18.0 ],
+					"patching_rect" : [ 735.25, 214.0, 338.0, 18.0 ],
 					"text" : "Allow segmentation of the incoming data (switching between gestures)"
 				}
 
@@ -93,7 +93,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 742.25, 200.0, 334.0, 18.0 ],
+					"patching_rect" : [ 735.25, 195.0, 334.0, 18.0 ],
 					"text" : "Allow translation of the data by the first point of the incoming gesture"
 				}
 
@@ -108,7 +108,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 649.25, 101.0, 439.0, 20.0 ],
+					"patching_rect" : [ 642.25, 96.0, 439.0, 20.0 ],
 					"text" : "Commands"
 				}
 
@@ -123,7 +123,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 649.25, 269.0, 439.0, 20.0 ],
+					"patching_rect" : [ 642.25, 264.0, 439.0, 20.0 ],
 					"text" : "Global Parameters"
 				}
 
@@ -138,7 +138,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 649.25, 378.0, 439.0, 20.0 ],
+					"patching_rect" : [ 642.25, 373.0, 439.0, 20.0 ],
 					"text" : "Adaptation Parameters: higher value means faster adaptation but lower accuracy"
 				}
 
@@ -152,7 +152,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 761.166626, 424.0, 333.0, 18.0 ],
+					"patching_rect" : [ 754.166626, 419.0, 333.0, 18.0 ],
 					"text" : "Adaptation of Scalings (1 scaling cof per dimension)"
 				}
 
@@ -166,7 +166,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 761.166626, 404.0, 327.0, 18.0 ],
+					"patching_rect" : [ 754.166626, 399.0, 327.0, 18.0 ],
 					"text" : "Adaptation of dynamics (speed and acceleration)"
 				}
 
@@ -180,7 +180,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 761.166626, 336.0, 288.0, 18.0 ],
+					"patching_rect" : [ 754.166626, 331.0, 288.0, 18.0 ],
 					"text" : "Change number of particles (lower value: faster, less accurate)"
 				}
 
@@ -193,7 +193,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 704.75, 743.5, 74.0, 18.0 ],
+					"patching_rect" : [ 697.75, 738.5, 74.0, 18.0 ],
 					"text" : "s ACCURACY",
 					"textcolor" : [ 1.0, 0.03593, 0.189907, 1.0 ]
 				}
@@ -218,7 +218,7 @@
 					"orientation" : 0,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 705.0, 628.5, 137.0, 95.0 ],
+					"patching_rect" : [ 698.0, 623.5, 137.0, 95.0 ],
 					"peakcolor" : [ 0.498039, 0.498039, 0.498039, 1.0 ],
 					"setminmax" : [ 0.0, 1.0 ],
 					"setstyle" : 5,
@@ -346,7 +346,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 19.0, 581.0, 45.0, 18.0 ],
+					"patching_rect" : [ 12.0, 576.0, 45.0, 18.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontface" : 0,
 						"default_fontname" : "Arial",
@@ -374,7 +374,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 313.0, 600.0, 156.0, 29.0 ],
+					"patching_rect" : [ 306.0, 595.0, 156.0, 29.0 ],
 					"text" : "scalings coefs of the recognised\ngesture"
 				}
 
@@ -389,7 +389,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 313.0, 528.0, 149.0, 40.0 ],
+					"patching_rect" : [ 306.0, 523.0, 149.0, 40.0 ],
 					"text" : "scalings (1 scaling coefficient \nper dimension [here 2] times N\n[nb of learned gestures]) "
 				}
 
@@ -404,7 +404,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 167.875, 600.0, 104.0, 29.0 ],
+					"patching_rect" : [ 160.875, 595.0, 104.0, 29.0 ],
 					"text" : "speed estimation(on \nrecognised gestures)"
 				}
 
@@ -419,7 +419,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 167.875, 528.0, 142.0, 40.0 ],
+					"patching_rect" : [ 160.875, 523.0, 142.0, 40.0 ],
 					"text" : "dynamics (speed and acceleration times N [nb of learned gestures]) "
 				}
 
@@ -434,7 +434,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 27.5, 528.0, 125.0, 40.0 ],
+					"patching_rect" : [ 20.5, 523.0, 125.0, 40.0 ],
 					"text" : "alignement (N elements) \nwhere N=Number of \nLeanred Gestures"
 				}
 
@@ -449,7 +449,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 30.5, 600.0, 104.0, 29.0 ],
+					"patching_rect" : [ 23.5, 595.0, 104.0, 29.0 ],
 					"text" : "alignement (on \nrecognised gestures)"
 				}
 
@@ -463,7 +463,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 783.25, 315.5, 150.0, 18.0 ],
+					"patching_rect" : [ 776.25, 310.5, 150.0, 18.0 ],
 					"text" : "Student T-distribution nu param"
 				}
 
@@ -478,7 +478,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 733.583374, 315.5, 48.0, 18.0 ]
+					"patching_rect" : [ 726.583374, 310.5, 48.0, 18.0 ]
 				}
 
 			}
@@ -491,7 +491,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 649.833374, 316.5, 74.0, 17.0 ],
+					"patching_rect" : [ 642.833374, 311.5, 74.0, 17.0 ],
 					"text" : "studentnu $1",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -506,7 +506,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 650.25, 240.0, 67.0, 17.0 ],
+					"patching_rect" : [ 643.25, 235.0, 67.0, 17.0 ],
 					"text" : "normalize 0",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -521,7 +521,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 650.25, 424.0, 99.0, 17.0 ],
+					"patching_rect" : [ 643.25, 419.0, 99.0, 17.0 ],
 					"text" : "scalings 0.000001",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -536,7 +536,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 650.25, 404.0, 88.0, 17.0 ],
+					"patching_rect" : [ 643.25, 399.0, 88.0, 17.0 ],
 					"text" : "dynamics 0.001",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -551,7 +551,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 650.25, 472.0, 54.0, 18.0 ],
+					"patching_rect" : [ 643.25, 467.0, 54.0, 18.0 ],
 					"text" : "s #0-togvf"
 				}
 
@@ -566,7 +566,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 856.666626, 308.5, 93.0, 18.0 ],
+					"patching_rect" : [ 849.666626, 303.5, 93.0, 18.0 ],
 					"text" : "r internalTolerance"
 				}
 
@@ -690,7 +690,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 230.0, 485.0, 99.0, 18.0 ],
+					"patching_rect" : [ 223.0, 480.0, 99.0, 18.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontface" : 0,
 						"default_fontname" : "Arial",
@@ -716,7 +716,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 311.5, 408.0, 54.0, 18.0 ],
+					"patching_rect" : [ 304.5, 403.0, 54.0, 18.0 ],
 					"text" : "s #0-togvf"
 				}
 
@@ -730,7 +730,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 70.75, 202.0, 152.0, 18.0 ],
+					"patching_rect" : [ 63.75, 197.0, 152.0, 18.0 ],
 					"text" : "Clear all the recorded gestures"
 				}
 
@@ -744,7 +744,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 19.0, 201.0, 42.0, 20.0 ],
+					"patching_rect" : [ 12.0, 196.0, 42.0, 20.0 ],
 					"text" : "clear",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -759,7 +759,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 311.5, 67.5, 137.0, 25.0 ],
+					"patching_rect" : [ 304.5, 62.5, 137.0, 25.0 ],
 					"text" : "Gesture data"
 				}
 
@@ -774,7 +774,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 350.666626, 473.0, 96.0, 18.0 ],
+					"patching_rect" : [ 343.666626, 468.0, 96.0, 18.0 ],
 					"text" : "r learningGestureId"
 				}
 
@@ -788,7 +788,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 649.25, 172.0, 215.0, 17.0 ],
+					"patching_rect" : [ 642.25, 167.0, 215.0, 17.0 ],
 					"text" : "loadtemplates /Users/caramiaux/saved.txt",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -803,7 +803,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 869.25, 172.0, 217.0, 17.0 ],
+					"patching_rect" : [ 862.25, 167.0, 217.0, 17.0 ],
 					"text" : "savetemplates /Users/caramiaux/saved.txt",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -819,7 +819,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 70.75, 153.5, 215.0, 29.0 ],
+					"patching_rect" : [ 63.75, 148.5, 215.0, 29.0 ],
 					"text" : "Click on play and perform a new gesture or a \nsequence of gestures"
 				}
 
@@ -833,7 +833,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 19.0, 236.5, 54.0, 18.0 ],
+					"patching_rect" : [ 12.0, 231.5, 54.0, 18.0 ],
 					"text" : "s #0-togvf"
 				}
 
@@ -847,7 +847,7 @@
 					"numinlets" : 0,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 19.0, 424.5, 53.0, 18.0 ],
+					"patching_rect" : [ 12.0, 419.5, 53.0, 18.0 ],
 					"text" : "r #0-togvf"
 				}
 
@@ -861,7 +861,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 648.25, 67.5, 244.0, 25.0 ],
+					"patching_rect" : [ 641.25, 62.5, 244.0, 25.0 ],
 					"text" : "Other commands and parameters"
 				}
 
@@ -879,7 +879,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "int", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 350.666626, 453.0, 50.0, 20.0 ],
+					"patching_rect" : [ 343.666626, 448.0, 50.0, 20.0 ],
 					"textcolor" : [ 1.0, 0.901961, 0.239216, 1.0 ]
 				}
 
@@ -893,7 +893,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 539.0, 378.0, 38.0, 20.0 ],
+					"patching_rect" : [ 532.0, 373.0, 38.0, 20.0 ],
 					"text" : "stop",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -908,7 +908,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 493.0, 378.0, 39.0, 20.0 ],
+					"patching_rect" : [ 486.0, 373.0, 39.0, 20.0 ],
 					"text" : "start",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -923,7 +923,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 420.75, 379.0, 71.0, 18.0 ],
+					"patching_rect" : [ 413.75, 374.0, 71.0, 18.0 ],
 					"text" : "IMPORTANT!",
 					"textcolor" : [ 1.0, 0.03593, 0.189907, 1.0 ]
 				}
@@ -939,7 +939,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 783.25, 293.5, 70.0, 18.0 ],
+					"patching_rect" : [ 776.25, 288.5, 70.0, 18.0 ],
 					"text" : "loadmess 0.2"
 				}
 
@@ -953,7 +953,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 782.25, 293.5, 128.0, 18.0 ],
+					"patching_rect" : [ 775.25, 288.5, 128.0, 18.0 ],
 					"text" : "Tolerance to the difference"
 				}
 
@@ -968,7 +968,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 733.583374, 293.5, 46.0, 18.0 ]
+					"patching_rect" : [ 726.583374, 288.5, 46.0, 18.0 ]
 				}
 
 			}
@@ -981,7 +981,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 649.833374, 294.5, 71.0, 17.0 ],
+					"patching_rect" : [ 642.833374, 289.5, 71.0, 17.0 ],
 					"text" : "tolerance $1",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -997,7 +997,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 3,
 					"outlettype" : [ "", "", "" ],
-					"patching_rect" : [ 493.166626, 352.5, 110.666748, 18.0 ],
+					"patching_rect" : [ 486.166626, 347.5, 110.666748, 18.0 ],
 					"text" : "route 1 0",
 					"textcolor" : [ 0.497009, 0.497009, 0.497009, 1.0 ]
 				}
@@ -1718,7 +1718,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 311.5, 352.5, 99.0, 18.0 ],
+					"patching_rect" : [ 304.5, 347.5, 99.0, 18.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontface" : 0,
 						"default_fontname" : "Arial",
@@ -1746,7 +1746,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 716.75, 146.0, 265.0, 18.0 ],
+					"patching_rect" : [ 709.75, 141.0, 265.0, 18.0 ],
 					"text" : "Print in the console templates and parameters in the GVF"
 				}
 
@@ -1760,7 +1760,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 716.75, 126.0, 152.0, 18.0 ],
+					"patching_rect" : [ 709.75, 121.0, 152.0, 18.0 ],
 					"text" : "Clear all the recorded templates"
 				}
 
@@ -1775,7 +1775,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 71.0, 100.5, 241.0, 40.0 ],
+					"patching_rect" : [ 64.0, 95.5, 241.0, 40.0 ],
 					"text" : "Click and record a new gesture by drawing here =>\nClick on \"record\" for each new gesture to be added\nto the vocabulary"
 				}
 
@@ -1789,7 +1789,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 566.0, 628.5, 137.0, 95.0 ],
+					"patching_rect" : [ 559.0, 623.5, 137.0, 95.0 ],
 					"setminmax" : [ 0.0, 1.0 ],
 					"setstyle" : 1,
 					"size" : 2
@@ -1806,7 +1806,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "int", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 455.583313, 628.5, 108.0, 47.0 ],
+					"patching_rect" : [ 448.583313, 623.5, 108.0, 47.0 ],
 					"textcolor" : [ 0.850909, 0.0, 0.0, 1.0 ]
 				}
 
@@ -1830,7 +1830,7 @@
 					"orientation" : 0,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 297.0, 628.5, 137.0, 95.0 ],
+					"patching_rect" : [ 290.0, 623.5, 137.0, 95.0 ],
 					"peakcolor" : [ 0.498039, 0.498039, 0.498039, 1.0 ],
 					"setminmax" : [ 0.0, 2.0 ],
 					"setstyle" : 2,
@@ -1847,7 +1847,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 19.0, 743.5, 52.0, 18.0 ],
+					"patching_rect" : [ 12.0, 738.5, 52.0, 18.0 ],
 					"text" : "s PHASE",
 					"textcolor" : [ 1.0, 0.03593, 0.189907, 1.0 ]
 				}
@@ -1863,7 +1863,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "float", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 158.0, 724.5, 137.0, 18.0 ]
+					"patching_rect" : [ 151.0, 719.5, 137.0, 18.0 ]
 				}
 
 			}
@@ -1886,7 +1886,7 @@
 					"orientation" : 0,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 158.0, 628.5, 137.0, 95.0 ],
+					"patching_rect" : [ 151.0, 623.5, 137.0, 95.0 ],
 					"peakcolor" : [ 0.498039, 0.498039, 0.498039, 1.0 ],
 					"setminmax" : [ -1.0, 2.0 ],
 					"setstyle" : 2,
@@ -1913,7 +1913,7 @@
 					"orientation" : 0,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 19.0, 628.5, 137.0, 95.0 ],
+					"patching_rect" : [ 12.0, 623.5, 137.0, 95.0 ],
 					"peakcolor" : [ 0.498039, 0.498039, 0.498039, 1.0 ],
 					"setminmax" : [ 0.0, 1.0 ],
 					"setstyle" : 5,
@@ -1940,7 +1940,7 @@
 					"orientation" : 0,
 					"outlettype" : [ "", "" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 19.0, 724.5, 137.0, 18.0 ],
+					"patching_rect" : [ 12.0, 719.5, 137.0, 18.0 ],
 					"peakcolor" : [ 0.498039, 0.498039, 0.498039, 1.0 ],
 					"setminmax" : [ 0.0, 1.0 ],
 					"setstyle" : 1,
@@ -1957,7 +1957,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 649.25, 126.0, 34.0, 17.0 ],
+					"patching_rect" : [ 642.25, 121.0, 34.0, 17.0 ],
 					"text" : "clear",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -1972,7 +1972,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 19.0, 154.0, 36.0, 20.0 ],
+					"patching_rect" : [ 12.0, 149.0, 36.0, 20.0 ],
 					"text" : "play",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -1987,7 +1987,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 19.0, 100.5, 50.0, 20.0 ],
+					"patching_rect" : [ 12.0, 95.5, 50.0, 20.0 ],
 					"text" : "record",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -2002,7 +2002,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 13.0, 42.0, 775.0, 18.0 ],
+					"patching_rect" : [ 6.0, 37.0, 775.0, 18.0 ],
 					"text" : "Realtime gesture recognition with variations estimation. Copyright, credits, sources & documentation at: https://github.com/bcaramiaux/ofxGVF",
 					"textcolor" : [ 0.672882, 0.680073, 0.701644, 1.0 ]
 				}
@@ -2016,7 +2016,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 4,
 					"outlettype" : [ "list", "list", "int", "" ],
-					"patching_rect" : [ 311.5, 100.5, 291.5, 245.0 ]
+					"patching_rect" : [ 304.5, 95.5, 291.5, 245.0 ]
 				}
 
 			}
@@ -2029,7 +2029,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 10.0, 6.0, 532.0, 42.0 ],
+					"patching_rect" : [ 3.0, 1.0, 532.0, 42.0 ],
 					"text" : "GVF - Gesture Variation Follower",
 					"textcolor" : [ 0.672882, 0.680073, 0.701644, 1.0 ]
 				}
@@ -2043,7 +2043,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 455.583313, 743.5, 81.0, 17.0 ],
+					"patching_rect" : [ 448.583313, 738.5, 81.0, 17.0 ],
 					"text" : "s RECOGNITION",
 					"textcolor" : [ 1.0, 0.03593, 0.189907, 1.0 ]
 				}
@@ -2058,7 +2058,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 649.25, 146.0, 47.0, 17.0 ],
+					"patching_rect" : [ 642.25, 141.0, 47.0, 17.0 ],
 					"text" : "printme",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -2072,7 +2072,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 566.0, 743.5, 93.0, 18.0 ],
+					"patching_rect" : [ 559.0, 738.5, 93.0, 18.0 ],
 					"text" : "s PROBABILITIES",
 					"textcolor" : [ 1.0, 0.03593, 0.189907, 1.0 ]
 				}
@@ -2086,7 +2086,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 297.0, 743.5, 51.0, 18.0 ],
+					"patching_rect" : [ 290.0, 738.5, 51.0, 18.0 ],
 					"text" : "s SCALE",
 					"textcolor" : [ 1.0, 0.03593, 0.189907, 1.0 ]
 				}
@@ -2100,7 +2100,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 158.0, 743.5, 52.0, 18.0 ],
+					"patching_rect" : [ 151.0, 738.5, 52.0, 18.0 ],
 					"text" : "s SPEED",
 					"textcolor" : [ 1.0, 0.03593, 0.189907, 1.0 ]
 				}
@@ -2117,7 +2117,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 3,
 					"outlettype" : [ "", "", "" ],
-					"patching_rect" : [ 19.0, 447.0, 230.0, 29.0 ],
+					"patching_rect" : [ 12.0, 442.0, 230.0, 29.0 ],
 					"text" : "gvf"
 				}
 
@@ -2131,7 +2131,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 650.25, 337.0, 110.0, 17.0 ],
+					"patching_rect" : [ 643.25, 332.0, 110.0, 17.0 ],
 					"text" : "numberparticles 700",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -2146,8 +2146,8 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 649.25, 220.0, 86.0, 17.0 ],
-					"text" : "segmentation 1",
+					"patching_rect" : [ 642.25, 215.0, 86.0, 17.0 ],
+					"text" : "segmentation 0",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
 
@@ -2161,7 +2161,7 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 649.25, 201.0, 62.0, 17.0 ],
+					"patching_rect" : [ 642.25, 196.0, 62.0, 17.0 ],
 					"text" : "translate 1",
 					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
 				}
@@ -2388,7 +2388,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 297.0, 581.0, 45.0, 18.0 ],
+					"patching_rect" : [ 290.0, 576.0, 45.0, 18.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontface" : 0,
 						"default_fontname" : "Arial",
@@ -2548,7 +2548,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 455.583313, 581.0, 148.0, 18.0 ],
+					"patching_rect" : [ 448.583313, 576.0, 148.0, 18.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontface" : 0,
 						"default_fontname" : "Arial",
@@ -2575,7 +2575,7 @@
 					"numinlets" : 3,
 					"numoutlets" : 3,
 					"outlettype" : [ "", "", "" ],
-					"patching_rect" : [ 455.583313, 510.0, 126.0, 18.0 ],
+					"patching_rect" : [ 448.583313, 505.0, 126.0, 18.0 ],
 					"text" : "route likelihoods accuracy"
 				}
 
@@ -2589,7 +2589,7 @@
 					"numinlets" : 4,
 					"numoutlets" : 4,
 					"outlettype" : [ "", "", "", "" ],
-					"patching_rect" : [ 19.0, 510.0, 436.0, 18.0 ],
+					"patching_rect" : [ 12.0, 505.0, 436.0, 18.0 ],
 					"text" : "route alignment dynamics scalings"
 				}
 
@@ -2843,7 +2843,7 @@
  ]
 					}
 ,
-					"patching_rect" : [ 158.0, 581.0, 45.0, 18.0 ],
+					"patching_rect" : [ 151.0, 576.0, 45.0, 18.0 ],
 					"saved_object_attributes" : 					{
 						"default_fontface" : 0,
 						"default_fontname" : "Arial",
@@ -2876,7 +2876,7 @@
 					"destination" : [ "obj-84", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 134.0, 506.5, 465.083313, 506.5 ],
+					"midpoints" : [ 127.0, 501.5, 458.083313, 501.5 ],
 					"source" : [ "obj-101", 1 ]
 				}
 
@@ -2913,7 +2913,7 @@
 					"destination" : [ "obj-33", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
-					"midpoints" : [ 28.5, 185.5, 28.5, 185.5 ],
+					"midpoints" : [ 21.5, 180.5, 21.5, 180.5 ],
 					"source" : [ "obj-120", 0 ]
 				}
 
@@ -2923,7 +2923,7 @@
 					"destination" : [ "obj-33", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
-					"midpoints" : [ 28.5, 212.75, 28.5, 212.75 ],
+					"midpoints" : [ 21.5, 207.75, 21.5, 207.75 ],
 					"source" : [ "obj-125", 0 ]
 				}
 
@@ -2942,7 +2942,7 @@
 					"destination" : [ "obj-9", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 548.5, 402.5, 321.0, 402.5 ],
+					"midpoints" : [ 541.5, 397.5, 314.0, 397.5 ],
 					"source" : [ "obj-16", 0 ]
 				}
 
@@ -3042,7 +3042,7 @@
 					"destination" : [ "obj-56", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 401.0, 349.5, 330.0, 349.5, 330.0, 90.5, 321.0, 90.5 ],
+					"midpoints" : [ 394.0, 344.5, 323.0, 344.5, 323.0, 85.5, 314.0, 85.5 ],
 					"source" : [ "obj-35", 1 ]
 				}
 
@@ -3079,7 +3079,7 @@
 					"destination" : [ "obj-26", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
-					"midpoints" : [ 878.75, 191.5, 659.75, 191.5 ],
+					"midpoints" : [ 871.75, 186.5, 652.75, 186.5 ],
 					"source" : [ "obj-41", 0 ]
 				}
 
@@ -3116,7 +3116,7 @@
 					"destination" : [ "obj-9", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 502.5, 402.5, 321.0, 402.5 ],
+					"midpoints" : [ 495.5, 397.5, 314.0, 397.5 ],
 					"source" : [ "obj-5", 0 ]
 				}
 
@@ -3126,7 +3126,7 @@
 					"destination" : [ "obj-33", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
-					"midpoints" : [ 28.5, 235.75, 28.5, 235.75 ],
+					"midpoints" : [ 21.5, 230.75, 21.5, 230.75 ],
 					"source" : [ "obj-51", 0 ]
 				}
 
@@ -3172,7 +3172,7 @@
 					"destination" : [ "obj-35", 1 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 502.666656, 348.5, 401.0, 348.5 ],
+					"midpoints" : [ 495.666656, 343.5, 394.0, 343.5 ],
 					"source" : [ "obj-56", 2 ]
 				}
 
@@ -3254,7 +3254,7 @@
 					"destination" : [ "obj-191", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 465.083313, 544.5, 465.083313, 544.5 ],
+					"midpoints" : [ 458.083313, 539.5, 458.083313, 539.5 ],
 					"source" : [ "obj-84", 0 ]
 				}
 
@@ -3264,7 +3264,7 @@
 					"destination" : [ "obj-4", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 465.083313, 555.75, 575.5, 555.75 ],
+					"midpoints" : [ 458.083313, 550.75, 568.5, 550.75 ],
 					"source" : [ "obj-84", 0 ]
 				}
 
@@ -3274,7 +3274,7 @@
 					"destination" : [ "obj-96", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 518.583313, 539.75, 714.5, 539.75 ],
+					"midpoints" : [ 511.583313, 534.75, 707.5, 534.75 ],
 					"source" : [ "obj-84", 1 ]
 				}
 

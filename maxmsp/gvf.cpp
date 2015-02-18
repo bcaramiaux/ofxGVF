@@ -53,10 +53,10 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv);
 void gvf_free(t_gvf *x);
 
 //// BASICS
-void gvf_learn           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_record           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_start           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_stop            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_follow          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_play          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_clear           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_list            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_printme         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -109,10 +109,10 @@ int C74_EXPORT main(void)
     //  MESSAGES
 
     // basics
-    class_addmethod(c, (method)gvf_learn, "learn", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_record, "record", A_GIMME, 0);
     class_addmethod(c, (method)gvf_start, "start", A_GIMME, 0);
     class_addmethod(c, (method)gvf_stop, "stop", A_GIMME, 0);
-    class_addmethod(c, (method)gvf_follow, "follow", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_play, "play", A_GIMME, 0);
     class_addmethod(c, (method)gvf_clear, "clear", A_GIMME, 0);
     class_addmethod(c, (method)gvf_list, "list", A_GIMME, 0);
     class_addmethod(c, (method)gvf_printme, "printme", A_GIMME, 0);
@@ -204,7 +204,7 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== LEARN
 ///////////////////////////////////////////////////////////
-void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_record(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     x->bubi->setState(ofxGVF::STATE_LEARNING);
     if (argc==0){
@@ -233,8 +233,14 @@ void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    if (x->bubi->getState()==ofxGVF::STATE_LEARNING)
+//    if (x->bubi->getState()==ofxGVF::STATE_LEARNING)
+//        x->currentGesture->clear();
+
         x->currentGesture->clear();
+        idfile = 0;
+        
+        if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
+            x->bubi->restart();
 
 }
 
@@ -253,7 +259,7 @@ void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== FOLLOW
 ///////////////////////////////////////////////////////////
-void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_play(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     x->bubi->setState(ofxGVF::STATE_FOLLOWING);
     
@@ -289,7 +295,7 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     }
     if(x->bubi->getState() == ofxGVF::STATE_CLEAR)
     {
-        post("I'm in a standby (must learn something beforehand)");
+        post("I'm in a standby (must record something beforehand)");
         return;
     }
     
@@ -353,23 +359,13 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
             outlet_anything(x->likelihoods_outlet, gensym("likelihoods"), numberOfTemplates, outAtoms);
             delete[] outAtoms;
             
-            outAtoms = new t_atom[numberOfTemplates];
-            for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].likelihood);
-            outlet_anything(x->likelihoods_outlet, gensym("abslikelihoods"), numberOfTemplates, outAtoms);
+            outAtoms = new t_atom[1];
+            float sumLikelihoods = 0.0f;
+            for(int k=0; k<x->bubi->getNumberOfGestureTemplates(); k++) sumLikelihoods += x->outcomes.estimations[k].likelihood;
+            atom_setfloat(&outAtoms[0],sumLikelihoods/x->bubi->getNumberOfParticles());
+            outlet_anything(x->likelihoods_outlet, gensym("accuracy"), 1, outAtoms);
             delete[] outAtoms;
-            
-//            float sumLikelihoods = 0.0f;
-//            for(int k=0; k<x->bubi->getNumberOfGestureTemplates(); k++)
-//                sumLikelihoods += x->outcomes.estimations[k].likelihood;
-//            
-//            if (sumLikelihoods<50.0) {
-//                post("**sumLikelihoods:%f",sumLikelihoods);
-//                x->currentGesture->clear();
-//                idfile = 0;
-//                if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING) x->bubi->restart();
-//            }
-            
+
 
             break;
         }
