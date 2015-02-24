@@ -155,6 +155,7 @@ public:
     
     int getDynamicsDim();
     int getScalingsDim();
+    int getRotationsDim();
     
     void restart();     // restart the GVF
 	void clear();       // clear templates etc.
@@ -219,9 +220,9 @@ public:
     void setScaleVariance(vector<float> scaleVariance);
     vector<float> getScaleVariance();
     
-    void setRotationVariance(float rotationVariance, int dim = 0);
-    void setRotationVariance(vector<float> rotationVariance);
-    vector<float> getRotationVariance();
+    void setRotationsVariance(float rotationsVariance, int dim = 0);
+    void setRotationsVariance(vector<float> rotationsVariance);
+    vector<float> getRotationsVariance();
     
     // MATHS
     
@@ -232,6 +233,8 @@ public:
     vector< vector<float> > getEstimatedDynamics();
     vector< vector<float> > getScalings();
     vector< vector<float> > getEstimatedScalings();
+    vector< vector<float> > getRotations();
+    vector< vector<float> > getEstimatedRotations();
     vector<float> getEstimatedProbabilities();
     vector<float> getEstimatedLikelihoods();
     vector<float> getWeights();
@@ -266,160 +269,73 @@ public:
 private:
     
     // private variables
-    
-
     ofxGVFConfig        config;
     ofxGVFParameters    parameters;
     ofxGVFOutcomes      outcomes;
-    
-    // TOOD: to be put in parameters?
-    vector<float> dimWeights;
-    
-//    ofxGVFVarianceCoefficents coefficents;
-//    ofxGVFInitialSpreadingParameters spreadingParameters;
-    
-    float   tolerance;          // standard deviation of the observation distribution
-	float   nu;                 // degree of freedom for the t-distribution; if 0, use a gaussian
-	float   sp, sv, sr, ss;     // sigma values (actually, their square root)
-	int     resamplingThreshold;// resampling threshol
-	int     pdim;               // number of state dimension
-    int     scale_dim;          // scale state dimension
-    int     rotation_dim;       // rotation state dimension
-    int     dynamicsDim;          // scale state dimension
-    int     scalingsDim;       // rotation state dimension
-    
-    
-    bool    has_learned;        // true if gesture templates have been learned
-    bool    parametersSetAsDefault;
-    float   globalNormalizationFactor;
-    
-    int mostProbableIndex;                      // cached most probable index
-    vector<float> mostProbableStatus;           // cached most probable status [phase, speed, scale[, rotation], probability]
-    vector< vector<float> > status;                  // cached estimated status for all templates
-	vector< vector<float> > X;                  // each row is a particle
-	vector<int>             g;                  // gesture index for each particle [g is ns x 1]
-	vector<float>           w;                  // weight of each particle [w is ns x 1]
-
-    vector< vector<float> > offS;               // translation offset
-
-	vector<float>           featVariances;      // vector of variances
-	vector<float>           means;              // vector of means for particles initial spreading
-	vector<float>           ranges;             // vector of ranges around the means for particles initial spreading
-    
-    
-    // --- new stuff
-	vector<int>             classes;            // gesture index for each particle [g is ns x 1]
-	vector<float >          alignment;          // each row is a sample of dynamical features
-	vector<vector<float> >  dynamics;           // each row is a sample of dynamical features
-	vector<vector<float> >  scalings;           // each row is a sample of dynamical features
-    
-	vector<float>           weights;            // weight of each particle [w is ns x 1]
-    vector<float>           prior;              // weight of each particle [w is ns x 1]
-    vector<float>           posterior;          // weight of each particle [w is ns x 1]
-    vector<float>           likelihood;
-    vector<vector<float> >  offsets;            // translation offset
-    
-    // estimations
-    vector<float>           estimatedGesture;   // ..
-    vector<float>           estimatedAlignment; // ..
-    vector<vector<float> >  estimatedDynamics;  // ..
-    vector<vector<float> >  estimatedScalings;  // ..
-    vector<float>           estimatedProbabilities;        // ..
-    vector<float>           estimatedLikelihoods;
-    vector<float>           absoluteLikelihoods;// ..
-    
-    // keep track of the estimation for the recognized gesture
-//    vector<float>           mostProbableStatus; // cached most probable status [phase, speed, scale[, rotation], probability]
-    
-    
-    // gesture 'history'
-    //	map<int, vector< vector<float> > > R_single;    // gesture references (1 example)
-    //    map<int, vector<float> > R_initial;             // gesture initial data
-    //    vector<int> gestureLengths;                     // length of each reference gesture
-    //    vector< vector<float> > EmptyTemplate;      // dummy empty template for passing as ref
-    //    int     numTemplates;       // number of learned gestures (starts at 0)
-    
+    ofxGVFState         state;
+   
+    vector<float> dimWeights;           // TOOD: to be put in parameters?
     vector<float> maxRange;
     vector<float> minRange;
+    int     dynamicsDim;                // dynamics state dimension
+    int     scalingsDim;                // scalings state dimension
+    int     rotationsDim;               // rotation state dimension
+    float   globalNormalizationFactor;          // flagged if normalization
+    int     mostProbableIndex;                  // cached most probable index
     
-    vector<ofxGVFGesture> gestureTemplates;
+	vector<int>             classes;            // gesture index for each particle [ns x 1]
+	vector<float >          alignment;          // alignment index (between 0 and 1) [ns x 1]
+	vector<vector<float> >  dynamics;           // dynamics estimation [ns x 2]
+	vector<vector<float> >  scalings;           // scalings estimation [ns x D]
+	vector<vector<float> >  rotations;          // rotations estimation [ns x A]
+	vector<float>           weights;            // weight of each particle [ns x 1]
+    vector<float>           prior;              // prior of each particle [ns x 1]
+    vector<float>           posterior;          // poserior of each particle [ns x 1]
+    vector<float>           likelihood;         // likelihood of each particle [ns x 1]
+    
+    // estimations
+    vector<float>           estimatedGesture;           // ..
+    vector<float>           estimatedAlignment;         // ..
+    vector<vector<float> >  estimatedDynamics;          // ..
+    vector<vector<float> >  estimatedScalings;          // ..
+    vector<vector<float> >  estimatedRotations;         // ..
+    vector<float>           estimatedProbabilities;     // ..
+    vector<float>           estimatedLikelihoods;       // ..
+    vector<float>           absoluteLikelihoods;        // ..
+    
+    
+    vector<ofxGVFGesture>   gestureTemplates;           // ..
+    vector<vector<float> >  offsets;                    // translation offset
+    
 
-    
-    //////////////
-    // MODELING
-    //////////////
+    // Model mechanics
     void initStateSpace();
     void initStateValues();
     void initStateValues(int pf_n, float range);
     void initPrior();
     void initPrior(int pf_n);
-    //void initPrior(int pf_n, float range = 0.1);
     void initNoiseParameters();
-    
-
     
     void updateStateSpace(int n);
     void updateLikelihood(vector<float> obs, int n);
     void updatePrior(int n);
     void updatePosterior(int n);
-    
-    
-    //in order to output particles
-    vector< vector<float> > particlesPositions;
-    
-    ofxGVFState state;                          // store current state of the gesture follower
+    //    void UpdateOutcomes();
+
 
     // random number generator
-#if BOOSTLIB
-	boost::variate_generator<boost::mt19937&, boost::normal_distribution<float> > *rndnorm(rng, normdist);
-	boost::mt19937 rng;
-	boost::normal_distribution<float> normdist;
-#else
-    //tr1::mt19937 rng;
-    //tr1::normal_distribution<float> *normdist;
-    //tr1::uniform_real<float> *unifdist;
-    //tr1::variate_generator<tr1::mt19937, tr1::normal_distribution<float> > *rndnorm; //(rng, *normdist);
-
-    // std::random_device           rd;
-    // std::mt19937                 gen(rd());
-    // std::normal_distribution<>  *normalDist;
-    
-    std::random_device      rd;
-
-    std::mt19937            normgen;
+    std::random_device                      rd;
+    std::mt19937                            normgen;
     std::normal_distribution<float>         *rndnorm;
-
-    std::default_random_engine unifgen;
+    std::default_random_engine              unifgen;
     std::uniform_real_distribution<float>   *rndunif;
-
-#endif
-    
-//    typedef tr1::mt19937 pseudorandom;
-//    typedef tr1::normal_distribution<float> normaldist;
-//    typedef tr1::variate_generator<pseudorandom, normaldist> generator;
-    
-    vector<float> obsOffset;
-	// Segmentation variables
-	vector<float> abs_weights;
-	double probThresh;
-    double probThreshMin;
-    int currentGest;
-    bool compa;
-    float old_max;
-    vector<float> meansCopy;
-    vector<float> rangesCopy;
-    vector<float> origin;
-    vector<float> *offset;
-
-    
-    void UpdateOutcomes();
     
     
-    // only for logs
+    // ONLY for LOGS
     vector<vector<float> >  vecRef;
     vector<float>           vecObs;
     vector<float>           stateNoiseDist;
-    
+    vector< vector<float> > particlesPositions;
     
     
 };

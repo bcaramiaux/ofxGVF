@@ -75,6 +75,7 @@ void gvf_resamplingthreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom 
 void gvf_alignment           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_dynamics            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_scalings            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_rotations            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_anticipate           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// I/O
@@ -131,6 +132,7 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_alignment, "alignment", A_GIMME,0);
     class_addmethod(c, (method)gvf_dynamics, "dynamics", A_GIMME,0);
     class_addmethod(c, (method)gvf_scalings, "scalings", A_GIMME,0);
+    class_addmethod(c, (method)gvf_rotations, "rotations", A_GIMME,0);
     class_addmethod(c, (method)gvf_anticipate, "anticipate", A_GIMME,0);
     
     
@@ -352,6 +354,16 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
             outlet_anything(x->estimation_outlet, gensym("scalings"), numberOfTemplates * x->bubi->getScalingsDim(), outAtoms);
             delete[] outAtoms;
 
+            if (x->bubi->getRotationsDim()!=0)
+            {
+                outAtoms = new t_atom[numberOfTemplates * x->bubi->getRotationsDim()];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    for(int jj = 0; jj < x->bubi->getRotationsDim(); jj++)
+                        atom_setfloat(&outAtoms[j*x->bubi->getRotationsDim()+jj],x->outcomes.estimations[j].rotations[jj]);
+                outlet_anything(x->estimation_outlet, gensym("rotations"), numberOfTemplates * x->bubi->getRotationsDim(), outAtoms);
+                delete[] outAtoms;
+            }
+            
             
             outAtoms = new t_atom[numberOfTemplates];
             for(int j = 0; j < numberOfTemplates; j++)
@@ -701,6 +713,21 @@ void gvf_scalings(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     if (argc == 1) {
         for (int k=0; k< x->bubi->getScalingsDim(); k++)
             x->parameters.scalingsVariance[k] = sqrt(atom_getfloat(argv));
+    }
+    
+    // Set the new parameters
+    x->bubi->setParameters(x->parameters);
+}
+
+void gvf_rotations(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    // Get the current parameters
+    x->parameters = x->bubi->getParameters();
+    
+    // Change ...
+    if (argc == x->bubi->getRotationsDim()) {
+        for (int k=0; k< argc; k++)
+            x->parameters.rotationsVariance[k] = sqrt(atom_getfloat(&argv[k]));
     }
     
     // Set the new parameters

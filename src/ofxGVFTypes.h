@@ -47,16 +47,17 @@ typedef struct{
 // ofxGVFParameters
 //  comprises parameters of the algorithm
 typedef struct{
-    int             numberParticles;
     float           tolerance;
-    int             resamplingThreshold;
     float           distribution;
+    int             numberParticles;
+    int             resamplingThreshold;
+    // variances for variation estimations
     float           alignmentVariance;
     float           speedVariance;
     vector<float>   scaleVariance;
-    vector<float>   rotationVariance;
     vector<float>   dynamicsVariance;
     vector<float>   scalingsVariance;
+    vector<float>   rotationsVariance;
     float           phaseInitialSpreading;
     float           speedInitialSpreading;
     vector<float>   scaleInitialSpreading;
@@ -72,6 +73,7 @@ typedef struct {
     float alignment;
     vector<float> dynamics;
     vector<float> scalings;
+    vector<float> rotations;
     float likelihood;
 } ofxGVFEstimation;
 

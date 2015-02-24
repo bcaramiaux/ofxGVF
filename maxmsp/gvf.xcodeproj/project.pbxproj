@@ -179,8 +179,8 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = NO;
-				DSTROOT = "$(SRCROOT)/maxexternal/";
-				GCC_OPTIMIZATION_LEVEL = s;
+				DSTROOT = "$(SRCROOT)/maxstuff/";
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(C74SUPPORT)/max-includes\"",
@@ -211,8 +211,8 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				COPY_PHASE_STRIP = YES;
-				DSTROOT = "$(SRCROOT)/maxexternal/";
-				GCC_OPTIMIZATION_LEVEL = s;
+				DSTROOT = "$(SRCROOT)/maxstuff/";
+				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(C74SUPPORT)/max-includes\"",

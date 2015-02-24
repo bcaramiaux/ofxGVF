@@ -115,6 +115,7 @@ void ofxGVF::setup(ofxGVFConfig _config){
     defaultParameters.alignmentVariance     = sqrt(0.000001f);
     defaultParameters.dynamicsVariance      = vector<float>(1,sqrt(0.01f));
     defaultParameters.scalingsVariance      = vector<float>(1,sqrt(0.0000001f));
+    defaultParameters.rotationsVariance     = vector<float>(1,sqrt(0.0f));
     defaultParameters.predictionLoops       = 1;
     
     setup(_config,  defaultParameters);
@@ -130,17 +131,11 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     config      = _config;
     parameters  = _parameters;
 
-    //normdist = new std::tr1::normal_distribution<float>();
-    //unifdist = new std::tr1::uniform_real<float>();
-    //rndnorm = new std::tr1::variate_generator<std::tr1::mt19937, std::tr1::normal_distribution<float> >(rng, *normdist);
-
+    // Init random generators
     normgen = std::mt19937(rd());
     rndnorm = new std::normal_distribution<float>(0.0,1.0);
     unifgen = std::default_random_engine(rd());
     rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
-    
-    // flag
-    has_learned = false;
 }
 
 
@@ -156,21 +151,11 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-
-
 //--------------------------------------------------------------
 ofxGVF::~ofxGVF(){
-
-#if !BOOSTLIB
-    // if(normdist != NULL)
-    //     delete (normdist);
-    // if(unifdist != NULL)
-    //     delete (unifdist);
-#endif
     
     if (rndnorm != NULL)
         delete (rndnorm);
-    
     clear(); // not really necessary but it's polite ;)
     
 }
@@ -237,7 +222,7 @@ void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
     
 }
 
-//----------------------------------------------
+//--------------------------------------------------------------
 vector<float>& ofxGVF::getGestureTemplateSample(int gestureIndex, float cursor) {
     
     // cursor shoudl be between 0 and 1
@@ -301,14 +286,20 @@ void ofxGVF::learn(){
         // get the number of dimension in templates
         config.inputDimensions = gestureTemplates[0].getTemplateDimension();
         
-        dynamicsDim = 2;    // speed + acceleration
+        dynamicsDim = 2;    // hard coded: speed + acceleration
         scalingsDim = config.inputDimensions;
+        
+        // manage orientation
+        if (config.inputDimensions==2) rotationsDim=1;
+        else if (config.inputDimensions==3) rotationsDim=3;
+        else rotationsDim=0;
         
         // Init state space
         initVec(classes, parameters.numberParticles);                           // Vector of gesture class
         initVec(alignment, parameters.numberParticles);                         // Vector of phase values (alignment)
-        initMat(dynamics, parameters.numberParticles, dynamicsDim);
+        initMat(dynamics, parameters.numberParticles, dynamicsDim);             // Matric of dynamics
         initMat(scalings, parameters.numberParticles, scalingsDim);             // Matrix of scaling
+        if (rotationsDim!=0) initMat(rotations, parameters.numberParticles, rotationsDim);             // Matrix of rotations
         initMat(offsets, parameters.numberParticles, config.inputDimensions);
         initVec(weights, parameters.numberParticles);                           // Weights
         
@@ -371,15 +362,12 @@ void ofxGVF::initPrior(int pf_n) {
     
     float range = 0.1;
     
-    // random generators
-    //std::tr1::uniform_real<float> ur(0,1);
-    //std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
-    
     classes[pf_n]   = pf_n % gestureTemplates.size();
     alignment[pf_n] = ((*rndunif)(unifgen) - 0.5) * range;    // spread phase
     
     for(int l = 0; l < dynamics[pf_n].size(); l++) dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0;    // spread dynamics
     for(int l = 0; l < scalings[pf_n].size(); l++) scalings[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0;    // spread scalings
+    if (rotationsDim!=0) for(int l = 0; l < rotations[pf_n].size(); l++) rotations[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 1 + 0.0;    // spread rotations
     
     if (config.translate) for(int l = 0; l < offsets[pf_n].size(); l++) offsets[pf_n][l] = 0.0;
     
@@ -413,6 +401,16 @@ void ofxGVF::initNoiseParameters() {
             parameters.scalingsVariance[k] = variance;
     }
     
+    if (rotationsDim!=0)
+    {
+        if (parameters.rotationsVariance.size() != rotationsDim)
+        {
+            float variance = parameters.rotationsVariance[0];
+            parameters.rotationsVariance.resize(rotationsDim);
+            for (int k=0; k<rotationsDim; k++)
+                parameters.rotationsVariance[k] = variance;
+        }
+    }
     
     // ADAPTATION OF THE TOLERANCE IF DEFAULT PARAMTERS
     // ---------------------------
@@ -510,6 +508,14 @@ vector< vector<float> > ofxGVF::getEstimatedScalings(){
     return estimatedScalings;
 }
 //--------------------------------------------------------------
+vector< vector<float> > ofxGVF::getRotations(){
+    return rotations;
+}
+//--------------------------------------------------------------
+vector< vector<float> > ofxGVF::getEstimatedRotations(){
+    return estimatedRotations;
+}
+//--------------------------------------------------------------
 vector<float> ofxGVF::getEstimatedProbabilities(){
     return estimatedProbabilities;
 }
@@ -540,6 +546,10 @@ vector<float> ofxGVF::getStateNoiseDist(){
 //--------------------------------------------------------------
 int ofxGVF::getScalingsDim(){
     return scalingsDim;
+}
+//--------------------------------------------------------------
+int ofxGVF::getRotationsDim(){
+    return rotationsDim;
 }
 //--------------------------------------------------------------
 void ofxGVF::restart(){
@@ -585,7 +595,8 @@ void ofxGVF::updatePrior(int n) {
     
     for(int l= 0; l < dynamics[n].size(); l++)  dynamics[n][l] += (*rndnorm)(normgen) * parameters.dynamicsVariance[l];
     for(int l= 0; l < scalings[n].size(); l++)  scalings[n][l] += (*rndnorm)(normgen) * parameters.scalingsVariance[l];
- 
+    if (rotationsDim!=0) for(int l= 0; l < rotations[n].size(); l++)  rotations[n][l] += (*rndnorm)(normgen) * parameters.rotationsVariance[l];
+    
     // update prior (bayesian incremental inference)
     prior[n] = posterior[n];
 }
@@ -634,6 +645,18 @@ void ofxGVF::updateLikelihood(vector<float> obs, int n) {
         if (config.normalization) vref[k] = vref[k] / globalNormalizationFactor;
         vref[k] *= scalings[n][k];
     }
+
+    // Apply rotation coefficients
+    if (config.inputDimensions==2) {
+        float tmp0=vref[0]; float tmp1=vref[1];
+        vref[0] = cos(rotations[n][0])*tmp0 - sin(rotations[n][0])*tmp1;
+        vref[1] = sin(rotations[n][0])*tmp0 + cos(rotations[n][0])*tmp1;
+    }
+    else if (config.inputDimensions==3) {
+        // Rotate template sample according to the estimated angles of rotations (3d)
+        vector<vector< float> > RotMatrix = return_RotationMatrix_3d(rotations[n][0],rotations[n][1],rotations[n][2]);
+        vref = multiplyMat(RotMatrix, vref);
+    }
     
 
     // COMPUTE LIKELIHOOD
@@ -646,7 +669,7 @@ void ofxGVF::updateLikelihood(vector<float> obs, int n) {
         likelihood[n] = exp(- dist * 1 / (parameters.tolerance * parameters.tolerance));
     }
     else {            // Student's distribution
-        likelihood[n] = pow(dist/nu + 1, -nu/2 - 1);    // dimension is 2 .. pay attention if editing]
+        likelihood[n] = pow(dist/parameters.distribution + 1, -parameters.distribution/2 - 1);    // dimension is 2 .. pay attention if editing]
     }
     
     // if log on keep track on vref and vobs
@@ -752,11 +775,13 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
     vector<float>           oldAlignment;
     vector< vector<float> > oldDynamics;
     vector< vector<float> > oldScalings;
+    vector< vector<float> > oldRotations;
     
     setVec(oldClasses,   classes);
     setVec(oldAlignment, alignment);
     setMat(oldDynamics,  dynamics);
     setMat(oldScalings,  scalings);
+    if (rotationsDim!=0) setMat(oldRotations, rotations);
     
     
     c[0] = 0;
@@ -779,50 +804,12 @@ void ofxGVF::resampleAccordingToWeights(vector<float> obs)
         
         for (int l=0;l<dynamicsDim;l++)     dynamics[j][l] = oldDynamics[i][l];
         for (int l=0;l<scalingsDim;l++)     scalings[j][l] = oldScalings[i][l];
+        if (rotationsDim!=0) for (int l=0;l<rotationsDim;l++) rotations[j][l] = oldRotations[i][l];
         
         // update posterior (partilces' weights)
         posterior[j] = 1.0/(float)numOfPart;
     }
     
-    
-//    // If segmentation
-//    if (config.segmentation) {
-//        
-//        float sumLikelihoods = 0.0f;
-//        for(int k=0; k<getNumberOfGestureTemplates(); k++)
-//            sumLikelihoods += outcomes.estimations[k].likelihood;
-//
-//        post("**sumLikelihoods:%f",sumLikelihoods);
-//        if (sumLikelihoods<100.0) { //TODO threshold
-//        
-//        // defining here the number of particles allocated to reinitialisation
-//        // used for segmentation
-//        int free_pool = round(50*numOfPart/100);
-//        
-//        for (int j = 0; j < free_pool; j++)
-//        {
-//            int index = round((*rndunif)(unifgen)*numOfPart);
-//            if (index == numOfPart) index = 0;
-//            
-//            initPrior(index);
-//            //initStateValues(index, 0.1);
-//            //weights[index] = 1.0/(float)(numOfPart * numOfPart);
-//            
-//            if (config.translate) for (int jj=0; jj<config.inputDimensions; jj++) offsets[index][jj]=obs[jj];
-//            
-//            //classes[index] = index % getNumberOfGestureTemplates(); // distribute particles across templates
-//        }
-////        float sumw = 0.0;
-////        for (int j = 0; j < numOfPart; j++) {
-////            // sumw += weights[j];
-////            sumw += posterior[j];
-////        }
-////        for (int j = 0; j < numOfPart; j++){
-////            //weights[j] /= sumw;
-////            posterior[j] /= sumw;
-////        }
-//        }
-//    }
 }
 
 
@@ -835,6 +822,7 @@ void ofxGVF::estimates(){
     setVec(estimatedAlignment, 0.0f, getNumberOfGestureTemplates());            // rows are gestures
     setMat(estimatedDynamics,  0.0f, getNumberOfGestureTemplates(), dynamicsDim);  // rows are gestures, cols are features + probabilities
     setMat(estimatedScalings,  0.0f, getNumberOfGestureTemplates(), scalingsDim);   // rows are gestures, cols are features + probabilities
+    if (rotationsDim!=0) setMat(estimatedRotations,  0.0f, getNumberOfGestureTemplates(), rotationsDim);   // ..
     setVec(estimatedProbabilities, 0.0f, getNumberOfGestureTemplates());            // rows are gestures
     setVec(estimatedLikelihoods, 0.0f, getNumberOfGestureTemplates());            // rows are gestures
     
@@ -844,14 +832,11 @@ void ofxGVF::estimates(){
         estimatedAlignment[classes[n]] += alignment[n] * posterior[n];
         for(int m = 0; m < dynamicsDim; m++) estimatedDynamics[classes[n]][m] += dynamics[n][m] * posterior[n];
         for(int m = 0; m < scalingsDim; m++) estimatedScalings[classes[n]][m] += scalings[n][m] * posterior[n];
+        if (rotationsDim!=0) for(int m = 0; m < rotationsDim; m++) estimatedRotations[classes[n]][m] += rotations[n][m] * posterior[n];
         if (!isnan(posterior[n]))
             estimatedProbabilities[classes[n]] += posterior[n];
         estimatedLikelihoods[classes[n]] += likelihood[n];
     }
-    
-    //float sumEstLikelihoods = 0.;
-    //for(int n = 0; n < getNumberOfGestureTemplates(); n++) sumEstLikelihoods+=estimatedLikelihoods[n];
-    //for(int n = 0; n < getNumberOfGestureTemplates(); n++) if (sumEstLikelihoods>0) estimatedLikelihoods[n]/=sumEstLikelihoods;
 	
     // calculate most probable index during scaling...
     float maxProbability = 0.0f;
@@ -870,7 +855,6 @@ void ofxGVF::estimates(){
     // most probable gesture index
     outcomes.most_probable = mostProbableIndex;
     
-    
     // Fill estimation for each gesture
     for (int gi = 0; gi < gestureTemplates.size(); ++gi) {
         
@@ -885,6 +869,13 @@ void ofxGVF::estimates(){
         estimation.scalings    = vector<float>(scalingsDim);
         for (int j = 0; j < scalingsDim; ++j) estimation.scalings[j] = estimatedScalings[gi][j];
         
+        estimation.rotations   = vector<float>();
+        if (rotationsDim!=0)
+        {
+            estimation.rotations.resize(rotationsDim);
+            for (int j = 0; j < rotationsDim; ++j) estimation.rotations[j] = estimatedRotations[gi][j];
+        }
+            
         estimation.likelihood = estimatedLikelihoods[gi];
         
         // push estimation for gesture gi in outcomes
@@ -916,36 +907,6 @@ ofxGVFOutcomes ofxGVF::getOutcomes() {
     return outcomes;
 }
 
-//--------------------------------------------------------------
-void ofxGVF::UpdateOutcomes() {
-
-    outcomes.estimations.clear();
-    
-    // most probable gesture index
-    outcomes.most_probable = mostProbableIndex;
-
-    
-    // Fill estimation for each gesture
-    for (int gi = 0; gi < gestureTemplates.size(); ++gi) {
-        
-        ofxGVFEstimation estimation;
-        
-        estimation.probability = estimatedProbabilities[gi];
-        estimation.alignment   = estimatedAlignment[gi];
-        
-        estimation.dynamics    = vector<float>(dynamicsDim);
-        for (int j = 0; j < dynamicsDim; ++j) estimation.dynamics[j] = estimatedDynamics[gi][j];
-
-        estimation.scalings    = vector<float>(scalingsDim);
-        for (int j = 0; j < scalingsDim; ++j) estimation.scalings[j] = estimatedScalings[gi][j];
-        
-        // push estimation for gesture gi in outcomes
-        outcomes.estimations.push_back(estimation);
-    }
-    
-    assert(outcomes.estimations.size() == gestureTemplates.size());
-    
-}
 
 //--------------------------------------------------------------
 ofxGVFEstimation ofxGVF::getTemplateRecogInfo(int templateNumber) { // FIXME: Rename!
@@ -1123,7 +1084,7 @@ float ofxGVF::getTolerance(){
 
 //--------------------------------------------------------------
 void ofxGVF::setDistribution(float _distribution){
-    nu = _distribution;
+    //nu = _distribution;
     parameters.distribution = _distribution;
 }
 
@@ -1188,7 +1149,21 @@ vector<float> ofxGVF::getScalingsVariance(){
     return parameters.scalingsVariance;
 }
 
-
+// VARIANCE COEFFICIENTS: ROTATIONS
+//--------------------------------------------------------------
+void ofxGVF::setRotationsVariance(float rotationVariance, int dim){
+    // here dim should start at 1!!!
+    if (dim<parameters.rotationsVariance.size())
+        parameters.scalingsVariance[dim-1] = rotationVariance;
+}
+//--------------------------------------------------------------
+void ofxGVF::setRotationsVariance(vector<float> rotationVariance){
+    parameters.scaleVariance = rotationVariance;
+}
+//--------------------------------------------------------------
+vector<float> ofxGVF::getRotationsVariance(){
+    return parameters.rotationsVariance;
+}
 
 
 
@@ -1381,6 +1356,8 @@ void ofxGVF::testRndNum(){
     }
     
 }
+
+
 
 
 
