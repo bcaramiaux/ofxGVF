@@ -196,7 +196,9 @@ public:
     
     void setDistribution(float distribution);
     float getDistribution();
-    
+
+    void setDimWeights(vector<float> dimWeights);
+    vector<float> getDimWeights();
     
     // VARIANCE COEFFICENTS (in PARAMETERS)
     

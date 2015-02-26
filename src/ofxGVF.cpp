@@ -117,6 +117,7 @@ void ofxGVF::setup(ofxGVFConfig _config){
     defaultParameters.scalingsVariance      = vector<float>(1,sqrt(0.0000001f));
     defaultParameters.rotationsVariance     = vector<float>(1,sqrt(0.0f));
     defaultParameters.predictionLoops       = 1;
+    defaultParameters.dimWeights            = vector<float>(1,sqrt(1.0f));
     
     setup(_config,  defaultParameters);
 
@@ -314,9 +315,10 @@ void ofxGVF::learn(){
         
         
         // weighted dimensions in case: default is not weighted
-        dimWeights = vector<float> (config.inputDimensions);
-        for(int k = 0; k < config.inputDimensions; k++) dimWeights[k] = 1.0 / config.inputDimensions;
-        
+        if (parameters.dimWeights.size()!=config.inputDimensions){
+            parameters.dimWeights = vector<float> (config.inputDimensions);
+            for(int k = 0; k < config.inputDimensions; k++) parameters.dimWeights[k] = 1.0 / config.inputDimensions;
+        }
         
         // NORMALIZATION
         if (config.normalization) {     // update the global normaliation factor
@@ -367,7 +369,7 @@ void ofxGVF::initPrior(int pf_n) {
     
     for(int l = 0; l < dynamics[pf_n].size(); l++) dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0;    // spread dynamics
     for(int l = 0; l < scalings[pf_n].size(); l++) scalings[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0;    // spread scalings
-    if (rotationsDim!=0) for(int l = 0; l < rotations[pf_n].size(); l++) rotations[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 1 + 0.0;    // spread rotations
+    if (rotationsDim!=0) for(int l = 0; l < rotations[pf_n].size(); l++) rotations[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 0 + 0.0;    // spread rotations
     
     if (config.translate) for(int l = 0; l < offsets[pf_n].size(); l++) offsets[pf_n][l] = 0.0;
     
@@ -663,7 +665,7 @@ void ofxGVF::updateLikelihood(vector<float> obs, int n) {
     // ==================
     
     // weighted euclidean distance
-    float dist = distance_weightedEuclidean(vref,vobs,dimWeights);
+    float dist = distance_weightedEuclidean(vref,vobs,parameters.dimWeights);
     
     if(parameters.distribution == 0.0f){    // Gaussian distribution
         likelihood[n] = exp(- dist * 1 / (parameters.tolerance * parameters.tolerance));
@@ -1093,15 +1095,14 @@ float ofxGVF::getDistribution(){
     return parameters.distribution;
 }
 
-////--------------------------------------------------------------
-//void ofxGVF::setGestureType(ofxGVFGestureType type){
-//    parameters.gestureType = type;
-//    kGestureType = parameters.gestureType;
+//void ofxGVF::setDimWeights(vector<float> dimWeights){
+//    if (dimWeights.size()!=parameters.dimWeights.size())
+//        parameters.dimWeights.resize(dimWeights.size());
+//    parameters.dimWeights = dimWeights;
 //}
 //
-////--------------------------------------------------------------
-//ofxGVFGestureType ofxGVF::getGestureType(){
-//    return kGestureType;
+//vector<float> ofxGVF::getDimWeights(){
+//    return parameters.dimWeights;
 //}
 
 

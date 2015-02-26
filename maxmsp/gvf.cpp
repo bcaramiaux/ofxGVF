@@ -75,8 +75,9 @@ void gvf_resamplingthreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom 
 void gvf_alignment           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_dynamics            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_scalings            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_rotations            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
-void gvf_anticipate           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_rotations           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_anticipate          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_weights             (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// I/O
 void gvf_savetemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -134,6 +135,7 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_scalings, "scalings", A_GIMME,0);
     class_addmethod(c, (method)gvf_rotations, "rotations", A_GIMME,0);
     class_addmethod(c, (method)gvf_anticipate, "anticipate", A_GIMME,0);
+    class_addmethod(c, (method)gvf_weights, "weights", A_GIMME,0);
     
     
     // I/O
@@ -269,6 +271,11 @@ void gvf_play(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     t_atom *outAtoms = new t_atom[1];
     atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
     outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
+    delete[] outAtoms;
+    
+    outAtoms = new t_atom[1];
+    atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
+    outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
     delete[] outAtoms;
 }
 
@@ -412,11 +419,13 @@ void gvf_clear(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     post("======================");
+    
     post("CONFIGURATION");
     post("  Segmentation: %d", x->bubi->getConfig().segmentation);
     post("  Normalization: %d", x->bubi->getConfig().normalization);
     if (x->bubi->getConfig().normalization)
         post("  Global normalization factor: %f", x->bubi->getGlobalNormalizationFactor());
+    
     post("PARAMETERS");
     post("  Number of particles: %d", x->bubi->getNumberOfParticles());
     post("  Resampling Threshold: %d", x->bubi->getResamplingThreshold());
@@ -437,6 +446,15 @@ void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         scale_str = scale_str + ss.str() + " ";
     }
     post("  %s", scale_str.c_str());
+    scale_str = "  Weights: ";
+    for (int k=0; k<x->bubi->getParameters().dimWeights.size(); k++) {
+        std::ostringstream ss;
+        ss << x->bubi->getParameters().dimWeights[k];
+        scale_str = scale_str + ss.str() + " ";
+    }
+    post("  %s", scale_str.c_str());
+    
+    
     post("TEMPLATES");
     post("  Number of recorded templates: %d", x->bubi->getNumberOfGestureTemplates());
     post("  Number of dimensions: %d", x->bubi->getConfig().inputDimensions);
@@ -600,6 +618,37 @@ void gvf_anticipate(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     
 }
 
+///////////////////////////////////////////////////////////
+//====================== tolerance
+///////////////////////////////////////////////////////////
+void gvf_weights(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    // Get the current parameters
+    x->parameters = x->bubi->getParameters();
+    
+    // Change ...
+    if (argc != x->bubi->getParameters().dimWeights.size()){
+        x->bubi->getParameters().dimWeights.resize(argc);
+    }
+    
+    float normsum=0.0;
+    for (int k=0; k< argc; k++){
+            x->parameters.dimWeights[k] = atom_getfloat(&argv[k]);
+            normsum += atom_getfloat(&argv[k]);
+        }
+        if (normsum==0.0)
+            for (int k=0; k< argc; k++)
+                x->parameters.dimWeights[k]=1.0/(float)argc;
+        else
+            for (int k=0; k< argc; k++)
+                x->parameters.dimWeights[k]=x->parameters.dimWeights[k]/normsum;
+    
+    // Set the new parameters
+    x->bubi->setParameters(x->parameters);
+
+    
+}
+
 /////////////////////////////////////////////////////////////
 ////====================== tolerance
 /////////////////////////////////////////////////////////////
@@ -728,6 +777,10 @@ void gvf_rotations(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     if (argc == x->bubi->getRotationsDim()) {
         for (int k=0; k< argc; k++)
             x->parameters.rotationsVariance[k] = sqrt(atom_getfloat(&argv[k]));
+    }
+    if ((argc == 1) && (argc != x->bubi->getRotationsDim())){
+        for (int k=0; k< argc; k++)
+            x->parameters.rotationsVariance[k] = sqrt(atom_getfloat(argv));
     }
     
     // Set the new parameters

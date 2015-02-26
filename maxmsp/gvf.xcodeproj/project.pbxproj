@@ -201,7 +201,7 @@
 				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = gvf;
 				PRODUCT_VERSION = 0.2.1;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx10.9;
 			};
 			name = Development;
 		};
@@ -233,7 +233,7 @@
 				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = gvf;
 				PRODUCT_VERSION = 0.2.1;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx10.9;
 			};
 			name = Deployment;
 		};

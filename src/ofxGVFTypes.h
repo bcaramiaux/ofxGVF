@@ -63,6 +63,7 @@ typedef struct{
     vector<float>   scaleInitialSpreading;
     vector<float>   rotationInitialSpreading;
     int             predictionLoops;
+    vector<float>   dimWeights;
 } ofxGVFParameters;
 
 
