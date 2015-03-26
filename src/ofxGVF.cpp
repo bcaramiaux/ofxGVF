@@ -118,6 +118,19 @@ void ofxGVF::setup(ofxGVFConfig _config){
     defaultParameters.predictionLoops       = 1;
     defaultParameters.dimWeights            = vector<float>(1,sqrt(1.0f));
     
+    // default spreading
+    defaultParameters.alignmentSpreadingCenter = 0.0;
+    defaultParameters.alignmentSpreadingRange  = 0.2;
+    
+    defaultParameters.dynamicsSpreadingCenter = 1.0;
+    defaultParameters.dynamicsSpreadingRange  = 0.3;
+    
+    defaultParameters.scalingsSpreadingCenter = 1.0;
+    defaultParameters.scalingsSpreadingRange  = 0.3;
+    
+    defaultParameters.rotationsSpreadingCenter = 0.0;
+    defaultParameters.rotationsSpreadingRange  = 0.0;
+    
     setup(_config,  defaultParameters);
 
 }
@@ -130,7 +143,7 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     // Set configuration and parameters
     config      = _config;
     parameters  = _parameters;
-
+    
     // Init random generators
     normgen = std::mt19937(rd());
     rndnorm = new std::normal_distribution<float>(0.0,1.0);
@@ -411,17 +424,20 @@ void ofxGVF::initPrior() {
 void ofxGVF::initPrior(int pf_n) {
     
     float range = 0.1;
+
     
     classes[pf_n]   = pf_n % gestureTemplates.size();
-    alignment[pf_n] = ((*rndunif)(unifgen) - 0.5) * range * 2;    // spread phase
+    alignment[pf_n] = ((*rndunif)(unifgen) - 0.5) * parameters.alignmentSpreadingRange + parameters.alignmentSpreadingCenter;    // spread phase
     
-    for(int l = 0; l < dynamics[pf_n].size(); l++) dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0; // spread dynamics
+    for(int l = 0; l < dynamics[pf_n].size(); l++)
+        dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange + parameters.dynamicsSpreadingCenter; // spread dynamics
     for(int l = 0; l < scalings[pf_n].size(); l++) {
-        scalings[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 3 + 1.0; // spread scalings
+        scalings[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.scalingsSpreadingRange + parameters.scalingsSpreadingCenter; // spread scalings
 //        post("scalings[pf_n][l]=%f",scalings[pf_n][l]);
     }
     if (rotationsDim!=0)
-        for(int l = 0; l < rotations[pf_n].size(); l++) rotations[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * range * 0 + 0.0;    // spread rotations
+        for(int l = 0; l < rotations[pf_n].size(); l++)
+            rotations[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.rotationsSpreadingRange + parameters.rotationsSpreadingCenter;    // spread rotations
     
     if (config.translate) for(int l = 0; l < offsets[pf_n].size(); l++) offsets[pf_n][l] = 0.0;
     
@@ -641,7 +657,18 @@ void ofxGVF::restart(){
 
 
 
-
+void ofxGVF::setSpreadDynamics(float center, float range){
+    parameters.dynamicsSpreadingCenter = center;
+    parameters.dynamicsSpreadingRange = range;
+}
+void ofxGVF::setSpreadScalings(float center, float range){
+    parameters.scalingsSpreadingCenter = center;
+    parameters.scalingsSpreadingRange = range;
+}
+void ofxGVF::setSpreadRotations(float center, float range){
+    parameters.rotationsSpreadingCenter = center;
+    parameters.rotationsSpreadingRange = range;
+}
 
 
 
@@ -820,7 +847,7 @@ void ofxGVF::update(vector<float> & obs){
         posterior[k] /= sumw;
         dotProdw   += posterior[k] * posterior[k];
     }
-    // avoid degeneracy (no particles active, i.e. weights = 0) by resampling
+    // avoid degeneracy (no particles active, i.e. weight = 0) by resampling
 	if( (1./dotProdw) < parameters.resamplingThreshold)
         resampleAccordingToWeights(obs);
     

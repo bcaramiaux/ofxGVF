@@ -179,9 +179,13 @@ public:
 
     void setConfig(ofxGVFConfig _config);
     ofxGVFConfig getConfig();
+
+
+#pragma mark Set/Get Parameters
     
     // PARAMETERS
-    
+    // ==========
+
     void setParameters(ofxGVFParameters parameters);
     ofxGVFParameters getParameters();
     
@@ -203,21 +207,30 @@ public:
     void setDimWeights(vector<float> dimWeights);
     vector<float> getDimWeights();
     
-    // VARIANCE COEFFICENTS (in PARAMETERS)
-    
+    // --- VARIANCES ---
+    // alignement variance
     void setAlignmentVariance(float alignmentVariance);
     float getAlignmentVariance();
-    
-    void setScalingsVariance(float scaleVariance, int dim);
-    void setScalingsVariance(vector<float> scaleVariance);
-    vector<float> getScalingsVariance();
-    
+
+    // dynamics variance
     void setDynamicsVariance(float dynVariance, int dim);
     void setDynamicsVariance(vector<float> dynVariance);
     vector<float> getDynamicsVariance();
     
+    // scalings variance
+    void setScalingsVariance(float scaleVariance, int dim);
+    void setScalingsVariance(vector<float> scaleVariance);
+    vector<float> getScalingsVariance();
     
-    // oldies
+    // --- SPREADING CENTER/RANGE ---
+    // angles
+    void setSpreadDynamics(float center, float range);
+    void setSpreadScalings(float center, float range);
+    void setSpreadRotations(float center, float range);
+    
+    
+    
+    // oldies (deprecated)
     void setSpeedVariance(float speedVariance);
     float getSpeedVariance();
     
@@ -228,6 +241,9 @@ public:
     void setRotationsVariance(float rotationsVariance, int dim = 0);
     void setRotationsVariance(vector<float> rotationsVariance);
     vector<float> getRotationsVariance();
+    
+    
+    
     
     // MATHS
     

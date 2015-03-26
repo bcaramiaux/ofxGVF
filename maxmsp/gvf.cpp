@@ -71,6 +71,7 @@ void gvf_normalize       (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 //// PARAMETERS
 void gvf_tolerance           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_studentnu           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+void gvf_particles           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_numberparticles     (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_resamplingthreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_alignment           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
@@ -79,6 +80,9 @@ void gvf_scalings            (t_gvf *x,const t_symbol *sss, short argc, t_atom *
 void gvf_rotations           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_anticipate          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_weights             (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_spreadingdynamics             (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_spreadingscalings             (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_spreadingrotations             (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// I/O
 void gvf_savetemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -132,6 +136,7 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_tolerance, "tolerance", A_GIMME, 0);
     class_addmethod(c, (method)gvf_studentnu, "studentnu", A_GIMME, 0);
     class_addmethod(c, (method)gvf_resamplingthreshold, "resamplingthreshold", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_particles, "particles", A_GIMME,0);
     class_addmethod(c, (method)gvf_numberparticles, "numberparticles", A_GIMME,0);
     class_addmethod(c, (method)gvf_alignment, "alignment", A_GIMME,0);
     class_addmethod(c, (method)gvf_dynamics, "dynamics", A_GIMME,0);
@@ -139,7 +144,9 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_rotations, "rotations", A_GIMME,0);
     class_addmethod(c, (method)gvf_anticipate, "anticipate", A_GIMME,0);
     class_addmethod(c, (method)gvf_weights, "weights", A_GIMME,0);
-    
+    class_addmethod(c, (method)gvf_spreadingdynamics, "spreadingdynamics", A_GIMME,0);
+    class_addmethod(c, (method)gvf_spreadingscalings, "spreadingscalings", A_GIMME,0);
+    class_addmethod(c, (method)gvf_spreadingrotations, "spreadingrotations", A_GIMME,0);
     
     // I/O
     class_addmethod(c, (method)gvf_savetemplates, "savetemplates", A_GIMME,0);
@@ -228,10 +235,10 @@ void gvf_record(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         delete[] outAtoms;
         
         x->currentGestureID = x->bubi->getNumberOfGestureTemplates()+1;
-     post("x->currentGestureID %i",x->currentGestureID);
+//     post("x->currentGestureID %i",x->currentGestureID);
     }
     else if (argc==1) {
-        post("replacing gesture %i", atom_getlong(&argv[0]));
+//        post("replacing gesture %i", atom_getlong(&argv[0]));
         x->currentGestureID = atom_getlong(&argv[0]);
     }
     else if (argc==2) {
@@ -294,12 +301,12 @@ void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0)){
-                    post("x->currentGestureID = %i x->bubi->getNumberOfGestureTemplates()+1=%i",x->currentGestureID,x->bubi->getNumberOfGestureTemplates()+1);
+//                    post("x->currentGestureID = %i x->bubi->getNumberOfGestureTemplates()+1=%i",x->currentGestureID,x->bubi->getNumberOfGestureTemplates()+1);
         if (x->currentGestureID == x->bubi->getNumberOfGestureTemplates()+1){
             x->bubi->addGestureTemplate(*(x->currentGesture));
         }
         else if (x->currentGestureID < x->bubi->getNumberOfGestureTemplates()+1){
-            post("replacing g");
+//            post("replacing g");
             x->bubi->replaceGestureTemplate(*(x->currentGesture),x->currentGestureID-1);
         }
     }
@@ -770,9 +777,30 @@ void gvf_resamplingthreshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *a
 ///////////////////////////////////////////////////////////
 //====================== numberOfParticles
 ///////////////////////////////////////////////////////////
-void gvf_numberparticles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+void gvf_particles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
+    int nsNew = atom_getlong(&argv[0]);
+    
+    // Get the current parameters
+    x->parameters = x->bubi->getParameters();
+    
+    // Change Resampling threshold
+    x->parameters.numberParticles  = nsNew;
+    
+    // Set the new parameters
+    x->bubi->setParameters(x->parameters);
+    
+    
+}
+
+
+///////////////////////////////////////////////////////////
+//====================== numberOfParticles
+///////////////////////////////////////////////////////////
+void gvf_numberparticles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    post("'numberparticles' message is deprecated, use 'particles' instead");
     int nsNew = atom_getlong(&argv[0]);
     
     // Get the current parameters
@@ -862,6 +890,21 @@ void gvf_rotations(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     x->bubi->setParameters(x->parameters);
 }
 
+void gvf_spreadingdynamics (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv){
+    if (argc!=2)
+        return;
+    x->bubi->setSpreadDynamics(atom_getfloat(&argv[0]),atom_getfloat(&argv[1]));
+}
+void gvf_spreadingscalings (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv){
+    if (argc!=2)
+        return;
+    x->bubi->setSpreadScalings(atom_getfloat(&argv[0]),atom_getfloat(&argv[1]));
+}
+void gvf_spreadingrotations (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv){
+    if (argc!=2)
+        return;
+    x->bubi->setSpreadRotations(atom_getfloat(&argv[0]),atom_getfloat(&argv[1]));
+}
 
 
 
