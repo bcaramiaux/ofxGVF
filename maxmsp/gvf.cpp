@@ -43,6 +43,7 @@ typedef struct _gvf
     void *estimation_outlet;
     void *likelihoods_outlet;
     void *info_outlet;
+    int currentGestureID;
     
 } t_gvf;
 
@@ -85,6 +86,8 @@ void gvf_loadtemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 void gvf_log         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// DEPRECATED
+void gvf_learn           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_follow          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_gestureOn       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_gestureOff      (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -143,11 +146,16 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_loadtemplates, "loadtemplates", A_GIMME,0);
     class_addmethod(c, (method)gvf_log, "log", A_GIMME,0);
     
-	
+    
+    // DEPRECATED
+    class_addmethod(c, (method)gvf_learn, "learn", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_follow, "follow", A_GIMME, 0);
+    
+    
 	class_register(CLASS_BOX, c); /* CLASS_NOBOX */
 	gvf_class = c;
 
-    post("gvf.beta - gesture variation follower (version: 0.2.1 [feb2015])");
+    post("gvf.beta - gesture variation follower (version: 0.2.1 [mar2015])");
     post("(c) Goldsmiths, University of London and IRCAM - Centre Pompidou");
     
 	return 0;
@@ -219,6 +227,36 @@ void gvf_record(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         outlet_anything(x->info_outlet, gensym("learningGesture"), 1, outAtoms);
         delete[] outAtoms;
         
+        x->currentGestureID = x->bubi->getNumberOfGestureTemplates()+1;
+     post("x->currentGestureID %i",x->currentGestureID);
+    }
+    else if (argc==1) {
+        post("replacing gesture %i", atom_getlong(&argv[0]));
+        x->currentGestureID = atom_getlong(&argv[0]);
+    }
+    else if (argc==2) {
+        
+    }
+    else {
+        error("wrong number of argument in learn message");
+    }
+}
+
+///////////////////////////////////////////////////////////
+//====================== LEARN
+///////////////////////////////////////////////////////////
+void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    post("Learn() method is DEPRECATED, change to 'Record'");
+    x->bubi->setState(ofxGVF::STATE_LEARNING);
+    if (argc==0){
+        
+        // output the current ID of the gesture being learned with the prefix "learningGesture"
+        t_atom *outAtoms = new t_atom[1];
+        atom_setlong(&outAtoms[0],x->bubi->getNumberOfGestureTemplates()+1);
+        outlet_anything(x->info_outlet, gensym("learningGesture"), 1, outAtoms);
+        delete[] outAtoms;
+        
     }
     else if (argc==1) {
         
@@ -244,7 +282,8 @@ void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         idfile = 0;
         
         if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
-            x->bubi->restart();
+            if(x->bubi->getNumberOfGestureTemplates() > 0)
+                x->bubi->restart();
 
 }
 
@@ -254,8 +293,16 @@ void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0))
+    if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0)){
+                    post("x->currentGestureID = %i x->bubi->getNumberOfGestureTemplates()+1=%i",x->currentGestureID,x->bubi->getNumberOfGestureTemplates()+1);
+        if (x->currentGestureID == x->bubi->getNumberOfGestureTemplates()+1){
             x->bubi->addGestureTemplate(*(x->currentGesture));
+        }
+        else if (x->currentGestureID < x->bubi->getNumberOfGestureTemplates()+1){
+            post("replacing g");
+            x->bubi->replaceGestureTemplate(*(x->currentGesture),x->currentGestureID-1);
+        }
+    }
     
 }
 
@@ -265,6 +312,30 @@ void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_play(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
+    if (x->bubi->getNumberOfGestureTemplates()==0){
+        x->bubi->setState(ofxGVF::STATE_CLEAR);
+    }
+    else{
+        x->bubi->setState(ofxGVF::STATE_FOLLOWING);
+    // output the current ID of the gesture being learned with the prefix "learningGesture"
+    t_atom *outAtoms = new t_atom[1];
+    atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
+    outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
+    delete[] outAtoms;
+    
+    outAtoms = new t_atom[1];
+    atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
+    outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
+    delete[] outAtoms;
+    }
+}
+
+///////////////////////////////////////////////////////////
+//====================== FOLLOW
+///////////////////////////////////////////////////////////
+void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+{
+    post("Follow() method is DEPRECATED, change to 'Play'");
     x->bubi->setState(ofxGVF::STATE_FOLLOWING);
     
     // output the current ID of the gesture being learned with the prefix "learningGesture"
@@ -304,7 +375,7 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     }
     if(x->bubi->getState() == ofxGVF::STATE_CLEAR)
     {
-        post("I'm in a standby (must record something beforehand)");
+        //post("I'm in a standby (must record something beforehand)");
         return;
     }
     
@@ -322,71 +393,75 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         }
         case ofxGVF::STATE_FOLLOWING:
         {
-            vector<float> observation_vector(argc);
-            for (int k=0; k<argc; k++)
-                observation_vector[k] = atom_getfloat(&argv[k]);
-            
-            x->currentGesture->addObservation(observation_vector);
-            
-            // log just before inference
-            if (x->bubi->getConfig().logOn)
-                logGVF(x);
-            
-            // inference on the last observation
-            x->bubi->update(x->currentGesture->getLastObservation());
-        
-            
-            // output recognition
-            x->outcomes = x->bubi->getOutcomes();
-            int numberOfTemplates = x->bubi->getNumberOfGestureTemplates();
-            
-            t_atom *outAtoms = new t_atom[numberOfTemplates];
-            
-            for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].alignment);
-            outlet_anything(x->estimation_outlet, gensym("alignment"), numberOfTemplates, outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[numberOfTemplates * x->bubi->getDynamicsDim()];
-            for(int j = 0; j < numberOfTemplates; j++)
-                for(int jj = 0; jj < x->bubi->getDynamicsDim(); jj++)
-                    atom_setfloat(&outAtoms[j*x->bubi->getDynamicsDim()+jj],x->outcomes.estimations[j].dynamics[jj]);
-            outlet_anything(x->estimation_outlet, gensym("dynamics"), numberOfTemplates * x->bubi->getDynamicsDim(), outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[numberOfTemplates * x->bubi->getScalingsDim()];
-            for(int j = 0; j < numberOfTemplates; j++)
-                for(int jj = 0; jj < x->bubi->getScalingsDim(); jj++)
-                    atom_setfloat(&outAtoms[j*x->bubi->getScalingsDim()+jj],x->outcomes.estimations[j].scalings[jj]);
-            outlet_anything(x->estimation_outlet, gensym("scalings"), numberOfTemplates * x->bubi->getScalingsDim(), outAtoms);
-            delete[] outAtoms;
-
-            if (x->bubi->getRotationsDim()!=0)
-            {
-                outAtoms = new t_atom[numberOfTemplates * x->bubi->getRotationsDim()];
+//            post("x->bubi->getNumberOfGestureTemplates()=%i",x->bubi->getNumberOfGestureTemplates());
+            if (x->bubi->getNumberOfGestureTemplates()>0) {
+                
+                vector<float> observation_vector(argc);
+                for (int k=0; k<argc; k++)
+                    observation_vector[k] = atom_getfloat(&argv[k]);
+                
+                x->currentGesture->addObservation(observation_vector);
+                
+                // log just before inference
+                if (x->bubi->getConfig().logOn)
+                    logGVF(x);
+                
+                // inference on the last observation
+                x->bubi->update(x->currentGesture->getLastObservation());
+                
+                
+                // output recognition
+                x->outcomes = x->bubi->getOutcomes();
+                int numberOfTemplates = x->bubi->getNumberOfGestureTemplates();
+                
+                t_atom *outAtoms = new t_atom[numberOfTemplates];
+                
                 for(int j = 0; j < numberOfTemplates; j++)
-                    for(int jj = 0; jj < x->bubi->getRotationsDim(); jj++)
-                        atom_setfloat(&outAtoms[j*x->bubi->getRotationsDim()+jj],x->outcomes.estimations[j].rotations[jj]);
-                outlet_anything(x->estimation_outlet, gensym("rotations"), numberOfTemplates * x->bubi->getRotationsDim(), outAtoms);
+                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].alignment);
+                outlet_anything(x->estimation_outlet, gensym("alignment"), numberOfTemplates, outAtoms);
                 delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates * x->bubi->getDynamicsDim()];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    for(int jj = 0; jj < x->bubi->getDynamicsDim(); jj++)
+                        atom_setfloat(&outAtoms[j*x->bubi->getDynamicsDim()+jj],x->outcomes.estimations[j].dynamics[jj]);
+                outlet_anything(x->estimation_outlet, gensym("dynamics"), numberOfTemplates * x->bubi->getDynamicsDim(), outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[numberOfTemplates * x->bubi->getScalingsDim()];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    for(int jj = 0; jj < x->bubi->getScalingsDim(); jj++)
+                        atom_setfloat(&outAtoms[j*x->bubi->getScalingsDim()+jj],x->outcomes.estimations[j].scalings[jj]);
+                outlet_anything(x->estimation_outlet, gensym("scalings"), numberOfTemplates * x->bubi->getScalingsDim(), outAtoms);
+                delete[] outAtoms;
+                
+                if (x->bubi->getRotationsDim()!=0)
+                {
+                    outAtoms = new t_atom[numberOfTemplates * x->bubi->getRotationsDim()];
+                    for(int j = 0; j < numberOfTemplates; j++)
+                        for(int jj = 0; jj < x->bubi->getRotationsDim(); jj++)
+                            atom_setfloat(&outAtoms[j*x->bubi->getRotationsDim()+jj],x->outcomes.estimations[j].rotations[jj]);
+                    outlet_anything(x->estimation_outlet, gensym("rotations"), numberOfTemplates * x->bubi->getRotationsDim(), outAtoms);
+                    delete[] outAtoms;
+                }
+                
+                
+                outAtoms = new t_atom[numberOfTemplates];
+                for(int j = 0; j < numberOfTemplates; j++)
+                    atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].probability);
+                outlet_anything(x->likelihoods_outlet, gensym("likelihoods"), numberOfTemplates, outAtoms);
+                delete[] outAtoms;
+                
+                outAtoms = new t_atom[1];
+                float sumLikelihoods = 0.0f;
+                for(int k=0; k<x->bubi->getNumberOfGestureTemplates(); k++) sumLikelihoods += x->outcomes.estimations[k].likelihood;
+                atom_setfloat(&outAtoms[0],sumLikelihoods/x->bubi->getNumberOfParticles());
+                outlet_anything(x->likelihoods_outlet, gensym("accuracy"), 1, outAtoms);
+                delete[] outAtoms;
+                
             }
-            
-            
-            outAtoms = new t_atom[numberOfTemplates];
-            for(int j = 0; j < numberOfTemplates; j++)
-                atom_setfloat(&outAtoms[j],x->outcomes.estimations[j].probability);
-            outlet_anything(x->likelihoods_outlet, gensym("likelihoods"), numberOfTemplates, outAtoms);
-            delete[] outAtoms;
-            
-            outAtoms = new t_atom[1];
-            float sumLikelihoods = 0.0f;
-            for(int k=0; k<x->bubi->getNumberOfGestureTemplates(); k++) sumLikelihoods += x->outcomes.estimations[k].likelihood;
-            atom_setfloat(&outAtoms[0],sumLikelihoods/x->bubi->getNumberOfParticles());
-            outlet_anything(x->likelihoods_outlet, gensym("accuracy"), 1, outAtoms);
-            delete[] outAtoms;
-
-
             break;
+                
         }
             
         default:

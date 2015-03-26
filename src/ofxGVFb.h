@@ -92,7 +92,6 @@ public:
 	//////////////////////////
     
     void addGestureTemplate(ofxGVFGesture & gestureTemplate);
-    void replaceGestureTemplate(ofxGVFGesture & gestureTemplate, int ID);
     ofxGVFGesture & getGestureTemplate(int index);
     vector<ofxGVFGesture> & getAllGestureTemplates();
     int getNumberOfGestureTemplates();
@@ -319,12 +318,13 @@ private:
     void initStateValues(int pf_n, float range);
     void initPrior();
     void initPrior(int pf_n);
-//    void initPriorV1(int pf_n);
+    void initPriorV1(int pf_n);
     void initNoiseParameters();
     
     void updateStateSpace(int n);
     void updateLikelihood(vector<float> obs, int n);
-    void updatePrior(int n);
+    void updatePrior();
+//    void updatePrior(int n);
     void updatePosterior(int n);
     //    void UpdateOutcomes();
 

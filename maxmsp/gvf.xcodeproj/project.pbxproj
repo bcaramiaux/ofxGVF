@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		2117E51F1A0E7A01004A9857 /* gvf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2117E51E1A0E7A01004A9857 /* gvf.cpp */; };
-		216CF28A1A1A3B5300443E8A /* ofxGVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 216CF2861A1A3B5300443E8A /* ofxGVF.cpp */; };
-		216CF28B1A1A3B5300443E8A /* ofxGVF.h in Headers */ = {isa = PBXBuildFile; fileRef = 216CF2871A1A3B5300443E8A /* ofxGVF.h */; };
+		215AE1511AC2DF5A007576AF /* ofxGVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 215AE14F1AC2DF5A007576AF /* ofxGVF.cpp */; };
+		215AE1521AC2DF5A007576AF /* ofxGVF.h in Headers */ = {isa = PBXBuildFile; fileRef = 215AE1501AC2DF5A007576AF /* ofxGVF.h */; };
 		216CF28C1A1A3B5300443E8A /* ofxGVFGesture.h in Headers */ = {isa = PBXBuildFile; fileRef = 216CF2881A1A3B5300443E8A /* ofxGVFGesture.h */; };
 		216CF28D1A1A3B5300443E8A /* ofxGVFTypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 216CF2891A1A3B5300443E8A /* ofxGVFTypes.h */; };
 		21BAAF431A93C86A0004C828 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 21BAAF421A93C86A0004C828 /* libc++.dylib */; };
@@ -17,8 +17,8 @@
 
 /* Begin PBXFileReference section */
 		2117E51E1A0E7A01004A9857 /* gvf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gvf.cpp; sourceTree = "<group>"; };
-		216CF2861A1A3B5300443E8A /* ofxGVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxGVF.cpp; sourceTree = "<group>"; };
-		216CF2871A1A3B5300443E8A /* ofxGVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVF.h; sourceTree = "<group>"; };
+		215AE14F1AC2DF5A007576AF /* ofxGVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ofxGVF.cpp; sourceTree = "<group>"; };
+		215AE1501AC2DF5A007576AF /* ofxGVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVF.h; sourceTree = "<group>"; };
 		216CF2881A1A3B5300443E8A /* ofxGVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVFGesture.h; sourceTree = "<group>"; };
 		216CF2891A1A3B5300443E8A /* ofxGVFTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVFTypes.h; sourceTree = "<group>"; };
 		21BAAF421A93C86A0004C828 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
@@ -61,10 +61,10 @@
 		216CF2851A1A3B5300443E8A /* src */ = {
 			isa = PBXGroup;
 			children = (
-				216CF2861A1A3B5300443E8A /* ofxGVF.cpp */,
-				216CF2871A1A3B5300443E8A /* ofxGVF.h */,
 				216CF2881A1A3B5300443E8A /* ofxGVFGesture.h */,
 				216CF2891A1A3B5300443E8A /* ofxGVFTypes.h */,
+				215AE14F1AC2DF5A007576AF /* ofxGVF.cpp */,
+				215AE1501AC2DF5A007576AF /* ofxGVF.h */,
 			);
 			name = src;
 			path = ../../../../Github/ofxGVF/src;
@@ -78,8 +78,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				216CF28D1A1A3B5300443E8A /* ofxGVFTypes.h in Headers */,
+				215AE1521AC2DF5A007576AF /* ofxGVF.h in Headers */,
 				216CF28C1A1A3B5300443E8A /* ofxGVFGesture.h in Headers */,
-				216CF28B1A1A3B5300443E8A /* ofxGVF.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,7 +154,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2117E51F1A0E7A01004A9857 /* gvf.cpp in Sources */,
-				216CF28A1A1A3B5300443E8A /* ofxGVF.cpp in Sources */,
+				215AE1511AC2DF5A007576AF /* ofxGVF.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -201,7 +201,7 @@
 				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = gvf;
 				PRODUCT_VERSION = 0.2.1;
-				SDKROOT = macosx10.9;
+				SDKROOT = macosx;
 			};
 			name = Development;
 		};
@@ -233,7 +233,7 @@
 				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
 				PRODUCT_NAME = gvf;
 				PRODUCT_VERSION = 0.2.1;
-				SDKROOT = macosx10.9;
+				SDKROOT = macosx;
 			};
 			name = Deployment;
 		};
