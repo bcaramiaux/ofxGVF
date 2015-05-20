@@ -19,7 +19,7 @@
 
 #include "ofxGVF.h"
 
-#include <Accelerate/Accelerate.h>
+//#include <Accelerate/Accelerate.h>
 
 #include <string.h>
 #include <stdio.h>
@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 //debug max
-#include "ext.h"
+//#include "ext.h"
 
 
 using namespace std;
@@ -112,7 +112,7 @@ void ofxGVF::setup(ofxGVFConfig _config){
     defaultParameters.resamplingThreshold   = 250;
     defaultParameters.distribution          = 0.0f;
     defaultParameters.alignmentVariance     = sqrt(0.000001f);
-    defaultParameters.dynamicsVariance      = vector<float>(1,sqrt(0.01f));
+    defaultParameters.dynamicsVariance      = vector<float>(1,sqrt(0.001f));
     defaultParameters.scalingsVariance      = vector<float>(1,sqrt(0.00001f));
     defaultParameters.rotationsVariance     = vector<float>(1,sqrt(0.0f));
     defaultParameters.predictionLoops       = 1;
@@ -130,6 +130,8 @@ void ofxGVF::setup(ofxGVFConfig _config){
     
     defaultParameters.rotationsSpreadingCenter = 0.0;
     defaultParameters.rotationsSpreadingRange  = 0.0;
+    
+    tolerancesetmanually = false;
     
     setup(_config,  defaultParameters);
 
@@ -351,7 +353,7 @@ void ofxGVF::learn(){
         // get the number of dimension in templates
         config.inputDimensions = gestureTemplates[0].getTemplateDimension();
         
-        dynamicsDim = 1;    // hard coded: just speed now
+        dynamicsDim = 2;    // hard coded: just speed now
         scalingsDim = config.inputDimensions;
         
         // manage orientation
@@ -423,14 +425,20 @@ void ofxGVF::initPrior() {
 //--------------------------------------------------------------
 void ofxGVF::initPrior(int pf_n) {
     
-    float range = 0.1;
-
+//    float range = 0.1;
     
     classes[pf_n]   = pf_n % gestureTemplates.size();
     alignment[pf_n] = ((*rndunif)(unifgen) - 0.5) * parameters.alignmentSpreadingRange + parameters.alignmentSpreadingCenter;    // spread phase
     
-    for(int l = 0; l < dynamics[pf_n].size(); l++)
-        dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange + parameters.dynamicsSpreadingCenter; // spread dynamics
+//    for(int l = 0; l < dynamics[pf_n].size(); l++)
+//        dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange + parameters.dynamicsSpreadingCenter; // spread dynamics
+
+    dynamics[pf_n][0] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange + parameters.dynamicsSpreadingCenter; // spread speed
+    if (dynamics[pf_n].size()>1){
+        dynamics[pf_n][1] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange; // spread accel
+//        cout << dynamics[pf_n][1] << endl;
+    }
+    
     for(int l = 0; l < scalings[pf_n].size(); l++) {
         scalings[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.scalingsSpreadingRange + parameters.scalingsSpreadingCenter; // spread scalings
 //        post("scalings[pf_n][l]=%f",scalings[pf_n][l]);
@@ -513,7 +521,7 @@ void ofxGVF::initNoiseParameters() {
     
     // ADAPTATION OF THE TOLERANCE IF DEFAULT PARAMTERS
     // ---------------------------
-    
+    if (!tolerancesetmanually){
     float obsMeanRange = 0.0f;
     for (int gt=0; gt<gestureTemplates.size(); gt++) {
         for (int d=0; d<config.inputDimensions; d++)
@@ -522,7 +530,7 @@ void ofxGVF::initNoiseParameters() {
     }
     obsMeanRange /= gestureTemplates.size();
     parameters.tolerance = obsMeanRange / 4.0f;  // dividing by an heuristic factor [to be learned?]
-    
+    }
 }
 
 
@@ -701,8 +709,15 @@ void ofxGVF::updatePrior(int n) {
     float L = gestureTemplates[classes[n]].getTemplateLength();
     alignment[n] += (*rndnorm)(normgen) * parameters.alignmentVariance + dynamics[n][0]/L; // + dynamics[n][1]/(L*L);
     
+    if (dynamics[n].size()>1){
+        dynamics[n][0] += (*rndnorm)(normgen) * parameters.dynamicsVariance[0] + dynamics[n][1]/L;
+        dynamics[n][1] += (*rndnorm)(normgen) * parameters.dynamicsVariance[1];
+    }
+    else {
+        dynamics[n][0] += (*rndnorm)(normgen) * parameters.dynamicsVariance[0];
+    }
     
-    for(int l= 0; l < dynamics[n].size(); l++)  dynamics[n][l] += (*rndnorm)(normgen) * parameters.dynamicsVariance[l];
+//    for(int l= 0; l < dynamics[n].size(); l++)  dynamics[n][l] += (*rndnorm)(normgen) * parameters.dynamicsVariance[l];
     for(int l= 0; l < scalings[n].size(); l++)  scalings[n][l] += (*rndnorm)(normgen) * parameters.scalingsVariance[l];
     if (rotationsDim!=0) for(int l= 0; l < rotations[n].size(); l++)  rotations[n][l] += (*rndnorm)(normgen) * parameters.rotationsVariance[l];
     
@@ -860,6 +875,11 @@ void ofxGVF::update(vector<float> & obs){
 
 
     
+}
+
+// Old way with infer [DEPRECATED]
+void ofxGVF::infer(vector<float> obs) {
+    update(obs);
 }
 
 
@@ -1216,6 +1236,7 @@ int ofxGVF::getResamplingThreshold(){
 void ofxGVF::setTolerance(float _tolerance){
     if (_tolerance <= 0.0) _tolerance = 0.1;
     parameters.tolerance = _tolerance;
+    tolerancesetmanually = true;
 }
 
 //--------------------------------------------------------------

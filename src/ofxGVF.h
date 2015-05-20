@@ -324,6 +324,7 @@ private:
     vector<float>           estimatedLikelihoods;       // ..
     vector<float>           absoluteLikelihoods;        // ..
     
+    bool tolerancesetmanually;
     
     vector<ofxGVFGesture>   gestureTemplates;           // ..
     vector<vector<float> >  offsets;                    // translation offset

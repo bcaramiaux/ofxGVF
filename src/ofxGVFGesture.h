@@ -461,6 +461,8 @@ public:
                 }
             }
         }
+        
+        return gestureData;
     }
     
     

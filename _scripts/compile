@@ -1,1 +1,0 @@
-g++ -O3 -o test -I ../src/ -I main-gvf.cpp ../src/ofxGVF.cpp
