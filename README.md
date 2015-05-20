@@ -22,7 +22,46 @@ Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you
 API
 ---
 
-To be updated !!!...
+Declare an ofxGVF object, an ofxGVFGesture object (to store currently performed gesture):
+```
+ofxGVF *gvf;
+ofxGVFGesture currentGesture;
+```
+  
+Build GVF with default configuration and parameters:
+```
+gvf = new ofxGVF();
+```
+
+Perform *Learning* from a matrix of type `vector<vector<float>>` called `data` by first filling the object `currentGesture` and add eventually add this gesture as a template:
+```
+currentGesture.clear(); //  just in case!
+    
+for (vector<vector<float> >::iterator frame = data.begin() ; frame != data.end(); ++frame)
+  currentGesture.addObservation(*frame);
+  
+gvf->addGestureTemplate(currentGesture);
+```
+
+Perform *Testing* from a matrix of type `vector<vector<float>>` called `data` by first changing GVF state to Following, clearing the object `currentGesture` and updating GVF for each sample:
+```
+gvf->setState(ofxGVF::STATE_FOLLOWING);
+    
+currentGesture.clear();
+    
+for (vector<vector<float> >::iterator frame = data.begin() ; frame != data.end(); ++frame){
+  currentGesture.addObservation(*frame); // in case we want to plot or to analyse gesture data
+  gvf->update(currentGesture.getLastObservation());
+}
+```
+
+To get the recognition and adaption results, in the `for` loop above, called the following methods:
+```
+float phase = gvf->getOutcomes().estimations[0].alignment;
+float speed = gvf->getOutcomes().estimations[0].dynamics[0];
+```
+
+An example is available in the folder _libtests/
 
 
 
