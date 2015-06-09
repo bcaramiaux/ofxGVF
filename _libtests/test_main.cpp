@@ -19,7 +19,6 @@ int main(int argc, char ** argv)
     // GVF VARIABLES
     ofxGVF *gvf;
     ofxGVFGesture currentGesture;
-    ofxGVFOutcomes outcomes;
   
     // Build GVF with default setup
     gvf = new ofxGVF();

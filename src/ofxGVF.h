@@ -73,7 +73,7 @@ public:
 	// destructor
     ~ofxGVF();
 
-    
+#pragma mark Setup Functions
     
     /////////////
     // Set-Ups //
@@ -82,29 +82,28 @@ public:
     void setup(); // use default config and parameters
     void setup(ofxGVFConfig _config); // default parameters
     void setup(ofxGVFConfig _config, ofxGVFParameters _parameters);
-
-    //V1
-    void setupV1();
     
+    
+#pragma mark Gesture Templates
     
     //////////////////////////
     // Gestures & Templates //
 	//////////////////////////
     
+    // add gestures
     void addGestureTemplate(ofxGVFGesture & gestureTemplate);
     void replaceGestureTemplate(ofxGVFGesture & gestureTemplate, int ID);
+
+    // get gestures or infos
     ofxGVFGesture & getGestureTemplate(int index);
     vector<ofxGVFGesture> & getAllGestureTemplates();
     int getNumberOfGestureTemplates();
-    
     vector<float>& getGestureTemplateSample(int gestureIndex, float cursor);
-    
+
+    // remove gesture
     void removeGestureTemplate(int index);
     void removeAllGestureTemplates();
-    
-    // TODO: clearTemplate by given ID
-    void clearTemplate(int id);
-    
+
     
     // TODO: some methods below (not implemented) to handle multi-examples for a gesture
     void addGestureExamples(vector<ofxGVFGesture> & gestureExamples);   // add examples of one gesture to the Vocabulary
@@ -115,23 +114,19 @@ public:
     
     
     
-    /////////////////////
-    // Particle Filter //
-	/////////////////////
+    ///////////////
+    // INFERENCE //
+	///////////////
 
     void learn();               // learn parameters from the gesture examples
 
+    void infer(vector<float> obs);     // call the inference method on the observation (DEPRECATED)
     void update(vector<float> & obs);               // incremental step of filtering given the obs
-    void estimates();       // update estimated outcome
-    void resampleAccordingToWeights(vector<float> obs);     // resampling process
-    
-    
-    
-    ///////////////
-    // Inference //
-	///////////////
 
-	void infer(vector<float> obs);     // call the inference method on the observation
+    void estimates();       // update estimated outcome
+    
+
+    
 
     
     
@@ -323,6 +318,12 @@ private:
     vector<float>           estimatedProbabilities;     // ..
     vector<float>           estimatedLikelihoods;       // ..
     vector<float>           absoluteLikelihoods;        // ..
+
+    // velocity and acceleration estimations
+    vector<float>           currentVelAcc;
+    vector<vector<float>>   kalmanDynMatrix;
+    vector<vector<float>>   kalmanMapMatrix;
+    
     
     bool tolerancesetmanually;
     
@@ -336,15 +337,16 @@ private:
     void initStateValues(int pf_n, float range);
     void initPrior();
     void initPrior(int pf_n);
-//    void initPriorV1(int pf_n);
     void initNoiseParameters();
     
     void updateStateSpace(int n);
     void updateLikelihood(vector<float> obs, int n);
     void updatePrior(int n);
     void updatePosterior(int n);
-    //    void UpdateOutcomes();
 
+    // particle filer resampling method
+    void resampleAccordingToWeights(vector<float> obs);
+    
 
     // random number generator
     std::random_device                      rd;

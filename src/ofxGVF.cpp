@@ -153,17 +153,7 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
 }
 
-//--------------------------------------------------------------
-void ofxGVF::setupV1(){
-    
-    clear(); // just in case
 
-    // Init random generators
-    normgen = std::mt19937(rd());
-    rndnorm = new std::normal_distribution<float>(0.0,1.0);
-    unifgen = std::default_random_engine(rd());
-    rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
-}
 
 
 
@@ -313,7 +303,7 @@ vector<ofxGVFGesture> & ofxGVF::getAllGestureTemplates(){
 
 //--------------------------------------------------------------
 int ofxGVF::getNumberOfGestureTemplates(){
-    return gestureTemplates.size();
+    return (int)gestureTemplates.size();
 }
 
 //--------------------------------------------------------------
