@@ -236,6 +236,7 @@ void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
     }
     
     gestureTemplates.push_back(gestureTemplate);
+    activeGestures.push_back(gestureTemplates.size());
     
 }
 
@@ -404,35 +405,40 @@ void ofxGVF::learn(){
 // GENERAL FUNCTIONS FOR STATE SPACE BAYESIAN MODEL
 
 //--------------------------------------------------------------
-void ofxGVF::initPrior() {
+void ofxGVF::initPrior()
+{
     
     // PATICLE FILTERING
     for (int k = 0; k < parameters.numberParticles; k++)
+    {
         initPrior(k);
+        
+        classes[k] = activeGestures[k % activeGestures.size()] - 1;
+    }
     
 }
 
 //--------------------------------------------------------------
-void ofxGVF::initPrior(int pf_n) {
+void ofxGVF::initPrior(int pf_n)
+{
     
-//    float range = 0.1;
-    
-    classes[pf_n]   = pf_n % gestureTemplates.size();
+    // alignment
     alignment[pf_n] = ((*rndunif)(unifgen) - 0.5) * parameters.alignmentSpreadingRange + parameters.alignmentSpreadingCenter;    // spread phase
     
-//    for(int l = 0; l < dynamics[pf_n].size(); l++)
-//        dynamics[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange + parameters.dynamicsSpreadingCenter; // spread dynamics
 
+    // dynamics
     dynamics[pf_n][0] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange + parameters.dynamicsSpreadingCenter; // spread speed
-    if (dynamics[pf_n].size()>1){
+    if (dynamics[pf_n].size()>1)
+    {
         dynamics[pf_n][1] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange; // spread accel
-//        cout << dynamics[pf_n][1] << endl;
     }
     
+    // scalings
     for(int l = 0; l < scalings[pf_n].size(); l++) {
         scalings[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.scalingsSpreadingRange + parameters.scalingsSpreadingCenter; // spread scalings
-//        post("scalings[pf_n][l]=%f",scalings[pf_n][l]);
     }
+    
+    // rotations
     if (rotationsDim!=0)
         for(int l = 0; l < rotations[pf_n].size(); l++)
             rotations[pf_n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.rotationsSpreadingRange + parameters.rotationsSpreadingCenter;    // spread rotations
@@ -1188,6 +1194,21 @@ void ofxGVF::setNumberOfParticles(int numberOfParticles){
 //--------------------------------------------------------------
 int ofxGVF::getNumberOfParticles(){
     return parameters.numberParticles; // Return the number of particles
+}
+
+//--------------------------------------------------------------
+void ofxGVF::setActiveGestures(vector<int> activeGestureIds)
+{
+    int argmax = *std::max_element(activeGestureIds.begin(), activeGestureIds.end());
+    if (activeGestureIds[argmax] <= gestureTemplates.size())
+    {
+        activeGestures = activeGestureIds;
+    }
+    else
+    {
+        activeGestures.resize(gestureTemplates.size());
+        std::iota(activeGestures.begin(), activeGestures.end(), 1);
+    }
 }
 
 //--------------------------------------------------------------

@@ -4,12 +4,12 @@
 		"appversion" : 		{
 			"major" : 7,
 			"minor" : 0,
-			"revision" : 2,
-			"architecture" : "x86",
+			"revision" : 5,
+			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 59.0, 79.0, 1214.0, 787.0 ],
+		"rect" : [ 59.0, 79.0, 1214.0, 707.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -40,13 +40,39 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 10.0,
-					"id" : "obj-6",
+					"id" : "obj-8",
+					"linecount" : 2,
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 907.166626, 496.0, 268.0, 18.0 ],
+					"patching_rect" : [ 119.625, 213.5, 183.25, 29.0 ],
 					"style" : "",
-					"text" : "Spreading rotations around -1.5 with range +-1.5 (radians)"
+					"text" : "Add the indexes of the gestures to be taken into account during following"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"bgcolor" : [ 0.867, 0.867, 0.867, 1.0 ],
+					"bgfillcolor_angle" : 270.0,
+					"bgfillcolor_autogradient" : 0.79,
+					"bgfillcolor_color" : [ 0.290196, 0.309804, 0.301961, 1.0 ],
+					"bgfillcolor_color1" : [ 0.867, 0.867, 0.867, 1.0 ],
+					"bgfillcolor_color2" : [ 0.685, 0.685, 0.685, 1.0 ],
+					"bgfillcolor_proportion" : 0.39,
+					"bgfillcolor_type" : "gradient",
+					"fontname" : "Arial",
+					"fontsize" : 11.0,
+					"gradient" : 0,
+					"id" : "obj-12",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 64.0, 215.5, 57.0, 21.0 ],
+					"style" : "",
+					"text" : "follow 1 3",
+					"textcolor" : [ 0.0, 0.0, 0.0, 1.0 ]
 				}
 
 			}
@@ -106,23 +132,7 @@
 					"numoutlets" : 2,
 					"outlettype" : [ "", "bang" ],
 					"parameter_enable" : 0,
-					"patching_rect" : [ 823.0, 337.0, 52.0, 20.0 ],
-					"style" : ""
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontname" : "Arial",
-					"fontsize" : 10.0,
-					"format" : 6,
-					"id" : "obj-102",
-					"maxclass" : "flonum",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "bang" ],
-					"parameter_enable" : 0,
-					"patching_rect" : [ 823.0, 314.5, 52.0, 20.0 ],
+					"patching_rect" : [ 823.0, 322.0, 52.0, 20.0 ],
 					"style" : ""
 				}
 
@@ -257,23 +267,9 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 336.5, 62.0, 20.0 ],
+					"patching_rect" : [ 746.25, 321.5, 62.0, 20.0 ],
 					"style" : "",
 					"text" : "particles $1"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontsize" : 10.0,
-					"id" : "obj-86",
-					"maxclass" : "message",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 314.5, 68.0, 20.0 ],
-					"style" : "",
-					"text" : "studentnu $1"
 				}
 
 			}
@@ -288,20 +284,6 @@
 					"patching_rect" : [ 746.25, 292.5, 66.0, 20.0 ],
 					"style" : "",
 					"text" : "tolerance $1"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontsize" : 10.0,
-					"id" : "obj-73",
-					"maxclass" : "message",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 238.0, 62.0, 20.0 ],
-					"style" : "",
-					"text" : "normalize 0"
 				}
 
 			}
@@ -391,20 +373,6 @@
 			}
 , 			{
 				"box" : 				{
-					"fontsize" : 10.0,
-					"id" : "obj-32",
-					"maxclass" : "message",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 496.0, 129.0, 20.0 ],
-					"style" : "",
-					"text" : "spreadingrotations -1.5 1.5"
-				}
-
-			}
-, 			{
-				"box" : 				{
 					"fontface" : 0,
 					"fontname" : "Arial",
 					"fontsize" : 8.0,
@@ -418,8 +386,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -619,7 +587,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 63.75, 257.5, 192.0, 29.0 ],
+					"patching_rect" : [ 116.875, 135.5, 192.0, 29.0 ],
 					"style" : "",
 					"text" : "Replace gesture 2 by the gesture drawn if there is at least 2 gestures recorded"
 				}
@@ -643,10 +611,10 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 12.0, 254.5, 51.0, 21.0 ],
+					"patching_rect" : [ 64.0, 137.5, 51.0, 21.0 ],
 					"style" : "",
 					"text" : "record 2",
-					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
+					"textcolor" : [ 0.0, 0.0, 0.0, 1.0 ]
 				}
 
 			}
@@ -707,8 +675,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -742,14 +710,13 @@
 						"boxes" : [ 							{
 								"box" : 								{
 									"id" : "obj-52",
-									"linecount" : 2,
 									"maxclass" : "message",
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
 									"patching_rect" : [ 264.0, 281.0, 30.0, 35.0 ],
 									"style" : "",
-									"text" : "0. 0."
+									"text" : "0."
 								}
 
 							}
@@ -1137,20 +1104,6 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 10.0,
-					"id" : "obj-68",
-					"maxclass" : "comment",
-					"numinlets" : 1,
-					"numoutlets" : 0,
-					"patching_rect" : [ 831.75, 239.0, 338.0, 18.0 ],
-					"style" : "",
-					"text" : "Allow normalization of the data"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontname" : "Arial",
-					"fontsize" : 10.0,
 					"id" : "obj-67",
 					"maxclass" : "comment",
 					"numinlets" : 1,
@@ -1256,7 +1209,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 885.25, 338.0, 288.0, 18.0 ],
+					"patching_rect" : [ 885.25, 323.0, 288.0, 18.0 ],
 					"style" : "",
 					"text" : "Change number of particles (lower value: faster, less accurate)"
 				}
@@ -1276,8 +1229,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -1507,20 +1460,6 @@
 				"box" : 				{
 					"fontname" : "Arial",
 					"fontsize" : 10.0,
-					"id" : "obj-65",
-					"maxclass" : "comment",
-					"numinlets" : 1,
-					"numoutlets" : 0,
-					"patching_rect" : [ 885.25, 315.5, 150.0, 18.0 ],
-					"style" : "",
-					"text" : "Student T-distribution nu param"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"fontname" : "Arial",
-					"fontsize" : 10.0,
 					"hidden" : 1,
 					"id" : "obj-26",
 					"maxclass" : "newobj",
@@ -1545,8 +1484,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -1725,7 +1664,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 63.75, 197.0, 152.0, 18.0 ],
+					"patching_rect" : [ 63.75, 272.0, 152.0, 18.0 ],
 					"style" : "",
 					"text" : "Clear all the recorded gestures"
 				}
@@ -1749,10 +1688,10 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 12.0, 196.0, 42.0, 24.0 ],
+					"patching_rect" : [ 12.0, 271.0, 42.0, 24.0 ],
 					"style" : "",
 					"text" : "clear",
-					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
+					"textcolor" : [ 0.0, 0.0, 0.0, 1.0 ]
 				}
 
 			}
@@ -1795,9 +1734,9 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 63.75, 148.5, 215.0, 29.0 ],
+					"patching_rect" : [ 64.0, 183.5, 215.0, 29.0 ],
 					"style" : "",
-					"text" : "Click on play and perform a new gesture or a \nsequence of gestures"
+					"text" : "Press follow and perform a new gesture or a \nsequence of gestures"
 				}
 
 			}
@@ -1810,7 +1749,7 @@
 					"maxclass" : "newobj",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 12.0, 320.5, 54.0, 20.0 ],
+					"patching_rect" : [ 12.0, 365.5, 54.0, 20.0 ],
 					"style" : "",
 					"text" : "s #0-togvf"
 				}
@@ -1978,8 +1917,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -2049,8 +1988,8 @@
 										"appversion" : 										{
 											"major" : 7,
 											"minor" : 0,
-											"revision" : 2,
-											"architecture" : "x86",
+											"revision" : 5,
+											"architecture" : "x64",
 											"modernui" : 1
 										}
 ,
@@ -2484,8 +2423,8 @@
 										"appversion" : 										{
 											"major" : 7,
 											"minor" : 0,
-											"revision" : 2,
-											"architecture" : "x86",
+											"revision" : 5,
+											"architecture" : "x64",
 											"modernui" : 1
 										}
 ,
@@ -2849,7 +2788,7 @@
 					"patching_rect" : [ 568.25, 623.5, 137.0, 95.0 ],
 					"setminmax" : [ 0.0, 1.0 ],
 					"setstyle" : 1,
-					"size" : 2,
+					"size" : 3,
 					"style" : ""
 				}
 
@@ -2997,10 +2936,10 @@
 					"numinlets" : 2,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 12.0, 149.0, 36.0, 24.0 ],
+					"patching_rect" : [ 12.0, 184.0, 46.0, 24.0 ],
 					"style" : "",
-					"text" : "play",
-					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
+					"text" : "follow",
+					"textcolor" : [ 0.0, 0.0, 0.0, 1.0 ]
 				}
 
 			}
@@ -3025,7 +2964,7 @@
 					"patching_rect" : [ 12.0, 95.5, 50.0, 24.0 ],
 					"style" : "",
 					"text" : "record",
-					"textcolor" : [ 0.050458, 0.412719, 0.0, 1.0 ]
+					"textcolor" : [ 0.0, 0.0, 0.0, 1.0 ]
 				}
 
 			}
@@ -3039,7 +2978,7 @@
 					"numoutlets" : 0,
 					"patching_rect" : [ 6.0, 37.0, 775.0, 18.0 ],
 					"style" : "",
-					"text" : "Realtime gesture recognition with variations estimation. Copyright, credits, sources & documentation at: https://github.com/bcaramiaux/ofxGVF",
+					"text" : "Realtime gesture recognition with variations estimation (https://github.com/bcaramiaux/ofxGVF)",
 					"textcolor" : [ 0.672882, 0.680073, 0.701644, 1.0 ]
 				}
 
@@ -3103,8 +3042,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -3391,8 +3330,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -3618,8 +3557,8 @@
 						"appversion" : 						{
 							"major" : 7,
 							"minor" : 0,
-							"revision" : 2,
-							"architecture" : "x86",
+							"revision" : 5,
+							"architecture" : "x64",
 							"modernui" : 1
 						}
 ,
@@ -3792,15 +3731,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-86", 0 ],
-					"disabled" : 0,
-					"hidden" : 1,
-					"source" : [ "obj-102", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-104", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
@@ -3849,6 +3779,15 @@
 					"destination" : [ "obj-33", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
+					"source" : [ "obj-12", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-33", 0 ],
+					"disabled" : 0,
+					"hidden" : 1,
 					"midpoints" : [ 21.5, 180.5, 21.5, 180.5 ],
 					"source" : [ "obj-120", 0 ]
 				}
@@ -3859,7 +3798,7 @@
 					"destination" : [ "obj-33", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
-					"midpoints" : [ 21.5, 207.75, 21.5, 207.75 ],
+					"midpoints" : [ 21.5, 252.75, 21.5, 252.75 ],
 					"source" : [ "obj-125", 0 ]
 				}
 
@@ -3958,15 +3897,6 @@
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-26", 0 ],
-					"disabled" : 0,
-					"hidden" : 1,
-					"source" : [ "obj-32", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
 					"destination" : [ "obj-56", 0 ],
 					"disabled" : 0,
 					"hidden" : 0,
@@ -4017,7 +3947,7 @@
 					"destination" : [ "obj-33", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
-					"midpoints" : [ 21.5, 230.75, 21.5, 230.75 ],
+					"midpoints" : [ 21.5, 275.75, 21.5, 275.75 ],
 					"source" : [ "obj-51", 0 ]
 				}
 
@@ -4054,7 +3984,7 @@
 					"destination" : [ "obj-35", 1 ],
 					"disabled" : 0,
 					"hidden" : 0,
-					"midpoints" : [ 536.666687, 343.5, 435.0, 343.5 ],
+					"midpoints" : [ 536.666667, 343.5, 435.0, 343.5 ],
 					"source" : [ "obj-56", 2 ]
 				}
 
@@ -4128,15 +4058,6 @@
 					"destination" : [ "obj-26", 0 ],
 					"disabled" : 0,
 					"hidden" : 1,
-					"source" : [ "obj-73", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-26", 0 ],
-					"disabled" : 0,
-					"hidden" : 1,
 					"source" : [ "obj-82", 0 ]
 				}
 
@@ -4197,15 +4118,6 @@
 					"hidden" : 0,
 					"midpoints" : [ 67.75, 551.5, 160.5, 551.5 ],
 					"source" : [ "obj-85", 1 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-26", 0 ],
-					"disabled" : 0,
-					"hidden" : 1,
-					"source" : [ "obj-86", 0 ]
 				}
 
 			}

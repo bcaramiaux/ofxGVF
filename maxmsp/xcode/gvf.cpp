@@ -29,11 +29,11 @@
 ////////////////////////// object struct
 typedef struct _gvf
 {
-	t_object					ob;			// the object itself (must be first)
+    t_object					ob;			// the object itself (must be first)
     
     // GVF related variables
     ofxGVF              *bubi;
-	ofxGVFGesture       *currentGesture;
+    ofxGVFGesture       *currentGesture;
     ofxGVFConfig        config;
     ofxGVFParameters    parameters;
     ofxGVFOutcomes      outcomes;
@@ -108,19 +108,20 @@ void *gvf_class;
 
 int C74_EXPORT main(void)
 {
-	
-	// object initialization, NEW STYLE
-	t_class *c;
-	
-	c = class_new("gvf", (method)gvf_new, (method)gvf_free, (long)sizeof(t_gvf),
-				  0L /* leave NULL!! */, A_GIMME, 0);
-	
+    
+    // object initialization, NEW STYLE
+    t_class *c;
+    
+    c = class_new("gvf", (method)gvf_new, (method)gvf_free, (long)sizeof(t_gvf),
+                  0L /* leave NULL!! */, A_GIMME, 0);
+    
     //  MESSAGES
-
+    
     // basics
     class_addmethod(c, (method)gvf_record, "record", A_GIMME, 0);
     class_addmethod(c, (method)gvf_start, "start", A_GIMME, 0);
     class_addmethod(c, (method)gvf_stop, "stop", A_GIMME, 0);
+    class_addmethod(c, (method)gvf_follow, "follow", A_GIMME, 0);
     class_addmethod(c, (method)gvf_play, "play", A_GIMME, 0);
     class_addmethod(c, (method)gvf_clear, "clear", A_GIMME, 0);
     class_addmethod(c, (method)gvf_list, "list", A_GIMME, 0);
@@ -159,13 +160,13 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_follow, "follow", A_GIMME, 0);
     
     
-	class_register(CLASS_BOX, c); /* CLASS_NOBOX */
-	gvf_class = c;
-
+    class_register(CLASS_BOX, c); /* CLASS_NOBOX */
+    gvf_class = c;
+    
     post("gvf.beta - gesture variation follower (version: 0.2.1 [jun2015])");
     post("(c) Goldsmiths, University of London and IRCAM - Centre Pompidou");
     
-	return 0;
+    return 0;
 }
 
 
@@ -183,17 +184,17 @@ void gvf_free(t_gvf *x)
 ///////////////////////////////////////////////////////////
 void *gvf_new(t_symbol *s, long argc, t_atom *argv)
 {
-	t_gvf *x = NULL;
+    t_gvf *x = NULL;
     
     //x = (t_gvf *)newobject(gvf_class);
     x = (t_gvf *)object_alloc((t_class *)gvf_class);
-
+    
     
     if (x==NULL){
         post("Error, gvf object NULL (see code)");
     }
     else{
-    
+        
         // CONFIGURATION of the GVF
         x->config.inputDimensions  = 2;
         x->config.translate        = true;
@@ -207,14 +208,14 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
         
         // CREATE THE GESTURE
         x->currentGesture = new ofxGVFGesture();
-
+        
         x->info_outlet           = outlet_new(x, NULL);
         x->likelihoods_outlet    = outlet_new(x, NULL);
         x->estimation_outlet     = outlet_new(x, NULL);
-
+        
     }
-
-	return (x);
+    
+    return (x);
 }
 
 
@@ -227,7 +228,7 @@ void gvf_record(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     x->bubi->setState(ofxGVF::STATE_LEARNING);
     if (argc==0){
-    
+        
         // output the current ID of the gesture being learned with the prefix "learningGesture"
         t_atom *outAtoms = new t_atom[1];
         atom_setlong(&outAtoms[0],x->bubi->getNumberOfGestureTemplates()+1);
@@ -235,10 +236,10 @@ void gvf_record(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         delete[] outAtoms;
         
         x->currentGestureID = x->bubi->getNumberOfGestureTemplates()+1;
-//     post("x->currentGestureID %i",x->currentGestureID);
+        //     post("x->currentGestureID %i",x->currentGestureID);
     }
     else if (argc==1) {
-//        post("replacing gesture %i", atom_getlong(&argv[0]));
+        //        post("replacing gesture %i", atom_getlong(&argv[0]));
         x->currentGestureID = atom_getlong(&argv[0]);
     }
     else if (argc==2) {
@@ -282,16 +283,16 @@ void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-//    if (x->bubi->getState()==ofxGVF::STATE_LEARNING)
-//        x->currentGesture->clear();
-
-        x->currentGesture->clear();
-        idfile = 0;
-        
-        if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
-            if(x->bubi->getNumberOfGestureTemplates() > 0)
-                x->bubi->restart();
-
+    //    if (x->bubi->getState()==ofxGVF::STATE_LEARNING)
+    //        x->currentGesture->clear();
+    
+    x->currentGesture->clear();
+    idfile = 0;
+    
+    if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
+        if(x->bubi->getNumberOfGestureTemplates() > 0)
+            x->bubi->restart();
+    
 }
 
 
@@ -301,12 +302,12 @@ void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     if (x->bubi->getState()==ofxGVF::STATE_LEARNING && (x->currentGesture->getTemplateLength()>0)){
-//                    post("x->currentGestureID = %i x->bubi->getNumberOfGestureTemplates()+1=%i",x->currentGestureID,x->bubi->getNumberOfGestureTemplates()+1);
+        //                    post("x->currentGestureID = %i x->bubi->getNumberOfGestureTemplates()+1=%i",x->currentGestureID,x->bubi->getNumberOfGestureTemplates()+1);
         if (x->currentGestureID == x->bubi->getNumberOfGestureTemplates()+1){
             x->bubi->addGestureTemplate(*(x->currentGesture));
         }
         else if (x->currentGestureID < x->bubi->getNumberOfGestureTemplates()+1){
-//            post("replacing g");
+            //            post("replacing g");
             x->bubi->replaceGestureTemplate(*(x->currentGesture),x->currentGestureID-1);
         }
     }
@@ -324,16 +325,16 @@ void gvf_play(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     }
     else{
         x->bubi->setState(ofxGVF::STATE_FOLLOWING);
-    // output the current ID of the gesture being learned with the prefix "learningGesture"
-    t_atom *outAtoms = new t_atom[1];
-    atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
-    outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
-    delete[] outAtoms;
-    
-    outAtoms = new t_atom[1];
-    atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
-    outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
-    delete[] outAtoms;
+        // output the current ID of the gesture being learned with the prefix "learningGesture"
+        t_atom *outAtoms = new t_atom[1];
+        atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
+        outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
+        delete[] outAtoms;
+        
+        outAtoms = new t_atom[1];
+        atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
+        outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
+        delete[] outAtoms;
     }
 }
 
@@ -342,31 +343,65 @@ void gvf_play(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    post("Follow() method is DEPRECATED, change to 'Play'");
-    x->bubi->setState(ofxGVF::STATE_FOLLOWING);
-    
-    // output the current ID of the gesture being learned with the prefix "learningGesture"
-    t_atom *outAtoms = new t_atom[1];
-    atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
-    outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
-    delete[] outAtoms;
-    
-    outAtoms = new t_atom[1];
-    atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
-    outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
-    delete[] outAtoms;
+    if (x->bubi->getNumberOfGestureTemplates()==0)
+    {
+        post("Record gestures before following");
+        x->bubi->setState(ofxGVF::STATE_CLEAR);
+    }
+    else
+    {
+        if (argc>0)
+        {
+            vector<int> activeGestures;
+            for (int i = 0; i< argc; i++) activeGestures.push_back(atom_getlong(&argv[i]));
+            x->bubi->setActiveGestures(activeGestures);
+        }
+        
+        x->bubi->setState(ofxGVF::STATE_FOLLOWING);
+        // output the current ID of the gesture being learned with the prefix "learningGesture"
+        t_atom *outAtoms = new t_atom[1];
+        atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
+        outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
+        delete[] outAtoms;
+        
+        outAtoms = new t_atom[1];
+        atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
+        outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
+        delete[] outAtoms;
+        
+    }
 }
+
+/////////////////////////////////////////////////////////////
+////====================== FOLLOW
+/////////////////////////////////////////////////////////////
+//void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+//{
+//    post("Follow() method is DEPRECATED, change to 'Play'");
+//    x->bubi->setState(ofxGVF::STATE_FOLLOWING);
+//
+//    // output the current ID of the gesture being learned with the prefix "learningGesture"
+//    t_atom *outAtoms = new t_atom[1];
+//    atom_setfloat(&outAtoms[0],x->bubi->getParameters().tolerance);
+//    outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
+//    delete[] outAtoms;
+//
+//    outAtoms = new t_atom[1];
+//    atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
+//    outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
+//    delete[] outAtoms;
+//}
 
 
 void gvf_gestureOn(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-     error("gestureOn message deprecated: do nothing");
+    error("gestureOn message deprecated: do nothing");
 }
 
 
 void gvf_gestureOff(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-     error("gestureOff message deprecated: do nothing");
+    error("gestureOff message deprecated: do nothing");
 }
 
 ///////////////////////////////////////////////////////////
@@ -395,12 +430,12 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
                 observation_vector[k] = atom_getfloat(&argv[k]);
             
             x->currentGesture->addObservation(observation_vector);
-
+            
             break;
         }
         case ofxGVF::STATE_FOLLOWING:
         {
-//            post("x->bubi->getNumberOfGestureTemplates()=%i",x->bubi->getNumberOfGestureTemplates());
+            //            post("x->bubi->getNumberOfGestureTemplates()=%i",x->bubi->getNumberOfGestureTemplates());
             if (x->bubi->getNumberOfGestureTemplates()>0) {
                 
                 vector<float> observation_vector(argc);
@@ -468,7 +503,7 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
                 
             }
             break;
-                
+            
         }
             
         default:
@@ -486,7 +521,7 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 void gvf_clear(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
     x->bubi->clear();
-
+    
     // output 0 for the number of learned gesture
     t_atom *outAtoms = new t_atom[1];
     atom_setlong(&outAtoms[0],0);
@@ -623,7 +658,7 @@ void logGVF(t_gvf *x)
         file_write << endl;
     }
     file_write.close();
-
+    
     vector<float> estAlign = x->bubi->getEstimatedAlignment();
     vector< vector<float> > estDynas = x->bubi->getEstimatedDynamics();
     vector< vector<float> > estScals = x->bubi->getEstimatedScalings();
@@ -641,7 +676,7 @@ void logGVF(t_gvf *x)
         file_write2 << endl;
     }
     file_write2.close();
-
+    
     
 }
 
@@ -679,7 +714,7 @@ void gvf_tolerance(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
-
+    
 }
 
 ///////////////////////////////////////////////////////////
@@ -715,19 +750,19 @@ void gvf_weights(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     
     float normsum=0.0;
     for (int k=0; k< argc; k++){
-            x->parameters.dimWeights[k] = atom_getfloat(&argv[k]);
-            normsum += atom_getfloat(&argv[k]);
-        }
-        if (normsum==0.0)
-            for (int k=0; k< argc; k++)
-                x->parameters.dimWeights[k]=1.0/(float)argc;
-        else
-            for (int k=0; k< argc; k++)
-                x->parameters.dimWeights[k]=x->parameters.dimWeights[k]/normsum;
+        x->parameters.dimWeights[k] = atom_getfloat(&argv[k]);
+        normsum += atom_getfloat(&argv[k]);
+    }
+    if (normsum==0.0)
+        for (int k=0; k< argc; k++)
+            x->parameters.dimWeights[k]=1.0/(float)argc;
+    else
+        for (int k=0; k< argc; k++)
+            x->parameters.dimWeights[k]=x->parameters.dimWeights[k]/normsum;
     
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
-
+    
     
 }
 
@@ -770,7 +805,7 @@ void gvf_resamplingthreshold(t_gvf *x,const t_symbol *sss, short argc, t_atom *a
     
     // Set the new parameters
     x->bubi->setParameters(x->parameters);
-
+    
     
 }
 
@@ -962,9 +997,9 @@ void gvf_log(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
-     t_symbol* mpath = atom_getsym(argv);
-     string filename(mpath->s_name);
-     x->bubi->saveTemplates(filename);
+    t_symbol* mpath = atom_getsym(argv);
+    string filename(mpath->s_name);
+    x->bubi->saveTemplates(filename);
 }
 
 
@@ -975,13 +1010,13 @@ void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 void gvf_loadtemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
     
-     char* mpath = atom_string(argv);
-     int i=0;
-     while ( *(mpath+i)!='/' )
-     i++;
-     mpath = mpath+i;
-     string filename(mpath);
-     x->bubi->loadTemplates(filename);
+    char* mpath = atom_string(argv);
+    int i=0;
+    while ( *(mpath+i)!='/' )
+        i++;
+    mpath = mpath+i;
+    string filename(mpath);
+    x->bubi->loadTemplates(filename);
     
 }
 

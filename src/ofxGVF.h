@@ -112,7 +112,7 @@ public:
     int getNumberOfGestures();                          // return the number of gesture classes (not counting the examples)
     int getNumberOfGestureExamples(int gestureIndex);   // return the number of examples for a given gesture
     
-    
+    void setActiveGestures(vector<int> activeGestureIds);
     
     ///////////////
     // INFERENCE //
@@ -329,7 +329,8 @@ private:
     
     vector<ofxGVFGesture>   gestureTemplates;           // ..
     vector<vector<float> >  offsets;                    // translation offset
-    
+
+    vector<int> activeGestures;
 
     // Model mechanics
     void initStateSpace();
