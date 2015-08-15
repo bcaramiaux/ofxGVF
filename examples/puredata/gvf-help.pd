@@ -1,0 +1,125 @@
+#N canvas 175 171 1215 593 10;
+#X declare -lib gvf;
+#X declare -lib mrpeach;
+#X obj 390 311 import gvf;
+#X obj 19 311 gvf this is the help patch ---------------------------------
+;
+#X msg 19 10 learn;
+#X text 1051 -2 <-- import mrpeach objects;
+#X obj 949 -1 import mrpeach;
+#X obj 951 79 unpackOSC;
+#X obj 951 54 udpreceive 9003;
+#X msg 19 223 clear;
+#X obj 19 374 print Phase;
+#X obj 376 374 print Likelihoods;
+#X obj 286 374 print Rotation;
+#X obj 197 374 print Scaling;
+#X obj 108 374 print Speed;
+#X msg 19 118 follow;
+#X obj 935 149 s gvf;
+#X obj 19 286 r gvf;
+#X obj 16 -111 cnv 15 552 40 empty \$0-pddp.cnv.header GVF 3 12 1 18
+-262144 -191407 0;
+#N canvas 214 166 507 398 README 0;
+#X text 16 9 The current implementation of the Gesture Variation Follower
+proposes:;
+#X text 16 83 Adaptation of: phase \, speed \, scale \, rotation;
+#X text 16 123 N-dimensional inputs (e.g. accelerometers \, biosignals
+\, ...);
+#X text 15 138 Adaptation of: phase \, speed \, scale;
+#X text 14 198 You can choose to automatically translate the data according
+to the first input point by sending "translate 1" otherwise "translate
+0". Translation is highly recommended for 2-d shapes.;
+#X msg 17 259 translate 0;
+#X msg 100 260 translate 1;
+#X text 16 68 2-dimensional and 3-dimensional inputs (e.g. shapes)
+;
+#X restore 233 -112 pd README;
+#X text 18 -90 GVF - Gesture Variation Follower;
+#X text 18 -79 realtime gesture recognition with variations estimation
+;
+#X text 1054 54 <-- listen to port 9003;
+#X text 19 -62 (c) Ircam Centre Pompidou \, Goldsmiths University of
+London version: 06-2014 sources: https://github.com/bcaramiaux/gvf
+;
+#X msg 19 32 start;
+#X msg 19 53 stop;
+#X obj 1009 147 print;
+#X obj 951 109 route /osc/data;
+#X msg 19 146 restart;
+#X text 119 116 <-- send the message follow and send gesture data;
+#X text 119 143 <-- Important: at the beginning of each gesture \,
+send "restart";
+#X text 120 19 <-- send the message learn;
+#X text 28 -16 LEARNING;
+#X text 28 93 PERFORMING;
+#X text 29 186 CLEAR;
+#X text 120 220 <-- clear all the templates in GVF;
+#X msg 529 -33 printme;
+#X obj 492 -33 s gvf;
+#X msg 529 68 tolerance \$1;
+#X floatatom 529 47 10 0 0 0 - - -;
+#X text 595 46 Tolerance (choose between 0.01 and ...);
+#X msg 529 -13 translate 1;
+#X msg 529 7 segmentation 0;
+#X floatatom 529 132 10 0 100000 0 - - -;
+#X text 595 131 Number of Particles (it's an integer!);
+#X obj 492 -13 s gvf;
+#X floatatom 529 229 10 0 0 0 - - -;
+#X floatatom 528 270 10 0 0 0 - - -;
+#X floatatom 528 312 10 0 0 0 - - -;
+#X floatatom 528 353 10 0 0 0 - - -;
+#X text 595 228 phase adaptation (between 1e-10 and 0.1);
+#X text 594 352 rotation adaptation (between 1e-10 and 0.1);
+#X text 594 311 scale adaptation (between 1e-10 and 0.1);
+#X text 594 269 speed adaptation (between 1e-10 and 0.1);
+#X obj 492 8 s gvf;
+#X obj 492 68 s gvf;
+#X obj 492 153 s gvf;
+#X obj 492 249 s gvf;
+#X obj 489 291 s gvf;
+#X obj 491 334 s gvf;
+#X obj 490 373 s gvf;
+#X text 516 109 ADVANCED;
+#X msg 529 153 numberparticles \$1;
+#X msg 529 250 phaseadaptation \$1;
+#X msg 528 291 speedadaptation \$1;
+#X msg 528 333 scaleadaptation \$1;
+#X msg 528 374 rotationadaptation \$1;
+#X floatatom 530 174 10 0 100000 0 - - -;
+#X obj 493 195 s gvf;
+#X text 596 173 Resampling threshold (it's an integer!);
+#X msg 530 195 resamplingthreshold \$1;
+#X connect 1 0 8 0;
+#X connect 1 1 12 0;
+#X connect 1 2 11 0;
+#X connect 1 3 10 0;
+#X connect 1 4 9 0;
+#X connect 2 0 1 0;
+#X connect 5 0 25 0;
+#X connect 6 0 5 0;
+#X connect 7 0 1 0;
+#X connect 13 0 1 0;
+#X connect 15 0 1 0;
+#X connect 22 0 1 0;
+#X connect 23 0 1 0;
+#X connect 25 0 14 0;
+#X connect 25 0 24 0;
+#X connect 26 0 1 0;
+#X connect 34 0 35 0;
+#X connect 36 0 53 0;
+#X connect 37 0 36 0;
+#X connect 39 0 43 0;
+#X connect 40 0 52 0;
+#X connect 41 0 60 0;
+#X connect 44 0 61 0;
+#X connect 45 0 62 0;
+#X connect 46 0 63 0;
+#X connect 47 0 64 0;
+#X connect 60 0 54 0;
+#X connect 61 0 55 0;
+#X connect 62 0 56 0;
+#X connect 63 0 57 0;
+#X connect 64 0 58 0;
+#X connect 65 0 68 0;
+#X connect 68 0 66 0;
