@@ -24,8 +24,6 @@
 
 
 
-
-
 ////////////////////////// object struct
 typedef struct _gvf
 {
@@ -38,6 +36,8 @@ typedef struct _gvf
     ofxGVFParameters    parameters;
     ofxGVFOutcomes      outcomes;
     
+    t_atom* out;
+    
     // outlets
     //t_outlet *Position,*Vitesse,*Scaling,*Rotation,*Likelihoods;
     void *estimation_outlet;
@@ -48,10 +48,17 @@ typedef struct _gvf
 } t_gvf;
 
 
+static t_symbol *sym_getname = gensym("getname");
+
+
+
 ///////////////////////// function prototypes
 //// NEW / FREE
 void *gvf_new(t_symbol *s, long argc, t_atom *argv);
 void gvf_free(t_gvf *x);
+
+t_max_err getAttr(t_gvf *x, t_object *attr, long* ac, t_atom** av);
+t_max_err setAttr(t_gvf *x, void *attr, long ac, t_atom *av);
 
 //// BASICS
 void gvf_record           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -85,9 +92,8 @@ void gvf_spreadingscalings             (t_gvf *x, const t_symbol *sss, short arg
 void gvf_spreadingrotations             (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// I/O
-void gvf_savetemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_loadtemplates   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_log         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_export   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_import   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// DEPRECATED
 void gvf_learn           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -98,12 +104,10 @@ void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *ar
 
 
 
-int idfile = 0;
-void logGVF(t_gvf *x);
-
-
-//////////////////////// global class pointer variable
+//////////////////////// global variables and co
 void *gvf_class;
+bool manuallyAssignedGesture = false;
+
 
 
 int C74_EXPORT main(void)
@@ -150,14 +154,38 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_spreadingrotations, "spreadingrotations", A_GIMME,0);
     
     // I/O
-    class_addmethod(c, (method)gvf_savetemplates, "savetemplates", A_GIMME,0);
-    class_addmethod(c, (method)gvf_loadtemplates, "loadtemplates", A_GIMME,0);
-    class_addmethod(c, (method)gvf_log, "log", A_GIMME,0);
-    
+    class_addmethod(c, (method)gvf_export, "export", A_GIMME,0);
+    class_addmethod(c, (method)gvf_import, "import", A_GIMME,0);
     
     // DEPRECATED
     class_addmethod(c, (method)gvf_learn, "learn", A_GIMME, 0);
     class_addmethod(c, (method)gvf_follow, "follow", A_GIMME, 0);
+    
+    
+
+    CLASS_ATTR_FLOAT(c, "tolerance", 0, t_gvf, out);
+    CLASS_ATTR_LABEL(c, "tolerance", 0, "tolerance");
+    CLASS_ATTR_ACCESSORS(c, "tolerance", (method) getAttr, (method) setAttr);
+    //    CLASS_ATTR_FILTER_CLIP(c, "tolerance", 0.0, );
+    CLASS_ATTR_SAVE(c,"tolerance", 0.2);
+
+    CLASS_ATTR_LONG(c, "particles", 0, t_gvf, out);
+    CLASS_ATTR_LABEL(c, "particles", 0, "particles");
+    CLASS_ATTR_ACCESSORS(c, "particles", (method) getAttr, (method) setAttr);
+    CLASS_ATTR_FILTER_CLIP(c, "particles", 10, 100000);
+    
+    CLASS_ATTR_FLOAT(c, "dynamics", 0, t_gvf, out);
+    CLASS_ATTR_LABEL(c, "dynamics", 0, "dynamics");
+    CLASS_ATTR_ACCESSORS(c, "dynamics", (method) getAttr, (method) setAttr);
+    CLASS_ATTR_FILTER_CLIP(c, "dynamics", 0.00000001, 0.1);
+//    CLASS_ATTR_SAVE(c,"dynamics", 0.0001);
+    
+    CLASS_ATTR_FLOAT(c, "scalings", 0, t_gvf, out);
+    CLASS_ATTR_LABEL(c, "scalings", 0, "scalings");
+    CLASS_ATTR_ACCESSORS(c, "scalings", (method) getAttr, (method) setAttr);
+    CLASS_ATTR_FILTER_CLIP(c, "scalings", 0.00000001, 0.1);
+//    CLASS_ATTR_SAVE(c,"scalings", 0.0001);
+    
     
     
     class_register(CLASS_BOX, c); /* CLASS_NOBOX */
@@ -213,41 +241,122 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
         x->likelihoods_outlet    = outlet_new(x, NULL);
         x->estimation_outlet     = outlet_new(x, NULL);
         
+        x->currentGestureID      = 0;
     }
     
     return (x);
 }
 
 
+t_max_err getAttr(t_gvf *x, t_object *attr, long* ac, t_atom** av)
+{
+    if ((*ac) == 0 || (*av) == NULL)
+    {
+        *ac = 1;
+        if (!(*av = (t_atom *)getbytes(sizeof(t_atom) * (*ac))))
+        {
+            *ac = 0;
+            return MAX_ERR_OUT_OF_MEM;
+        }
+    }
+    const ofxGVFParameters parameters = x->bubi->getParameters();
+    string attrname = ((t_symbol *)object_method((t_object *)attr, sym_getname))->s_name;
+    
+    if (attrname.compare("tolerance") == 0)
+    {
+        atom_setfloat((av[0]), parameters.tolerance);
+    }
+    else if (attrname.compare("particles") == 0)
+    {
+        atom_setlong((av[0]), parameters.numberParticles);
+    }
+    else if (attrname.compare("dynamics") == 0)
+    {
+        atom_setlong((av[0]), parameters.dynamicsVariance[0]);
+    }
+    else if (attrname.compare("scalings") == 0)
+    {
+        atom_setlong((av[0]), parameters.scalingsVariance[0]);
+    }
+    return MAX_ERR_NONE;
+    
+}
 
+t_max_err setAttr(t_gvf *x, void *attr, long ac, t_atom *av)
+{
+    
+    t_symbol *attrsym = (t_symbol *)object_method((t_object *)attr, sym_getname);
+    string attrname = attrsym->s_name;
+    
+    ofxGVFParameters parameters = x->bubi->getParameters();
+    
+    
+    if (attrname.compare("tolerance") == 0)
+    {
+        x->bubi->setTolerance(atom_getfloat(&av[0]));
+    }
+    else if (attrname.compare("particles") == 0)
+    {
+        x->bubi->setNumberOfParticles(atom_getlong(&av[0]));
+    }
+    else if (attrname.compare("dynamics") == 0)
+    {
+        x->bubi->setDynamicsVariance(atom_getfloat(&av[0]));
+    }
+    else if (attrname.compare("scalings") == 0)
+    {
+        x->bubi->setScalingsVariance(atom_getfloat(&av[0]));
+    }
+    return MAX_ERR_NONE;
+    
+}
 
 ///////////////////////////////////////////////////////////
 //====================== LEARN
 ///////////////////////////////////////////////////////////
 void gvf_record(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
+    
+//    if (argc!=1)
+//    {
+//        error("Message Record requires one argument (1: sarting recording gestures, 0: finish)");
+//    }
+//    else
+//    {
+//        int recording = atom_getlong(&argv[0]);
+//        
+//        if (recording)
+//        {
+//            x->bubi->setState(ofxGVF::STATE_LEARNING);
+//        }
+//        else
+//        {
+//            x->bubi->setState(ofxGVF::STATE_FOLLOWING);
+//        }
+//     }
     x->bubi->setState(ofxGVF::STATE_LEARNING);
-    if (argc==0){
-        
+    
+    if (argc==0)
+    {
         // output the current ID of the gesture being learned with the prefix "learningGesture"
         t_atom *outAtoms = new t_atom[1];
         atom_setlong(&outAtoms[0],x->bubi->getNumberOfGestureTemplates()+1);
         outlet_anything(x->info_outlet, gensym("learningGesture"), 1, outAtoms);
         delete[] outAtoms;
         
-        x->currentGestureID = x->bubi->getNumberOfGestureTemplates()+1;
-        //     post("x->currentGestureID %i",x->currentGestureID);
+//        x->currentGestureID = x->bubi->getNumberOfGestureTemplates()+1;
+//             post("x->currentGestureID %i",x->currentGestureID);
     }
-    else if (argc==1) {
+    else if (argc==1)
+    {
         //        post("replacing gesture %i", atom_getlong(&argv[0]));
-        x->currentGestureID = atom_getlong(&argv[0]);
-    }
-    else if (argc==2) {
-        
+//        x->currentGestureID = atom_getlong(&argv[0]);
+//        manuallyAssignedGesture = true;
     }
     else {
         error("wrong number of argument in learn message");
     }
+
 }
 
 ///////////////////////////////////////////////////////////
@@ -283,15 +392,43 @@ void gvf_learn(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    //    if (x->bubi->getState()==ofxGVF::STATE_LEARNING)
-    //        x->currentGesture->clear();
-    
+
     x->currentGesture->clear();
-    idfile = 0;
+
     
     if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
+    {
+        // if there are recorded gestures, restart GVF
         if(x->bubi->getNumberOfGestureTemplates() > 0)
             x->bubi->restart();
+        
+//        // if start message has arguments, select active gestures
+//        if (argc > 0)
+//        {
+//            vector<int> activeGestures;
+//            for (int i = 0; i< argc; i++) activeGestures.push_back(atom_getlong(&argv[i]));
+//            x->bubi->setActiveGestures(activeGestures);
+//        }
+        
+    }
+    else if (x->bubi->getState() == ofxGVF::STATE_LEARNING)
+    {
+        
+        if (argc==1)
+        {
+            x->currentGestureID = atom_getlong(&argv[0]);
+//            manuallyAssignedGesture = true;
+        }
+        else
+        {
+            x->currentGestureID = x->bubi->getNumberOfGestureTemplates()+1;
+        }
+        
+//        if (manuallyAssignedGesture)
+//            manuallyAssignedGesture = false;
+//        else
+//            x->currentGestureID = x->bubi->getNumberOfGestureTemplates()+1;
+    }
     
 }
 
@@ -444,10 +581,6 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
                 
                 x->currentGesture->addObservation(observation_vector);
                 
-                // log just before inference
-                if (x->bubi->getConfig().logOn)
-                    logGVF(x);
-                
                 // inference on the last observation
                 x->bubi->update(x->currentGesture->getLastObservation());
                 
@@ -599,86 +732,86 @@ void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 
 
 
-void logGVF(t_gvf *x)
-{
-    idfile++;
-    
-    for(int j = 0; j < x->bubi->getNumberOfGestureTemplates(); j++){
-        ostringstream convert; convert << j;
-        string filename = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-template-"+convert.str()+".txt";
-        
-        ofxGVFGesture temp = x->bubi->getGestureTemplate(j);
-        vector<vector<float> > observations = temp.getTemplateRaw();
-        std::ofstream file_writeObs(filename.c_str());
-        for(int j = 0; j < observations.size(); j++){
-            for(int k = 0; k < observations[j].size(); k++)
-                file_writeObs << observations[j][k] << " ";
-            file_writeObs << endl;
-        }
-        file_writeObs.close();
-    }
-    
-    string filename = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-observations.txt";
-    vector<vector<float> > observations = x->currentGesture->getTemplateRaw();
-    std::ofstream file_writeObs(filename.c_str());
-    
-    for(int j = 0; j < observations.size(); j++){
-        for(int k = 0; k < observations[j].size(); k++)
-            file_writeObs << observations[j][k] << " ";
-        file_writeObs << endl;
-    }
-    file_writeObs.close();
-    
-    vector<float> align             = x->bubi->getAlignment();
-    vector<int> classes             = x->bubi->getClasses();
-    vector<vector<float> > dynas    = x->bubi->getDynamics();
-    vector<vector<float> > scals    = x->bubi->getScalings();
-    vector<float> prior             = x->bubi->getPrior();
-    vector<vector<float> > vref     = x->bubi->getVecRef();
-    vector<float> vobs              = x->bubi->getVecObs();
-    
-    
-    ostringstream convert; convert << idfile;
-    std::string directory = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-particles-"+convert.str()+".txt";
-    std::ofstream file_write(directory.c_str());
-    
-    for(int j = 0; j < dynas.size(); j++)
-    {
-        file_write << align[j] << " ";
-        for(int k = 0; k < dynas[j].size(); k++)
-            file_write << dynas[j][k] << " ";
-        for(int k = 0; k < scals[j].size(); k++)
-            file_write << scals[j][k] << " ";
-        file_write << prior[j] << " ";
-        file_write << classes[j] << " ";
-        for(int k = 0; k < vref[j].size(); k++)
-            file_write << vref[j][k] << " ";
-        for(int k = 0; k < vobs.size(); k++)
-            file_write << vobs[k] << " ";
-        file_write << endl;
-    }
-    file_write.close();
-    
-    vector<float> estAlign = x->bubi->getEstimatedAlignment();
-    vector< vector<float> > estDynas = x->bubi->getEstimatedDynamics();
-    vector< vector<float> > estScals = x->bubi->getEstimatedScalings();
-    
-    directory = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-estimations-"+convert.str()+".txt";
-    std::ofstream file_write2(directory.c_str());
-    
-    for(int j = 0; j < estAlign.size(); j++)
-    {
-        file_write2 << estAlign[j] << " ";
-        for(int k = 0; k < estDynas[j].size(); k++)
-            file_write2 << estDynas[j][k] << " ";
-        for(int k = 0; k < estScals[j].size(); k++)
-            file_write2 << estScals[j][k] << " ";
-        file_write2 << endl;
-    }
-    file_write2.close();
-    
-    
-}
+//void logGVF(t_gvf *x)
+//{
+//    idfile++;
+//    
+//    for(int j = 0; j < x->bubi->getNumberOfGestureTemplates(); j++){
+//        ostringstream convert; convert << j;
+//        string filename = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-template-"+convert.str()+".txt";
+//        
+//        ofxGVFGesture temp = x->bubi->getGestureTemplate(j);
+//        vector<vector<float> > observations = temp.getTemplateRaw();
+//        std::ofstream file_writeObs(filename.c_str());
+//        for(int j = 0; j < observations.size(); j++){
+//            for(int k = 0; k < observations[j].size(); k++)
+//                file_writeObs << observations[j][k] << " ";
+//            file_writeObs << endl;
+//        }
+//        file_writeObs.close();
+//    }
+//    
+//    string filename = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-observations.txt";
+//    vector<vector<float> > observations = x->currentGesture->getTemplateRaw();
+//    std::ofstream file_writeObs(filename.c_str());
+//    
+//    for(int j = 0; j < observations.size(); j++){
+//        for(int k = 0; k < observations[j].size(); k++)
+//            file_writeObs << observations[j][k] << " ";
+//        file_writeObs << endl;
+//    }
+//    file_writeObs.close();
+//    
+//    vector<float> align             = x->bubi->getAlignment();
+//    vector<int> classes             = x->bubi->getClasses();
+//    vector<vector<float> > dynas    = x->bubi->getDynamics();
+//    vector<vector<float> > scals    = x->bubi->getScalings();
+//    vector<float> prior             = x->bubi->getPrior();
+//    vector<vector<float> > vref     = x->bubi->getVecRef();
+//    vector<float> vobs              = x->bubi->getVecObs();
+//    
+//    
+//    ostringstream convert; convert << idfile;
+//    std::string directory = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-particles-"+convert.str()+".txt";
+//    std::ofstream file_write(directory.c_str());
+//    
+//    for(int j = 0; j < dynas.size(); j++)
+//    {
+//        file_write << align[j] << " ";
+//        for(int k = 0; k < dynas[j].size(); k++)
+//            file_write << dynas[j][k] << " ";
+//        for(int k = 0; k < scals[j].size(); k++)
+//            file_write << scals[j][k] << " ";
+//        file_write << prior[j] << " ";
+//        file_write << classes[j] << " ";
+//        for(int k = 0; k < vref[j].size(); k++)
+//            file_write << vref[j][k] << " ";
+//        for(int k = 0; k < vobs.size(); k++)
+//            file_write << vobs[k] << " ";
+//        file_write << endl;
+//    }
+//    file_write.close();
+//    
+//    vector<float> estAlign = x->bubi->getEstimatedAlignment();
+//    vector< vector<float> > estDynas = x->bubi->getEstimatedDynamics();
+//    vector< vector<float> > estScals = x->bubi->getEstimatedScalings();
+//    
+//    directory = "/Users/caramiaux/Research/Code/MaxSDK-6.1.4/examples/maxprojects/gvf-develop/maxexternal/datatests/gvflog-estimations-"+convert.str()+".txt";
+//    std::ofstream file_write2(directory.c_str());
+//    
+//    for(int j = 0; j < estAlign.size(); j++)
+//    {
+//        file_write2 << estAlign[j] << " ";
+//        for(int k = 0; k < estDynas[j].size(); k++)
+//            file_write2 << estDynas[j][k] << " ";
+//        for(int k = 0; k < estScals[j].size(); k++)
+//            file_write2 << estScals[j][k] << " ";
+//        file_write2 << endl;
+//    }
+//    file_write2.close();
+//    
+//    
+//}
 
 
 
@@ -689,7 +822,6 @@ void gvf_restart(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
     
     x->currentGesture->clear();
-    idfile = 0;
     
     if(x->bubi->getState() == ofxGVF::STATE_FOLLOWING)
         x->bubi->restart();
@@ -995,7 +1127,7 @@ void gvf_log(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== SAVE_VOCABULARY
 ///////////////////////////////////////////////////////////
-void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
+void gvf_export(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
     t_symbol* mpath = atom_getsym(argv);
     string filename(mpath->s_name);
@@ -1007,7 +1139,7 @@ void gvf_savetemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 ///////////////////////////////////////////////////////////
 //====================== LOAD_VOCABULARY
 ///////////////////////////////////////////////////////////
-void gvf_loadtemplates(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
+void gvf_import(t_gvf *x, const t_symbol *sss, short argc, t_atom *argv)
 {
     
     char* mpath = atom_string(argv);

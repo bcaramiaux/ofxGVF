@@ -208,11 +208,13 @@ public:
     float getAlignmentVariance();
 
     // dynamics variance
+    void setDynamicsVariance(float dynVariance);
     void setDynamicsVariance(float dynVariance, int dim);
     void setDynamicsVariance(vector<float> dynVariance);
     vector<float> getDynamicsVariance();
     
     // scalings variance
+    void setScalingsVariance(float scaleVariance);
     void setScalingsVariance(float scaleVariance, int dim);
     void setScalingsVariance(vector<float> scaleVariance);
     vector<float> getScalingsVariance();

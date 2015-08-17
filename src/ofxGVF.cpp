@@ -1290,6 +1290,11 @@ float ofxGVF::getAlignmentVariance(){
 
 // VARIANCE COEFFICIENTS: DYNAMICS
 //--------------------------------------------------------------
+void ofxGVF::setDynamicsVariance(float dynVariance){
+    for (int k=0; k< parameters.dynamicsVariance.size(); k++)
+        parameters.dynamicsVariance[k] = dynVariance;
+}
+//--------------------------------------------------------------
 void ofxGVF::setDynamicsVariance(float dynVariance, int dim){
     // here dim should start at 1!!!
     if (dim<parameters.dynamicsVariance.size())
@@ -1307,6 +1312,11 @@ vector<float> ofxGVF::getDynamicsVariance(){
 
 // VARIANCE COEFFICIENTS: SCALINGS
 //--------------------------------------------------------------
+void ofxGVF::setScalingsVariance(float scaleVariance)
+{
+    for (int k=0; k< parameters.scalingsVariance.size(); k++)
+        parameters.scalingsVariance[k] = scaleVariance;
+}
 void ofxGVF::setScalingsVariance(float scaleVariance, int dim){
     // here dim should start at 1!!!
     if (dim<parameters.scalingsVariance.size())
