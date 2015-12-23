@@ -1,21 +1,14 @@
-///////////////////////////////////////////////////////////////////////
-//
-//  ofxGVF class
-//
-//  The library (ofxGVF.cpp, ofxGVF.h) has been created in 2010-2011 at Ircam Centre Pompidou by
-//  - Baptiste Caramiaux
-//  previously with Ircam Centre Pompidou and University Paris VI, since 2012 with Goldsmiths College, University of London
-//  - Nicola Montecchio
-//  previously with University of Padova, since 2012 with The Echo Nest
-//
-//  The library is maintained by Baptiste Caramiaux at Goldsmiths College, University of London
-//
-//  Copyright (C) 2013 Baptiste Caramiaux, Nicola Montecchio - STMS lab Ircam-CRNS-UPMC, University of Padova
-//
-//  The library is under the GNU Lesser General Public License (LGPL v3)
-//
-//
-///////////////////////////////////////////////////////////////////////
+/**
+ * Gesture Variation Follower class allows for early gesture recognition and variation tracking
+ *
+ * @details Original algorithm designed and implemented in 2011 at Ircam Centre Pompidou
+ * by Baptiste Caramiaux and Nicola Montecchio. The library has been created and is maintained by Baptiste Caramiaux
+ *
+ * Copyright (C) 2015 Baptiste Caramiaux, Nicola Montecchio
+ * STMS lab Ircam-CRNS-UPMC, University of Padova, Goldsmiths College University of London
+ *
+ * The library is under the GNU Lesser General Public License (LGPL v3)
+ */
 
 #include "ofxGVF.h"
 
@@ -238,6 +231,8 @@ void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
     gestureTemplates.push_back(gestureTemplate);
     activeGestures.push_back(gestureTemplates.size());
     
+    train();
+    
 }
 
 //--------------------------------------------------------------
@@ -336,7 +331,7 @@ void ofxGVF::removeAllGestureTemplates(){
 //
 // Learn Internal Configuration
 //
-void ofxGVF::learn(){
+void ofxGVF::train(){
     
     if (gestureTemplates.size() > 0)
     {
@@ -553,7 +548,7 @@ void ofxGVF::setState(ofxGVFState _state){
             state = _state;
             // if following and some templates have laready been recorded start learning
             if (gestureTemplates.size() > 0)
-                learn();
+                train();
             break;
     }
 }
@@ -816,7 +811,7 @@ void ofxGVF::updatePosterior(int n) {
 //--------------------------------------------------------------
 //  update(p) *
 //--------------------------------------------------------------
-void ofxGVF::update(vector<float> & obs){
+ofxGVFOutcomes & ofxGVF::update(vector<float> & obs){
     
 
     if (getState() != ofxGVF::STATE_FOLLOWING)
@@ -869,7 +864,7 @@ void ofxGVF::update(vector<float> & obs){
     
     estimates();
 
-
+    return outcomes;
     
 }
 
@@ -1157,7 +1152,7 @@ void ofxGVF::setParameters(ofxGVFParameters _parameters){
         if (parameters.numberParticles < 4) parameters.numberParticles = 4;
 
         // re-learn
-        learn();
+        train();
         
         // adapt the resampling threshold in case if RT < NS
         if (parameters.numberParticles <= parameters.resamplingThreshold)
@@ -1183,7 +1178,7 @@ void ofxGVF::setNumberOfParticles(int numberOfParticles){
     if (parameters.numberParticles < 4)     // minimum number of particles allowed
         parameters.numberParticles = 4;
     
-    learn();
+    train();
     
     if (parameters.numberParticles <= parameters.resamplingThreshold) {
         parameters.resamplingThreshold = parameters.numberParticles / 4;
