@@ -355,6 +355,9 @@ void ofxGVF::train(){
         if (rotationsDim!=0) initMat(rotations, parameters.numberParticles, rotationsDim);             // Matrix of rotations
         initMat(offsets, parameters.numberParticles, config.inputDimensions);
         initVec(weights, parameters.numberParticles);                           // Weights
+
+        initMat(particles, parameters.numberParticles, 3);
+//            std::cout << particles.size() << " "  << parameters.numberParticles << std::endl;
         
         // bayesian elements
         initVec(prior, parameters.numberParticles);
@@ -547,6 +550,7 @@ void ofxGVF::setState(ofxGVFState _state){
         case STATE_FOLLOWING:
             state = _state;
             // if following and some templates have laready been recorded start learning
+//            std::cout << "- " << gestureTemplates.size() << std::endl;
             if (gestureTemplates.size() > 0)
                 train();
             break;
@@ -840,6 +844,10 @@ ofxGVFOutcomes & ofxGVF::update(vector<float> & obs){
         }
     
         sumw += posterior[n];   // sum posterior to normalise the distrib afterwards
+        
+        particles[n][0] = alignment[n];
+        particles[n][1] = scalings[n][0];
+        particles[n][2] = classes[n];
     }
     
     
@@ -863,7 +871,7 @@ ofxGVFOutcomes & ofxGVF::update(vector<float> & obs){
     // ==========================
     
     estimates();
-
+    
     return outcomes;
     
 }
@@ -1093,21 +1101,22 @@ ofxGVFEstimation ofxGVF::getRecogInfoOfMostProbable() // FIXME: Rename!
 // Returns the probabilities of each gesture. This probability is conditionnal
 // because it depends on the other gestures in the vocabulary:
 // probability to be in gesture A knowing that we have gesture A, B, C, ... in the vocabulary
-vector<float> ofxGVF::getGestureProbabilities()
+vector<float> & ofxGVF::getGestureProbabilities()
 {
     //	unsigned int ngestures = numTemplates+1;
     
-	vector<float> gp(getNumberOfGestureTemplates());
-    setVec(gp, 0.0f);
+//	vector<float> gp(getNumberOfGestureTemplates());
+    gestureProbabilities.resize(getNumberOfGestureTemplates());
+    setVec(gestureProbabilities, 0.0f);
 	for(int n = 0; n < parameters.numberParticles; n++)
-		gp[classes[n]] += posterior[n];
+		gestureProbabilities[classes[n]] += posterior[n];
     
-	return gp;
+	return gestureProbabilities;
 }
 
 //--------------------------------------------------------------
-vector< vector<float> > ofxGVF::getParticlesPositions(){
-    return particlesPositions;
+const vector<vector<float> > & ofxGVF::getParticlesPositions(){
+    return particles;
 }
 
 ////////////////////////////////////////////////////////////////

@@ -178,7 +178,7 @@ public:
      * TODO: why matrix? particlepositions not filled
      * @return ...
      */
-    vector< vector<float> > & getParticlesPositions();
+    const vector<vector<float> > & getParticlesPositions();
     
     
     
@@ -328,7 +328,7 @@ public:
     void setup(ofxGVFConfig _config); // default parameters
     void setup(ofxGVFConfig _config, ofxGVFParameters _parameters);
     
-#pragam mark - Deprecated functions, to be removed in the next version
+#pragma mark - Deprecated functions, to be removed in the next version
     
     /**
      * Perform inference, replaced by update()
@@ -415,8 +415,10 @@ private:
     vector<vector<float> >  vecRef;
     vector<float>           vecObs;
     vector<float>           stateNoiseDist;
-    vector< vector<float> > particlesPositions;
     
+    vector<float> gestureProbabilities;
+    vector< vector<float> > particles;
+//    vector<float> particlesPositions;
     
     vector<float>& getGestureTemplateSample(int gestureIndex, float cursor);
     void estimates();       // update estimated outcome
