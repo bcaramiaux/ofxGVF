@@ -49,7 +49,7 @@ public:
      * @details use default configuration and parameters, can be changed using accessors
      */
     ofxGVF();
-
+    
     /**
      * GVF default constructor
      * @param configuration structure (nb. dimensions etc), use default parameters
@@ -72,12 +72,12 @@ public:
     
     /**
      * Add gesture template to the vocabulary
-     * 
+     *
      * @details a gesture template is a ofxGVFGesture object
      * @param the gesture template to be recorded
      */
     void addGestureTemplate(ofxGVFGesture & gestureTemplate);
-
+    
     /**
      * Replace a specific gesture template by another
      *
@@ -118,24 +118,16 @@ public:
      * @return the number of templates
      */
     int getNumberOfGestureTemplates();
-
-
-    
-
-//    void addGestureExamples(vector<ofxGVFGesture> & gestureExamples);
-//    vector<ofxGVFGesture> & getGestureExamples(int gestureIndex);       // get all the examples of a given gesture
-//    ofxGVFGesture & getGestureExample(int gestureIndex, int exampleIndex = 0);   // get one example of a given gesture (default: the first one)
-//    int getNumberOfGestures();                          // return the number of gesture classes (not counting the examples)
-//    int getNumberOfGestureExamples(int gestureIndex);   // return the number of examples for a given gesture
     
     
 #pragma mark - Recognition and tracking
-
-
+    
+    ofxGVFState setState(ofxGVFState _state);
+    
     /**
      * Compute the estimated gesture and its potential variations
      *
-     * @details infers the probability that the current observation belongs to 
+     * @details infers the probability that the current observation belongs to
      * one of the recorded gesture template and track the variations of this gesture
      * according to each template
      *
@@ -153,68 +145,54 @@ public:
      */
     void setActiveGestures(vector<int> activeGestureIds);
     
+    /**
+     * Restart GVF
+     * @details re-sample particles at the origin (i.e. initial prior)
+     */
+    void restart();
     
-#pragma mark - Output accessors
+    /**
+     * Clear GVF
+     * @details delete templates
+     */
+    void clear();
     
+#pragma mark - Output accessors (deprecated, use ofxGVFOutcomes)
     
-    //////////////////////////
-    // OUTCOMES //
-    //////////////////////////
-    
-    int getMostProbableGestureIndex();
-    
-
-    ofxGVFEstimation getTemplateRecogInfo(int templateNumber);
-    ofxGVFEstimation getRecogInfoOfMostProbable(); // !!!: bad naming
-    
-    /*
+    /**
      * Get gesture probabilities
      * @return vector of probabilities
      */
     vector<float> & getGestureProbabilities();
-
-    /*
-     * Get first sampled alignment value for each particle
-     * TODO: why matrix? particlepositions not filled
-     * @return ...
+    
+    /**
+     *
+     */
+    int getMostProbableGestureIndex();
+    
+    /**
+     * Get particle values
+     * @return vector of list of estimated particles
      */
     const vector<vector<float> > & getParticlesPositions();
     
+    //    ofxGVFEstimation getTemplateRecogInfo(int templateNumber);
+    //    ofxGVFEstimation getRecogInfoOfMostProbable();
     
+    //    /////////////////////
+    //    // System Function //
+    //    /////////////////////
+    //
+    //    int getDynamicsDim();
+    //    int getScalingsDim();
+    //    int getRotationsDim();
     
-    /////////////////////
-    // System Function //
-    /////////////////////
-    
-    int getDynamicsDim();
-    int getScalingsDim();
-    int getRotationsDim();
-    
-    void restart();     // restart the GVF
-    void clear();       // clear templates etc.
-    
-    
-    
-    ///////////////////////
-    // Getters & Setters //
-    ///////////////////////
-    
-    // STATES
-    
-    ofxGVFState getState();
-    string getStateAsString();
-    void setState(ofxGVFState _state);
-    
-    // CONFIG
+#pragma mark Set/Get
+
+
     
     void setConfig(ofxGVFConfig _config);
     ofxGVFConfig getConfig();
-    
-    
-#pragma mark Set/Get Parameters
-    
-    // PARAMETERS
-    // ==========
     
     void setParameters(ofxGVFParameters parameters);
     ofxGVFParameters getParameters();
@@ -262,61 +240,61 @@ public:
     
     
     
-    // oldies (deprecated)
-    void setSpeedVariance(float speedVariance);
-    float getSpeedVariance();
-    
-    void setScaleVariance(float scaleVariance, int dim = 0);
-    void setScaleVariance(vector<float> scaleVariance);
-    vector<float> getScaleVariance();
-    
-    void setRotationsVariance(float rotationsVariance, int dim = 0);
-    void setRotationsVariance(vector<float> rotationsVariance);
-    vector<float> getRotationsVariance();
-    
-    
+    //    // oldies (deprecated)
+    //    void setSpeedVariance(float speedVariance);
+    //    float getSpeedVariance();
+    //
+    //    void setScaleVariance(float scaleVariance, int dim = 0);
+    //    void setScaleVariance(vector<float> scaleVariance);
+    //    vector<float> getScaleVariance();
+    //
+    //    void setRotationsVariance(float rotationsVariance, int dim = 0);
+    //    void setRotationsVariance(vector<float> rotationsVariance);
+    //    vector<float> getRotationsVariance();
     
     
-    // MATHS
     
+    
+    //    // MATHS
+    //
     vector<int> getClasses();
-    vector<float> getAlignment();
-    vector<float> getEstimatedAlignment();
-    vector< vector<float> > getDynamics();
-    vector< vector<float> > getEstimatedDynamics();
-    vector< vector<float> > getScalings();
-    vector< vector<float> > getEstimatedScalings();
-    vector< vector<float> > getRotations();
-    vector< vector<float> > getEstimatedRotations();
+    //    vector<float> getAlignment();
+    //    vector<float> getEstimatedAlignment();
+    //    vector< vector<float> > getDynamics();
+    //    vector< vector<float> > getEstimatedDynamics();
+    //    vector< vector<float> > getScalings();
+    //    vector< vector<float> > getEstimatedScalings();
+    //    vector< vector<float> > getRotations();
+    //    vector< vector<float> > getEstimatedRotations();
     vector<float> getEstimatedProbabilities();
     vector<float> getEstimatedLikelihoods();
     vector<float> getWeights();
     vector<float> getPrior();
     
-    // only fo rlogs
-    vector<vector<float> >  getVecRef();
-    vector<float>           getVecObs();
-    vector<float>           getStateNoiseDist();
-    
-    vector< vector<float> > getX();
-    vector<int>    getG();
-    vector<float>  getW();
-    
-    // MISC
-    
-    vector<vector<float> >  getIndividualOffset();
-    vector<float>           getIndividualOffset(int particleIndex);
+    //    // only fo rlogs
+    //    vector<vector<float> >  getVecRef();
+    //    vector<float>           getVecObs();
+    //    vector<float>           getStateNoiseDist();
+    //
+    //    vector< vector<float> > getX();
+    //    vector<int>    getG();
+    //    vector<float>  getW();
+    //
+    //    // MISC
+    //
+    //    vector<vector<float> >  getIndividualOffset();
+    //    vector<float>           getIndividualOffset(int particleIndex);
     
     // UTILITIES
     
     void saveTemplates(string filename);
     void loadTemplates(string filename);
     
-    string getStateAsString(ofxGVFState state);
+    //    string getStateAsString(ofxGVFState state);
     
-    float getGlobalNormalizationFactor();
+    //    float getGlobalNormalizationFactor();
     
-    void testRndNum();
+    //    void testRndNum();
     
 #pragma mark - openFrameworks convetion: setup functions
     
@@ -334,7 +312,10 @@ public:
      * Perform inference, replaced by update()
      */
     void infer(vector<float> obs);
-        ofxGVFOutcomes getOutcomes();
+    ofxGVFOutcomes getOutcomes();
+
+#pragma mark DEPRECATED
+    ofxGVFState getState();
     
 private:
     
@@ -343,6 +324,8 @@ private:
     ofxGVFParameters    parameters;
     ofxGVFOutcomes      outcomes;
     ofxGVFState         state;
+    ofxGVFGesture       theGesture;
+    
     
     vector<float> dimWeights;           // TOOD: to be put in parameters?
     vector<float> maxRange;
@@ -418,7 +401,7 @@ private:
     
     vector<float> gestureProbabilities;
     vector< vector<float> > particles;
-//    vector<float> particlesPositions;
+    //    vector<float> particlesPositions;
     
     vector<float>& getGestureTemplateSample(int gestureIndex, float cursor);
     void estimates();       // update estimated outcome

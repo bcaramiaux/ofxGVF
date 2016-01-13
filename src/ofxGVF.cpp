@@ -33,21 +33,6 @@ vector<vector<float> > return_RotationMatrix_3d(float phi, float theta, float ps
 float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float> w);
 // ---------------------------
 
-
-
-
-
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-//
-//
-//              CONSTRUCTORS and RESTART (GENERAL)
-//
-//
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-
-
 //--------------------------------------------------------------
 ofxGVF::ofxGVF(){
     setup();
@@ -62,19 +47,6 @@ ofxGVF::ofxGVF(ofxGVFConfig _config){
 ofxGVF::ofxGVF(ofxGVFConfig _config, ofxGVFParameters _parameters){
     setup(_config, _parameters);
 }
-
-
-
-
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-//
-//
-//              SET-UPS
-//
-//
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
 
 //--------------------------------------------------------------
 void ofxGVF::setup(){
@@ -131,14 +103,12 @@ void ofxGVF::setup(ofxGVFConfig _config){
 }
 
 //--------------------------------------------------------------
-void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
-    
+void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters)
+{
     clear(); // just in case
-    
     // Set configuration and parameters
     config      = _config;
     parameters  = _parameters;
-    
     // Init random generators
     normgen = std::mt19937(rd());
     rndnorm = new std::normal_distribution<float>(0.0,1.0);
@@ -146,51 +116,21 @@ void ofxGVF::setup(ofxGVFConfig _config, ofxGVFParameters _parameters){
     rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
 }
 
-
-
-
-
-
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-//
-//
-//              DESTRUCTOR
-//
-//
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-
 //--------------------------------------------------------------
-ofxGVF::~ofxGVF(){
-    
+ofxGVF::~ofxGVF()
+{
     if (rndnorm != NULL)
         delete (rndnorm);
     clear(); // not really necessary but it's polite ;)
-    
 }
 
 //--------------------------------------------------------------
-void ofxGVF::clear(){
+void ofxGVF::clear()
+{
     state = STATE_CLEAR;
     gestureTemplates.clear();
     mostProbableIndex = -1;
-
 }
-
-
-
-
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-//
-//
-//  MANAGE GESTURE / TEMPLATES
-//
-//
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-
 
 //--------------------------------------------------------------
 void ofxGVF::addGestureTemplate(ofxGVFGesture & gestureTemplate){
@@ -313,24 +253,7 @@ void ofxGVF::removeAllGestureTemplates(){
     gestureTemplates.clear();
 }
 
-
-
-
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-//
-//
-//              LEARNING and INIT FUNCTIONS
-//
-//
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-
-
 //----------------------------------------------
-//
-// Learn Internal Configuration
-//
 void ofxGVF::train(){
     
     if (gestureTemplates.size() > 0)
@@ -399,9 +322,6 @@ void ofxGVF::train(){
     }
 }
 
-
-// GENERAL FUNCTIONS FOR STATE SPACE BAYESIAN MODEL
-
 //--------------------------------------------------------------
 void ofxGVF::initPrior()
 {
@@ -451,35 +371,6 @@ void ofxGVF::initPrior(int pf_n)
     
 }
 
-////--------------------------------------------------------------
-//void ofxGVF::initPriorV1(int pf_n) {
-//    
-//    float range = 0.1;
-//    
-//    classes[pf_n]   = pf_n % gestureTemplates.size();
-//    alignment[pf_n] = ((*rndunif)(unifgen) - 0.5) * range;    // spread phase
-//    
-//    int maxdyn=4.0; int mindyn=-4.0;
-//    for(int l = 0; l < dynamics[pf_n].size(); l++) dynamics[pf_n][l] = (maxdyn-mindyn)/(1.0*pf_n)+mindyn; //dynamics between -4 and 4
-//
-//    int maxscale=4.0; int minscale=0.0;
-//    for(int l = 0; l < scalings[pf_n].size(); l++) scalings[pf_n][l] = (maxscale-minscale)/(1.0*pf_n)+minscale; //scalings between 0 and 4
-//   
-//    if (rotationsDim!=0) {
-//        int maxrot=180.0; int minrot=-180.0;
-//        for(int l = 0; l < rotations[pf_n].size(); l++) rotations[pf_n][l] = (maxrot-minrot)/(1.0*pf_n)+minrot; // rotations
-//    }
-//    
-//    if (config.translate) for(int l = 0; l < offsets[pf_n].size(); l++) offsets[pf_n][l] = 0.0;
-//    
-//    
-//    prior[pf_n] = 1.0 / (float) parameters.numberParticles;
-//    
-//    // set the posterior to the prior at the initialization
-//    posterior[pf_n] = prior[pf_n];
-//    
-//}
-
 //--------------------------------------------------------------
 void ofxGVF::initNoiseParameters() {
 
@@ -527,33 +418,24 @@ void ofxGVF::initNoiseParameters() {
     }
 }
 
-
-
-
-
-
-////////////////////////////////////////////////////////////////
-//
-// STATE SET & GET - eg., clear, learn, follow
-//
-////////////////////////////////////////////////////////////////
-
 //--------------------------------------------------------------
-void ofxGVF::setState(ofxGVFState _state){
-    switch (_state) {
+ofxGVF::ofxGVFState ofxGVF::setState(ofxGVFState _state)
+{
+    switch (_state)
+    {
         case STATE_CLEAR:
             clear();
-            break;
+            return STATE_CLEAR;
         case STATE_LEARNING:
             state = _state;
-            break;
+            return STATE_LEARNING;
         case STATE_FOLLOWING:
             state = _state;
-            // if following and some templates have laready been recorded start learning
-//            std::cout << "- " << gestureTemplates.size() << std::endl;
             if (gestureTemplates.size() > 0)
                 train();
-            break;
+            return STATE_FOLLOWING;
+        default:
+            return STATE_CLEAR;
     }
 }
 
@@ -562,108 +444,113 @@ ofxGVF::ofxGVFState ofxGVF::getState(){
     return state;
 }
 
-//--------------------------------------------------------------
-string ofxGVF::getStateAsString(){
-    switch (state) {
-        case STATE_CLEAR:
-            return "STATE_CLEAR";
-            break;
-        case STATE_LEARNING:
-            return "STATE_LEARNING";
-            break;
-        case STATE_FOLLOWING:
-            return "STATE_FOLLOWING";
-            break;
-    }
-}
+////--------------------------------------------------------------
+//int ofxGVF::getDynamicsDim(){
+//    return dynamicsDim;
+//}
 
-//--------------------------------------------------------------
-int ofxGVF::getDynamicsDim(){
-    return dynamicsDim;
-}
 //--------------------------------------------------------------
 vector<int> ofxGVF::getClasses(){
     return classes;
 }
-//--------------------------------------------------------------
-vector<float> ofxGVF::getAlignment(){
-    return alignment;
-}
-//--------------------------------------------------------------
-vector<float> ofxGVF::getEstimatedAlignment(){
-    return estimatedAlignment;
-}
-//--------------------------------------------------------------
-vector< vector<float> > ofxGVF::getDynamics(){
-    return dynamics;
-}
-//--------------------------------------------------------------
-vector< vector<float> > ofxGVF::getEstimatedDynamics(){
-    return estimatedDynamics;
-}
-//--------------------------------------------------------------
-vector< vector<float> > ofxGVF::getScalings(){
-    return scalings;
-}
-//--------------------------------------------------------------
-vector< vector<float> > ofxGVF::getEstimatedScalings(){
-    return estimatedScalings;
-}
-//--------------------------------------------------------------
-vector< vector<float> > ofxGVF::getRotations(){
-    return rotations;
-}
-//--------------------------------------------------------------
-vector< vector<float> > ofxGVF::getEstimatedRotations(){
-    return estimatedRotations;
-}
+
+////--------------------------------------------------------------
+//vector<float> ofxGVF::getAlignment(){
+//    return alignment;
+//}
+//
+////--------------------------------------------------------------
+//vector<float> ofxGVF::getEstimatedAlignment(){
+//    return estimatedAlignment;
+//}
+//
+////--------------------------------------------------------------
+//vector< vector<float> > ofxGVF::getDynamics(){
+//    return dynamics;
+//}
+//
+////--------------------------------------------------------------
+//vector< vector<float> > ofxGVF::getEstimatedDynamics(){
+//    return estimatedDynamics;
+//}
+//
+////--------------------------------------------------------------
+//vector< vector<float> > ofxGVF::getScalings(){
+//    return scalings;
+//}
+//
+////--------------------------------------------------------------
+//vector< vector<float> > ofxGVF::getEstimatedScalings(){
+//    return estimatedScalings;
+//}
+//
+////--------------------------------------------------------------
+//vector< vector<float> > ofxGVF::getRotations(){
+//    return rotations;
+//}
+//
+////--------------------------------------------------------------
+//vector< vector<float> > ofxGVF::getEstimatedRotations(){
+//    return estimatedRotations;
+//}
+
 //--------------------------------------------------------------
 vector<float> ofxGVF::getEstimatedProbabilities(){
     return estimatedProbabilities;
 }
+
 //--------------------------------------------------------------
 vector<float> ofxGVF::getEstimatedLikelihoods(){
     return estimatedLikelihoods;
 }
+
 //--------------------------------------------------------------
 vector<float> ofxGVF::getWeights(){
     return weights;
 }
+
 //--------------------------------------------------------------
 vector<float> ofxGVF::getPrior(){
     return prior;
 }
-//--------------------------------------------------------------
-vector<vector<float> > ofxGVF::getVecRef() {
-    return vecRef;
-}
-//--------------------------------------------------------------
-vector<float> ofxGVF::getVecObs() {
-    return vecObs;
-}
-//--------------------------------------------------------------
-vector<float> ofxGVF::getStateNoiseDist(){
-    return stateNoiseDist;
-}
-//--------------------------------------------------------------
-int ofxGVF::getScalingsDim(){
-    return scalingsDim;
-}
-//--------------------------------------------------------------
-int ofxGVF::getRotationsDim(){
-    return rotationsDim;
-}
+
+////--------------------------------------------------------------
+//vector<vector<float> > ofxGVF::getVecRef() {
+//    return vecRef;
+//}
+//
+////--------------------------------------------------------------
+//vector<float> ofxGVF::getVecObs() {
+//    return vecObs;
+//}
+//
+////--------------------------------------------------------------
+//vector<float> ofxGVF::getStateNoiseDist(){
+//    return stateNoiseDist;
+//}
+
+////--------------------------------------------------------------
+//int ofxGVF::getScalingsDim(){
+//    return scalingsDim;
+//}
+//
+////--------------------------------------------------------------
+//int ofxGVF::getRotationsDim(){
+//    return rotationsDim;
+//}
+
 //--------------------------------------------------------------
 void ofxGVF::restart(){
     initPrior();
 }
 
-
-
+//--------------------------------------------------------------
 void ofxGVF::setSpreadDynamics(float center, float range){
     parameters.dynamicsSpreadingCenter = center;
     parameters.dynamicsSpreadingRange = range;
 }
+
+//--------------------------------------------------------------
 void ofxGVF::setSpreadScalings(float center, float range){
     parameters.scalingsSpreadingCenter = center;
     parameters.scalingsSpreadingRange = range;
@@ -674,29 +561,8 @@ void ofxGVF::setSpreadRotations(float center, float range){
 }
 
 
+#pragma mark - PARTICLE FILTERING
 
-////////////////////////////////////////////////////////////////
-//
-//
-//  PARTICLE FILTERING
-//
-//
-//  updatePrior(p) * dynamics of the state space, compute prior distribution
-//
-//  updateLikelihood(obs,p) * compute observation distribution
-//
-//  updatePosterior(p) *
-//
-//  update(p) * main inference function calling previous ones
-//
-//
-////////////////////////////////////////////////////////////////
-
-
-
-
-//--------------------------------------------------------------
-//  updatePrior(p) * dynamics of the state space, compute prior distribution
 //--------------------------------------------------------------
 void ofxGVF::updatePrior(int n) {
     
@@ -720,35 +586,25 @@ void ofxGVF::updatePrior(int n) {
     prior[n] = posterior[n];
 }
 
-
-
-
-
 //--------------------------------------------------------------
-//  updateLikelihood(obs,p) * compute observation distribution
-//--------------------------------------------------------------
-void ofxGVF::updateLikelihood(vector<float> obs, int n) {
-    
-    
-    // OBSERVATIONS
-    // ============
+void ofxGVF::updateLikelihood(vector<float> obs, int n)
+{
     vector<float> vobs(config.inputDimensions);
     setVec(vobs, obs);
     
     if (config.translate) for (int j=0; j < config.inputDimensions; j++) vobs[j] = vobs[j] - offsets[n][j];
     if (config.normalization) for (int kk=0; kk<vobs.size(); kk++) vobs[kk] = vobs[kk] / globalNormalizationFactor;
 
-    
-    // TEMPLATE SAMPLE GIVEN FROM STATE VALUES
-    // =======================================
-    
-    if(alignment[n] < 0.0)      {
+    if(alignment[n] < 0.0)
+    {
         alignment[n] = fabs(alignment[n]);  // re-spread at the beginning
         if (config.segmentation)
             classes[n]   = n % getNumberOfGestureTemplates();
     }
-    else if(alignment[n] > 1.0) {
-        if (config.segmentation){
+    else if(alignment[n] > 1.0)
+    {
+        if (config.segmentation)
+        {
             alignment[n] = fabs(1.0-alignment[n]); // re-spread at the beginning
             classes[n]   = n % getNumberOfGestureTemplates();
         }
@@ -779,10 +635,6 @@ void ofxGVF::updateLikelihood(vector<float> obs, int n) {
         vref = multiplyMat(RotMatrix, vref);
     }
     
-
-    // COMPUTE LIKELIHOOD
-    // ==================
-    
     // weighted euclidean distance
     float dist = distance_weightedEuclidean(vref,vobs,parameters.dimWeights);
     
@@ -801,35 +653,16 @@ void ofxGVF::updateLikelihood(vector<float> obs, int n) {
     
 }
 
-
-
-//--------------------------------------------------------------
-//  updatePosterior(p) *
 //--------------------------------------------------------------
 void ofxGVF::updatePosterior(int n) {
     posterior[n]  = prior[n] * likelihood[n];
 }
 
-
-
 //--------------------------------------------------------------
-//  update(p) *
-//--------------------------------------------------------------
-ofxGVFOutcomes & ofxGVF::update(vector<float> & obs){
+ofxGVFOutcomes & ofxGVF::update(vector<float> & obs)
+{
     
-
-    if (getState() != ofxGVF::STATE_FOLLOWING)
-        setState(ofxGVF::STATE_FOLLOWING);
-        
-    // // If logging
-    // if (config.logOn){
-    //     vecRef.clear();
-    //     stateNoiseDist.clear();
-    // }
-    
-    
-    // INFERENCE
-    // =========
+    if (state != ofxGVF::STATE_FOLLOWING) setState(ofxGVF::STATE_FOLLOWING);
     
     // for each particle: perform updates of state space / likelihood / prior (weights)
     float sumw = 0.0;
@@ -850,11 +683,6 @@ ofxGVFOutcomes & ofxGVF::update(vector<float> & obs){
         particles[n][2] = classes[n];
     }
     
-    
-    
-    // RESAMPLING if needed
-    // ====================
-    
     // normalize the weights and compute the resampling criterion
     float dotProdw = 0.0;
     for (int k = 0; k < parameters.numberParticles; k++){
@@ -865,34 +693,16 @@ ofxGVFOutcomes & ofxGVF::update(vector<float> & obs){
 	if( (1./dotProdw) < parameters.resamplingThreshold)
         resampleAccordingToWeights(obs);
     
-    
-    
-    // ESTIMATES for each Gesture
-    // ==========================
-    
+    // estimate outcomes
     estimates();
     
     return outcomes;
     
 }
 
-// Old way with infer [DEPRECATED]
-void ofxGVF::infer(vector<float> obs) {
-    update(obs);
-}
-
-
-
-//--------------------------------------------------------------
-//  resampleAccordingToWeights(obs)
 //--------------------------------------------------------------
 void ofxGVF::resampleAccordingToWeights(vector<float> obs)
 {
-    
-    // random generator: uniform distribution
-    // std::tr1::uniform_real<float> ur(0,1);
-    // std::tr1::variate_generator<std::tr1::mt19937, std::tr1::uniform_real<float> > rnduni(rng, ur);
-    
     // covennient
     int numOfPart = parameters.numberParticles;
     
@@ -984,20 +794,8 @@ void ofxGVF::estimates(){
         if (!isnan(posterior[n]))
             estimatedProbabilities[classes[n]] += posterior[n];
         estimatedLikelihoods[classes[n]] += likelihood[n];
-
-//        post("dynamics[n][0] * posterior[n] = %f * %f", dynamics[n][0], posterior[n]);
     }
-//    post(" estimated scal = %f", estimatedScalings[1][0]);
-//    post(" sum posterior = %f", sumposterior);
 
-    
-//    for(int n = 0; n < estimatedScalings.size(); n++){
-//        for(int m = 0; m < estimatedScalings[0].size(); m++){
-//            post("est scal [%i][%i] = %f",n,m,estimatedScalings[classes[n]][m]);
-//        }
-//    }
-    
-	
     // calculate most probable index during scaling...
     float maxProbability = 0.0f;
     mostProbableIndex = -1;
@@ -1047,65 +845,47 @@ void ofxGVF::estimates(){
 
 }
 
-////////////////////////////////////////////////////////////////
-//
-// PROBABILITY AND TEMPLATE ACCESS
-//
-////////////////////////////////////////////////////////////////
-
-
-
 //--------------------------------------------------------------
-// Returns the index of the currently recognized gesture
-int ofxGVF::getMostProbableGestureIndex(){
+int ofxGVF::getMostProbableGestureIndex()
+{
     return mostProbableIndex;
 }
 
 //--------------------------------------------------------------
-// Returns the estimates features.
-ofxGVFOutcomes ofxGVF::getOutcomes() {
+ofxGVFOutcomes ofxGVF::getOutcomes()
+{
     return outcomes;
 }
 
-
-//--------------------------------------------------------------
-ofxGVFEstimation ofxGVF::getTemplateRecogInfo(int templateNumber) { // FIXME: Rename!
-    
-    // ???: Later transfer to an assert here.
-    //    assert(templateNumber >= 0 && templateNumber < getOutcomes().estimations.size());
-    
-    if (getOutcomes().estimations.size() <= templateNumber) {
-        ofxGVFEstimation estimation;
-        return estimation; // blank
-    }
-    else
-        return getOutcomes().estimations[templateNumber];
-}
-
-//--------------------------------------------------------------
-ofxGVFEstimation ofxGVF::getRecogInfoOfMostProbable() // FIXME: Rename!
-{
-    int indexMostProbable = getMostProbableGestureIndex();
-    
-    if ((getState() == ofxGVF::STATE_FOLLOWING) && (getMostProbableGestureIndex() != -1)) {
-        return getTemplateRecogInfo(indexMostProbable);
-    }
-    else {
-        ofxGVFEstimation estimation;
-        return estimation; // blank
-    }
-}
+////--------------------------------------------------------------
+//ofxGVFEstimation ofxGVF::getTemplateRecogInfo(int templateNumber)
+//{
+//    if (getOutcomes().estimations.size() <= templateNumber) {
+//        ofxGVFEstimation estimation;
+//        return estimation; // blank
+//    }
+//    else
+//        return getOutcomes().estimations[templateNumber];
+//}
+//
+////--------------------------------------------------------------
+//ofxGVFEstimation ofxGVF::getRecogInfoOfMostProbable() // FIXME: Rename!
+//{
+//    int indexMostProbable = getMostProbableGestureIndex();
+//    
+//    if ((getState() == ofxGVF::STATE_FOLLOWING) && (getMostProbableGestureIndex() != -1)) {
+//        return getTemplateRecogInfo(indexMostProbable);
+//    }
+//    else {
+//        ofxGVFEstimation estimation;
+//        return estimation; // blank
+//    }
+//}
 
 
 //--------------------------------------------------------------
-// Returns the probabilities of each gesture. This probability is conditionnal
-// because it depends on the other gestures in the vocabulary:
-// probability to be in gesture A knowing that we have gesture A, B, C, ... in the vocabulary
 vector<float> & ofxGVF::getGestureProbabilities()
 {
-    //	unsigned int ngestures = numTemplates+1;
-    
-//	vector<float> gp(getNumberOfGestureTemplates());
     gestureProbabilities.resize(getNumberOfGestureTemplates());
     setVec(gestureProbabilities, 0.0f);
 	for(int n = 0; n < parameters.numberParticles; n++)
@@ -1335,21 +1115,21 @@ vector<float> ofxGVF::getScalingsVariance(){
     return parameters.scalingsVariance;
 }
 
-// VARIANCE COEFFICIENTS: ROTATIONS
-//--------------------------------------------------------------
-void ofxGVF::setRotationsVariance(float rotationVariance, int dim){
-    // here dim should start at 1!!!
-    if (dim<parameters.rotationsVariance.size())
-        parameters.scalingsVariance[dim-1] = rotationVariance;
-}
-//--------------------------------------------------------------
-void ofxGVF::setRotationsVariance(vector<float> rotationVariance){
-    parameters.scaleVariance = rotationVariance;
-}
-//--------------------------------------------------------------
-vector<float> ofxGVF::getRotationsVariance(){
-    return parameters.rotationsVariance;
-}
+//// VARIANCE COEFFICIENTS: ROTATIONS
+////--------------------------------------------------------------
+//void ofxGVF::setRotationsVariance(float rotationVariance, int dim){
+//    // here dim should start at 1!!!
+//    if (dim<parameters.rotationsVariance.size())
+//        parameters.scalingsVariance[dim-1] = rotationVariance;
+//}
+////--------------------------------------------------------------
+//void ofxGVF::setRotationsVariance(vector<float> rotationVariance){
+//    parameters.scaleVariance = rotationVariance;
+//}
+////--------------------------------------------------------------
+//vector<float> ofxGVF::getRotationsVariance(){
+//    return parameters.rotationsVariance;
+//}
 
 
 
@@ -1456,29 +1236,29 @@ void ofxGVF::loadTemplates(string filename){
 }
 
 
-float ofxGVF::getGlobalNormalizationFactor(){
-    return globalNormalizationFactor;
-}
-
-
-
-//--------------------------------------------------------------
-string ofxGVF::getStateAsString(ofxGVFState state){
-    switch(state){
-        case STATE_CLEAR:
-            return "STATE_CLEAR";
-            break;
-        case STATE_LEARNING:
-            return "STATE_LEARNING";
-            break;
-        case STATE_FOLLOWING:
-            return "STATE_FOLLOWING";
-            break;
-        default:
-            return "STATE_UNKNOWN";
-            break;
-    }
-}
+//float ofxGVF::getGlobalNormalizationFactor(){
+//    return globalNormalizationFactor;
+//}
+//
+//
+//
+////--------------------------------------------------------------
+//string ofxGVF::getStateAsString(ofxGVFState state){
+//    switch(state){
+//        case STATE_CLEAR:
+//            return "STATE_CLEAR";
+//            break;
+//        case STATE_LEARNING:
+//            return "STATE_LEARNING";
+//            break;
+//        case STATE_FOLLOWING:
+//            return "STATE_FOLLOWING";
+//            break;
+//        default:
+//            return "STATE_UNKNOWN";
+//            break;
+//    }
+//}
 
 
 
@@ -1518,30 +1298,30 @@ float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float>
 
 
 
-void ofxGVF::testRndNum(){
-
-
-    std::map<int, int> hist;
-    cout << "===== UNIFORM" << endl;
-    for(int n=0; n<10000; ++n) {
-        ++hist[std::round((*rndunif)(unifgen)*5.0)];
-        cout << (*rndunif)(unifgen) << endl;
-    }
-    for(auto p : hist) {
-        std::cout << std::fixed << std::setprecision(1) << std::setw(2)
-                  << p.first << ' ' << std::string(p.second/200, '*') << '\n';
-    }
-    cout << "===== NORMAL" << endl;
-    hist.clear();
-    for(int n=0; n<10000; ++n) {
-        ++hist[std::round((*rndnorm)(normgen)*5.0)];
-    }
-    for(auto p : hist) {
-        std::cout << std::fixed << std::setprecision(1) << std::setw(2)
-                  << p.first << ' ' << std::string(p.second/200, '*') << '\n';
-    }
-    
-}
+//void ofxGVF::testRndNum(){
+//
+//
+//    std::map<int, int> hist;
+//    cout << "===== UNIFORM" << endl;
+//    for(int n=0; n<10000; ++n) {
+//        ++hist[std::round((*rndunif)(unifgen)*5.0)];
+//        cout << (*rndunif)(unifgen) << endl;
+//    }
+//    for(auto p : hist) {
+//        std::cout << std::fixed << std::setprecision(1) << std::setw(2)
+//                  << p.first << ' ' << std::string(p.second/200, '*') << '\n';
+//    }
+//    cout << "===== NORMAL" << endl;
+//    hist.clear();
+//    for(int n=0; n<10000; ++n) {
+//        ++hist[std::round((*rndnorm)(normgen)*5.0)];
+//    }
+//    for(auto p : hist) {
+//        std::cout << std::fixed << std::setprecision(1) << std::setw(2)
+//                  << p.first << ' ' << std::string(p.second/200, '*') << '\n';
+//    }
+//    
+//}
 
 
 

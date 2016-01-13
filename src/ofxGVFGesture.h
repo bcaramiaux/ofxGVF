@@ -229,7 +229,10 @@ public:
         }
 
         if(templatesRaw[templateIndex].size() == 0)
-            templateInitialRaw = templateInitialNormal = observation;
+        {
+            templateInitialRaw = observation;
+            templateInitialNormal = observation;
+        }
 
         for(int j = 0; j < observation.size(); j++)
             observation[j] = observation[j] - templateInitialRaw[j];
