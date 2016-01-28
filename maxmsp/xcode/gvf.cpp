@@ -75,7 +75,7 @@ void gvf_segmentation    (t_gvf *x, const t_symbol *sss, short argc, t_atom *arg
 void gvf_tolerance           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_particles           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_resamplingthreshold (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_alignment           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
+//void gvf_alignment           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_dynamics            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_scalings            (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
 void gvf_rotations           (t_gvf *x,const t_symbol *sss, short argc, t_atom *argv);
@@ -129,7 +129,7 @@ int C74_EXPORT main(void)
     class_addmethod(c, (method)gvf_tolerance, "tolerance", A_GIMME, 0);
     class_addmethod(c, (method)gvf_resamplingthreshold, "resamplingthreshold", A_GIMME, 0);
     class_addmethod(c, (method)gvf_particles, "particles", A_GIMME,0);
-    class_addmethod(c, (method)gvf_alignment, "alignment", A_GIMME,0);
+//    class_addmethod(c, (method)gvf_alignment, "alignment", A_GIMME,0);
     class_addmethod(c, (method)gvf_dynamics, "dynamics", A_GIMME,0);
     class_addmethod(c, (method)gvf_scalings, "scalings", A_GIMME,0);
     class_addmethod(c, (method)gvf_rotations, "rotations", A_GIMME,0);
@@ -478,7 +478,7 @@ void gvf_printme(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     post("  Resampling Threshold: %d", x->bubi->getResamplingThreshold());
     post("  Tolerance: %.2f", x->bubi->getTolerance());
     post("  Adaptation parameters:");
-    post("      phase: %.7f", x->bubi->getAlignmentVariance());
+//    post("      phase: %.7f", x->bubi->getAlignmentVariance());
     string scale_str = "      dynamics: ";
     for (int k=0; k<x->bubi->getDynamicsVariance().size(); k++) {
         std::ostringstream ss;
@@ -573,12 +573,12 @@ void gvf_particles(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     x->bubi->setNumberOfParticles(numberParticles);
 }
 
-// "alignment" msg
-// ---------------------------------------------------------------------------
-void gvf_alignment(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
-{
-    x->bubi->setAlignmentVariance(sqrt(atom_getfloat(argv)));
-}
+//// "alignment" msg
+//// ---------------------------------------------------------------------------
+//void gvf_alignment(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
+//{
+//    x->bubi->setAlignmentVariance(sqrt(atom_getfloat(argv)));
+//}
 
 // "dynamics" msg
 // ---------------------------------------------------------------------------

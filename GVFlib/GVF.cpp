@@ -1104,15 +1104,15 @@ float GVF::getTolerance(){
 //}
 
 
-// VARIANCE COEFFICIENTS: PHASE
-//--------------------------------------------------------------
-void GVF::setAlignmentVariance(float alignmentVariance){
-    parameters.alignmentVariance = sqrt(alignmentVariance);
-}
-//--------------------------------------------------------------
-float GVF::getAlignmentVariance(){
-    return parameters.alignmentVariance;
-}
+//// VARIANCE COEFFICIENTS: PHASE
+////--------------------------------------------------------------
+//void GVF::setAlignmentVariance(float alignmentVariance){
+//    parameters.alignmentVariance = sqrt(alignmentVariance);
+//}
+////--------------------------------------------------------------
+//float GVF::getAlignmentVariance(){
+//    return parameters.alignmentVariance;
+//}
 
 
 // VARIANCE COEFFICIENTS: DYNAMICS

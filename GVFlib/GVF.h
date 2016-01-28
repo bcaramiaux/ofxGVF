@@ -178,9 +178,20 @@ public:
      * @details delete templates
      */
     void clear();
-    
+
+    /**
+     * Translate data according to the first point
+     * @details substract each gesture feature by the first point of the gesture
+     * @param boolean to activate or deactivate translation
+     */
     void translate(bool translateFlag);
-    
+
+    /**
+     * Segment gestures within a continuous gesture stream
+     * @details if segmentation is true, the method will segment a continuous gesture into a sequence
+     * of gestures. In other words no need to call the method startGesture(), it is done automatically
+     * @param boolean to activate or deactivate segmentation
+     */
     void segmentation(bool segmentationFlag);
     
     
@@ -262,11 +273,23 @@ public:
      */
     int getResamplingThreshold();
     
-#pragma mark > Alignment
-    void setAlignmentVariance(float alignmentVariance);
-    float getAlignmentVariance();
+//#pragma mark > Alignment
+//    /**
+//     * Change variance of alignment adaptation
+//     * @details if alignment variance is high the method will adapt faster to high 
+//     * variations
+//     */
+//    void setAlignmentVariance(float alignmentVariance);
+//
+//    /**
+//     *
+//     */
+//    float getAlignmentVariance();
     
 #pragma mark > Dynamics
+    /**
+     *
+     */
     void setDynamicsVariance(float dynVariance);
     void setDynamicsVariance(float dynVariance, int dim);
     void setDynamicsVariance(vector<float> dynVariance);
