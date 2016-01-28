@@ -49,7 +49,6 @@ void GVF::setup(){
     defaultConfig.inputDimensions   = 2;
     defaultConfig.translate         = true;
     defaultConfig.segmentation      = false;
-    defaultConfig.normalization     = false;
     
     setup(defaultConfig);
 }
@@ -309,18 +308,18 @@ void GVF::train(){
         }
         
         // NORMALIZATION
-        if (config.normalization) {     // update the global normaliation factor
-            globalNormalizationFactor = -1.0;
-            // loop on previous gestures already learned
-            // take the max of all the gesture learned ...
-            for (int k=0; k<getNumberOfGestureTemplates() ; k++){
-                for(int j = 0; j < config.inputDimensions; j++){
-                    float rangetmp = fabs(getGestureTemplate(k).getMaxRange()[j]-getGestureTemplate(k).getMinRange()[j]);
-                    if (rangetmp > globalNormalizationFactor)
-                        globalNormalizationFactor=rangetmp;
-                }
-            }
-        }
+//        if (config.normalization) {     // update the global normaliation factor
+//            globalNormalizationFactor = -1.0;
+//            // loop on previous gestures already learned
+//            // take the max of all the gesture learned ...
+//            for (int k=0; k<getNumberOfGestureTemplates() ; k++){
+//                for(int j = 0; j < config.inputDimensions; j++){
+//                    float rangetmp = fabs(getGestureTemplate(k).getMaxRange()[j]-getGestureTemplate(k).getMinRange()[j]);
+//                    if (rangetmp > globalNormalizationFactor)
+//                        globalNormalizationFactor=rangetmp;
+//                }
+//            }
+//        }
 //        // only for logs
 //        if (config.logOn) {
 //            vecRef = vector<vector<float> > (parameters.numberParticles);
@@ -625,7 +624,7 @@ void GVF::updateLikelihood(vector<float> obs, int n)
     setVec(vobs, obs);
     
     if (config.translate) for (int j=0; j < config.inputDimensions; j++) vobs[j] = vobs[j] - offsets[n][j];
-    if (config.normalization) for (int kk=0; kk<vobs.size(); kk++) vobs[kk] = vobs[kk] / globalNormalizationFactor;
+//    if (config.normalization) for (int kk=0; kk<vobs.size(); kk++) vobs[kk] = vobs[kk] / globalNormalizationFactor;
     
     if(alignment[n] < 0.0)
     {
@@ -656,7 +655,7 @@ void GVF::updateLikelihood(vector<float> obs, int n)
     // Apply scaling coefficients
     for (int k=0;k < config.inputDimensions; k++)
     {
-        if (config.normalization) vref[k] = vref[k] / globalNormalizationFactor;
+//        if (config.normalization) vref[k] = vref[k] / globalNormalizationFactor;
         vref[k] *= scalings[n][k];
     }
     

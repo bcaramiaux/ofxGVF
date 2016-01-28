@@ -32,10 +32,20 @@ class GVF
     
 public:
     
-    enum GVFState{
+    /** 
+     * GVF possible states
+     * @details 
+     * STATE_CLEAR: clear the GVF and be in standby
+     * STATE_LEARNING: recording mode, input gestures are added to the templates
+     * STATE_FOLLOWING: tracking mode, input gestures are classifed and their variations tracked (need the GVF to be trained)
+     * STATE_BYPASS: by pass GVF but does not erase templates or training
+     */
+    enum GVFState
+    {
         STATE_CLEAR = 0,
         STATE_LEARNING,
-        STATE_FOLLOWING
+        STATE_FOLLOWING,
+        STATE_BYPASS
     };
     
     
@@ -49,7 +59,7 @@ public:
     
     /**
      * GVF default constructor
-     * @param configuration structure (nb. dimensions etc), use default parameters
+     * @param config configuration structure of type GVFConfig used to set number of dimensions etc. Here the parameters used are the default ones
      */
     GVF(GVFConfig _config);
     
@@ -153,7 +163,7 @@ public:
      * one of the recorded gesture template and track the variations of this gesture
      * according to each template
      *
-     * @param vector of the observation data at current time
+     * @param observation vector of the observation data at current time
      * @return the estimated probabilities and variaitons relative to each template
      */
     GVFOutcomes & update(vector<float> & observation);
@@ -298,17 +308,16 @@ public:
      * from one sample to another, the variance should allow a change of 0.1 in speed. So the variance 
      * should be set to 0.1*0.1 = 0.01
      *
-     * @param dynamics variance value
-     * @param dimension of the dynamics for which the change of variance is applied
+     * @param dynVariance dynamics variance value
+     * @param dim optional dimension of the dynamics for which the change of variance is applied (default value is 1)
      */
     void setDynamicsVariance(float dynVariance, int dim = -1);
     
     /**
      * Change variance of adaptation in dynamics
-     * @details See setDynamicsVariance(float dynVariance, int dim = -1) for more details
-     * @param vector of dynamics variances, each vector index is the variance to be applied to 
+     * @details See setDynamicsVariance(float dynVariance, int dim) for more details
+     * @param dynVariance vector of dynamics variances, each vector index is the variance to be applied to
      * each dynamics dimension (consequently the vector should be 2-dimensional).
-     * @param vector of variances (should be 2-dimensional)
      */
     void setDynamicsVariance(vector<float> dynVariance);
     
@@ -338,7 +347,7 @@ public:
     
     /**
      * Change variance of adaptation in dynamics
-     * @details See setScalingsVariance(float scaleVariance, int dim = -1) for more details
+     * @details See setScalingsVariance(float scaleVariance, int dim) for more details
      * @param vector of scalings variances, each vector index is the variance to be applied to
      * each scaling dimension.
      * @param vector of variances (should be the size of the template gestures dimension)
@@ -365,8 +374,8 @@ public:
      * to another, the variance should allow a change of 0.1 in rotation angle. So the variance
      * should be set to 0.1*0.1 = 0.01
      *
-     * @param rotation variance value
-     * @param dimension of the rotation for which the change of variance is applied
+     * @param rotationsVariance rotation variance value
+     * @param dim optional dimension of the rotation for which the change of variance is applied
      */
     void setRotationsVariance(float rotationsVariance, int dim = -1);
     
@@ -400,9 +409,9 @@ public:
      * @details this interval can be used to concentrate the potential dynamics value on a narrow interval,
      * typically around 1 (the default value), for instance between -0.05 and 0.05, or to allow at the very 
      * beginning, high changes in dynamics by spreading, for instance between 0.0 and 2.0
-     * @param lower value of the inital values for dynamics
-     * @param higher value of the inital values for dynamics
-     * @param the dimension on which the change of initial interval should be applied (optional)
+     * @param min lower value of the inital values for dynamics
+     * @param max higher value of the inital values for dynamics
+     * @param dim the dimension on which the change of initial interval should be applied (optional)
      */
     void setSpreadDynamics(float min, float max, int dim = -1);
 
@@ -411,9 +420,9 @@ public:
      * @details this interval can be used to concentrate the potential scalings value on a narrow interval,
      * typically around 1.0 (the default value), for instance between 0.95 and 1.05, or to allow at the very 
      * beginning high changes in dynamics by spreading, for instance, between 0.0 and 2.0
-     * @param lower value of the inital values for scalings
-     * @param higher value of the inital values for scalings
-     * @param the dimension on which the change of initial interval should be applied (optional)
+     * @param min lower value of the inital values for scalings
+     * @param max higher value of the inital values for scalings
+     * @param dim the dimension on which the change of initial interval should be applied (optional)
      */
     void setSpreadScalings(float min, float max, int dim = -1);
     
@@ -422,36 +431,43 @@ public:
      * @details this interval can be used to concentrate the potential angle values on a narrow interval,
      * typically around 0.0 (the default value), for instance between -0.05 and 0.05, or to allow at the very
      * beginning, high changes in orientation by spreading, for instance, between -0.5 and 0.5
-     * @param lower value of the inital values for angle of rotation
-     * @param higher value of the inital values for angle of rotation
-     * @param the dimension on which the change of initial interval should be applied (optional)
+     * @param min lower value of the inital values for angle of rotation
+     * @param max higher value of the inital values for angle of rotation
+     * @param dim the dimension on which the change of initial interval should be applied (optional)
      */
     void setSpreadRotations(float min, float max, int dim = -1);
     
 #pragma mark - Import/Export templates
-    
+    /**
+     * Export template data in a filename
+     * @param filename file name as a string
+     */
     void saveTemplates(string filename);
+
+    /**
+     * Import template data in a filename
+     * @details needs to respect a given format provided by saveTemplates()
+     * @param file name as a string
+     */
     void loadTemplates(string filename);
-    
     
 #pragma mark - openFrameworks convetion: setup functions
     
-    void setup(); // use default config and parameters
-    void setup(GVFConfig _config); // default parameters
+    /**
+     * Similar to constructor GVF() - for openFrameworks
+     */
+    void setup();
+
+    /**
+     * Similar to constructor GVF(GVFConfig _config) - for openFrameworks
+     */
+    void setup(GVFConfig _config);
+
+    /**
+     * Similar to constructor GVF(GVFConfig _config, GVFParameters _parameters) - for openFrameworks
+     */
     void setup(GVFConfig _config, GVFParameters _parameters);
-    
-//#pragma mark - Deprecated functions, to be removed in the next version
-//    
-//    /**
-//     * Perform inference, replaced by update()
-//     */
-//    void infer(vector<float> obs);
-//    GVFOutcomes getOutcomes();
-//
-//
-//    
-//#pragma mark DEPRECATED
-    
+
 private:
     
     // private variables

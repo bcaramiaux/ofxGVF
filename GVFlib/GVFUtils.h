@@ -17,23 +17,25 @@
 
 using namespace std;
 
-// Configuration of the GVF
-typedef struct{
-    int     inputDimensions;
-    bool    translate;
-    bool    normalization;
-    bool    segmentation;
-    bool    logOn;
+/**
+ * Configuration structure
+ */
+typedef struct
+{
+    int     inputDimensions;    /**< input dimesnion */
+    bool    translate;          /**< translate flag */
+    bool    segmentation;       /**< segmentation flag */
 } GVFConfig;
 
-// Parameters of the algorithm
-typedef struct{
-    
-    float           tolerance;
+/**
+ * Parameters structure
+ */
+typedef struct
+{
+    float           tolerance;              /**< input dimesnion */
     float           distribution;
     int             numberParticles;
     int             resamplingThreshold;
-    // variances for variation estimations
     float           alignmentVariance;
     float           speedVariance;
     vector<float>   scaleVariance;
