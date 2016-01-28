@@ -593,23 +593,6 @@ void GVF::restart()
     initPrior();
 }
 
-//--------------------------------------------------------------
-void GVF::setSpreadDynamics(float center, float range){
-    parameters.dynamicsSpreadingCenter = center;
-    parameters.dynamicsSpreadingRange = range;
-}
-
-//--------------------------------------------------------------
-void GVF::setSpreadScalings(float center, float range){
-    parameters.scalingsSpreadingCenter = center;
-    parameters.scalingsSpreadingRange = range;
-}
-void GVF::setSpreadRotations(float center, float range){
-    parameters.rotationsSpreadingCenter = center;
-    parameters.rotationsSpreadingRange = range;
-}
-
-
 #pragma mark - PARTICLE FILTERING
 
 //--------------------------------------------------------------
@@ -1117,76 +1100,119 @@ float GVF::getTolerance(){
 
 // VARIANCE COEFFICIENTS: DYNAMICS
 //--------------------------------------------------------------
-void GVF::setDynamicsVariance(float dynVariance){
-    for (int k=0; k< parameters.dynamicsVariance.size(); k++)
-        parameters.dynamicsVariance[k] = dynVariance;
-}
+//void GVF::setDynamicsVariance(float dynVariance)
+//{
+//    for (int k=0; k< parameters.dynamicsVariance.size(); k++)
+//        parameters.dynamicsVariance[k] = dynVariance;
+//}
 //--------------------------------------------------------------
-void GVF::setDynamicsVariance(float dynVariance, int dim){
-    // here dim should start at 1!!!
-    if (dim<parameters.dynamicsVariance.size())
-        parameters.dynamicsVariance[dim-1] = dynVariance;
+void GVF::setDynamicsVariance(float dynVariance, int dim)
+{
+    if (dim == -1)
+    {
+        for (int k=0; k< parameters.dynamicsVariance.size(); k++)
+            parameters.dynamicsVariance[k] = dynVariance;
+    }
+    else
+    {
+        if (dim<parameters.dynamicsVariance.size())
+            parameters.dynamicsVariance[dim-1] = dynVariance;
+    }
 }
+
 //--------------------------------------------------------------
-void GVF::setDynamicsVariance(vector<float> dynVariance){
+void GVF::setDynamicsVariance(vector<float> dynVariance)
+{
     parameters.dynamicsVariance = dynVariance;
 }
 //--------------------------------------------------------------
-vector<float> GVF::getDynamicsVariance(){
+vector<float> GVF::getDynamicsVariance()
+{
     return parameters.dynamicsVariance;
 }
 
-
-// VARIANCE COEFFICIENTS: SCALINGS
 //--------------------------------------------------------------
-void GVF::setScalingsVariance(float scaleVariance)
+void GVF::setScalingsVariance(float scaleVariance, int dim)
 {
-    for (int k=0; k< parameters.scalingsVariance.size(); k++)
-        parameters.scalingsVariance[k] = scaleVariance;
+    if (dim == -1)
+    {
+        for (int k=0; k< parameters.scalingsVariance.size(); k++)
+            parameters.scalingsVariance[k] = scaleVariance;
+    }
+    else
+    {
+        if (dim<parameters.scalingsVariance.size())
+            parameters.scalingsVariance[dim-1] = scaleVariance;
+    }
 }
-void GVF::setScalingsVariance(float scaleVariance, int dim){
-    // here dim should start at 1!!!
-    if (dim<parameters.scalingsVariance.size())
-        parameters.scalingsVariance[dim-1] = scaleVariance;
-}
+
 //--------------------------------------------------------------
-void GVF::setScalingsVariance(vector<float> scaleVariance){
+void GVF::setScalingsVariance(vector<float> scaleVariance)
+{
     parameters.scaleVariance = scaleVariance;
 }
+
 //--------------------------------------------------------------
-vector<float> GVF::getScalingsVariance(){
+vector<float> GVF::getScalingsVariance()
+{
     return parameters.scalingsVariance;
 }
 
-// VARIANCE COEFFICIENTS: ROTATIONS
 //--------------------------------------------------------------
-void GVF::setRotationsVariance(float rotationVariance)
-{
-    for (int k=0; k< parameters.rotationsVariance.size(); k++)
-        parameters.rotationsVariance[k] = rotationVariance;
-}
 void GVF::setRotationsVariance(float rotationVariance, int dim)
 {
-    if (dim<parameters.rotationsVariance.size())
-        parameters.scalingsVariance[dim-1] = rotationVariance;
+    if (dim == -1)
+    {
+        for (int k=0; k< parameters.rotationsVariance.size(); k++)
+            parameters.rotationsVariance[k] = rotationVariance;
+    }
+    else
+    {
+        if (dim<parameters.rotationsVariance.size())
+            parameters.scalingsVariance[dim-1] = rotationVariance;
+    }
 }
+
 //--------------------------------------------------------------
 void GVF::setRotationsVariance(vector<float> rotationVariance)
 {
     parameters.scaleVariance = rotationVariance;
 }
+
 //--------------------------------------------------------------
 vector<float> GVF::getRotationsVariance()
 {
     return parameters.rotationsVariance;
 }
 
+//--------------------------------------------------------------
+void GVF::setSpreadDynamics(float center, float range, int dim)
+{
+    parameters.dynamicsSpreadingCenter = center;
+    parameters.dynamicsSpreadingRange = range;
+}
 
+//--------------------------------------------------------------
+void GVF::setSpreadScalings(float center, float range, int dim)
+{
+    parameters.scalingsSpreadingCenter = center;
+    parameters.scalingsSpreadingRange = range;
+}
+
+//--------------------------------------------------------------
+void GVF::setSpreadRotations(float center, float range, int dim)
+{
+    parameters.rotationsSpreadingCenter = center;
+    parameters.rotationsSpreadingRange = range;
+}
+
+//--------------------------------------------------------------
 void GVF::translate(bool translateFlag)
 {
     config.translate = translateFlag;
 }
 
+//--------------------------------------------------------------
 void GVF::segmentation(bool segmentationFlag)
 {
     config.segmentation = segmentationFlag;

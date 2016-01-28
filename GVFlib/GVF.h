@@ -288,23 +288,102 @@ public:
     
 #pragma mark > Dynamics
     /**
+     * Change variance of adaptation in dynamics
+     * @details if dynamics adaptation variance is high the method will adapt faster to 
+     * fast changes in dynamics. Dynamics is 2-dimensional: the first dimension is the speed
+     * The second dimension is the acceleration.
      *
+     * Typically the variance is the average amount the speed or acceleration can change from
+     * one sample to another. As an example, if the relative estimated speed can change from 1.1 to 1.2 
+     * from one sample to another, the variance should allow a change of 0.1 in speed. So the variance 
+     * should be set to 0.1*0.1 = 0.01
+     *
+     * @param dynamics variance value
+     * @param dimension of the dynamics for which the change of variance is applied
      */
-    void setDynamicsVariance(float dynVariance);
-    void setDynamicsVariance(float dynVariance, int dim);
+    void setDynamicsVariance(float dynVariance, int dim = -1);
+    
+    /**
+     * Change variance of adaptation in dynamics
+     * @details See setDynamicsVariance(float dynVariance, int dim = -1) for more details
+     * @param vector of dynamics variances, each vector index is the variance to be applied to 
+     * each dynamics dimension (consequently the vector should be 2-dimensional).
+     * @param vector of variances (should be 2-dimensional)
+     */
     void setDynamicsVariance(vector<float> dynVariance);
+    
+    /**
+     * Get dynamics variances
+     * @return the vector of variances (the returned vector is 2-dimensional)
+     */
     vector<float> getDynamicsVariance();
     
 #pragma mark > Scalings
-    void setScalingsVariance(float scaleVariance);
-    void setScalingsVariance(float scaleVariance, int dim);
+    /**
+     * Change variance of adaptation in scalings
+     * @details if scalings adaptation variance is high the method will adapt faster to
+     * fast changes in relative sizes. There is one scaling variance for each dimension
+     * of the input gesture. If the gesture is 2-dimensional, the scalings variances will 
+     * also be 2-dimensional.
+     *
+     * Typically the variance is the average amount the size can change from
+     * one sample to another. As an example, if the relative estimated size changes from 1.1 to 1.15
+     * from one sample to another, the variance should allow a change of 0.05 in size. So the variance
+     * should be set to 0.05*0.05 = 0.0025
+     *
+     * @param scalings variance value
+     * @param dimension of the scalings for which the change of variance is applied
+     */
+    void setScalingsVariance(float scaleVariance, int dim = -1);
+    
+    /**
+     * Change variance of adaptation in dynamics
+     * @details See setScalingsVariance(float scaleVariance, int dim = -1) for more details
+     * @param vector of scalings variances, each vector index is the variance to be applied to
+     * each scaling dimension.
+     * @param vector of variances (should be the size of the template gestures dimension)
+     */
     void setScalingsVariance(vector<float> scaleVariance);
+    
+    /**
+     * Get scalings variances
+     * @return the vector of variances
+     */
     vector<float> getScalingsVariance();
 
 #pragma mark > Rotations
-    void setRotationsVariance(float rotationsVariance);
-    void setRotationsVariance(float rotationsVariance, int dim);
+    /**
+     * Change variance of adaptation in orientation
+     * @details if rotation adaptation variance is high the method will adapt faster to
+     * fast changes in relative orientation. If the gesture is 2-dimensional, there is 
+     * one variance value since the rotation can be defined by only one angle of rotation. If
+     * the gesture is 3-dimensional, there are 3 variance values since the rotation in 3-d is
+     * defined by 3 rotation angles. For any other dimension, the rotation is not defined.
+     *
+     * The variance is the average amount the orientation can change from one sample to another. 
+     * As an example, if the relative orientation in rad changes from 0.1 to 0.2 from one observation
+     * to another, the variance should allow a change of 0.1 in rotation angle. So the variance
+     * should be set to 0.1*0.1 = 0.01
+     *
+     * @param rotation variance value
+     * @param dimension of the rotation for which the change of variance is applied
+     */
+    void setRotationsVariance(float rotationsVariance, int dim = -1);
+    
+    /**
+     * Change variance of adaptation in orientation
+     * @details See setRotationsVariance(float rotationsVariance, int dim) for more details
+     * @param vector of rotation variances, each vector index is the variance to be applied to
+     * each rotation angle (1 or 3)
+     * @param vector of variances (should be 1 if the the template gestures are 2-dim or 3 if 
+     * they are 3-dim)
+     */
     void setRotationsVariance(vector<float> rotationsVariance);
+    
+    /**
+     * Get rotation variances
+     * @return the vector of variances
+     */
     vector<float> getRotationsVariance();
     
     
@@ -317,25 +396,37 @@ public:
     const vector<vector<float> > & getParticlesPositions();
 
     /**
-     *
+     * Set the interval on which the dynamics values should be spread at the beginning (before adaptation)
+     * @details this interval can be used to concentrate the potential dynamics value on a narrow interval,
+     * typically around 1 (the default value), for instance between -0.05 and 0.05, or to allow at the very 
+     * beginning, high changes in dynamics by spreading, for instance between 0.0 and 2.0
+     * @param lower value of the inital values for dynamics
+     * @param higher value of the inital values for dynamics
+     * @param the dimension on which the change of initial interval should be applied (optional)
      */
-    void setSpreadDynamics(float min, float max);
+    void setSpreadDynamics(float min, float max, int dim = -1);
 
     /**
-     *
+     * Set the interval on which the scalings values should be spread at the beginning (before adaptation)
+     * @details this interval can be used to concentrate the potential scalings value on a narrow interval,
+     * typically around 1.0 (the default value), for instance between 0.95 and 1.05, or to allow at the very 
+     * beginning high changes in dynamics by spreading, for instance, between 0.0 and 2.0
+     * @param lower value of the inital values for scalings
+     * @param higher value of the inital values for scalings
+     * @param the dimension on which the change of initial interval should be applied (optional)
      */
-    void setSpreadScalings(float min, float max);
+    void setSpreadScalings(float min, float max, int dim = -1);
     
     /**
-     *
+     * Set the interval on which the angle of rotation values should be spread at the beginning (before adaptation)
+     * @details this interval can be used to concentrate the potential angle values on a narrow interval,
+     * typically around 0.0 (the default value), for instance between -0.05 and 0.05, or to allow at the very
+     * beginning, high changes in orientation by spreading, for instance, between -0.5 and 0.5
+     * @param lower value of the inital values for angle of rotation
+     * @param higher value of the inital values for angle of rotation
+     * @param the dimension on which the change of initial interval should be applied (optional)
      */
-    void setSpreadRotations(float min, float max);
-    
-//    vector<float> getEstimatedProbabilities();
-//    vector<float> getEstimatedLikelihoods();
-//    vector<float> getWeights();
-//    vector<float> getPrior();
-    
+    void setSpreadRotations(float min, float max, int dim = -1);
     
 #pragma mark - Import/Export templates
     
