@@ -1,58 +1,38 @@
 //
-//  ofxGVFTypes.h
+//  GVFTypesAndUtils.h
 //
-//  Created by gameover on 12/11/13.
 //
 //
 
-#ifndef __H_OFXGVFTYPES
-#define __H_OFXGVFTYPES
+#ifndef __H_GVFTYPES
+#define __H_GVFTYPES
 
 #include <map>
 #include <vector>
 #include <iostream>
-#include <random> //tr1/random
+#include <random>
 #include <iostream>
 #include <math.h>
 #include <assert.h>
 
-#define OPENFRAMEWORKS 1
-#define BOOSTLIB 0
-#define OPTIMISD 0
-#define VDSPOPTM 0
-#define GESTLEARNT 8
-
-#if BOOSTLIB
-#include <boost/random.hpp>
-#endif
-
 using namespace std;
 
-//enum ofxGVFGestureType{
-//    GEOMETRIC,
-//    TEMPORAL
-//};
-
-
-// ofxGVFConfig
-//  configuration of the GVF
+// Configuration of the GVF
 typedef struct{
     int     inputDimensions;
     bool    translate;
     bool    normalization;
     bool    segmentation;
     bool    logOn;
-} ofxGVFConfig;
+} GVFConfig;
 
-// ofxGVFParameters
-//  comprises parameters of the algorithm
+// Parameters of the algorithm
 typedef struct{
     
     float           tolerance;
     float           distribution;
     int             numberParticles;
     int             resamplingThreshold;
-    
     // variances for variation estimations
     float           alignmentVariance;
     float           speedVariance;
@@ -60,7 +40,6 @@ typedef struct{
     vector<float>   dynamicsVariance;
     vector<float>   scalingsVariance;
     vector<float>   rotationsVariance;
-    
     // spreadings
     float           alignmentSpreadingCenter;
     float           alignmentSpreadingRange;
@@ -70,68 +49,22 @@ typedef struct{
     float           scalingsSpreadingRange;
     float           rotationsSpreadingCenter;
     float           rotationsSpreadingRange;
-
-    int             predictionLoops;
+    
+    int             predictionSteps;
     vector<float>   dimWeights;
-} ofxGVFParameters;
+} GVFParameters;
 
+// Outcomes structure
+typedef struct
+{
+    int likeliestGesture;
+    vector<float> likelihoods;
+    vector<float> alignments;
+    vector<vector<float> > dynamics;
+    vector<vector<float> > scalings;
+    vector<vector<float> > rotations;
+} GVFOutcomes;
 
-
-// ofxGVFEstimation
-typedef struct {
-    float probability;
-    float alignment;
-    vector<float> dynamics;
-    vector<float> scalings;
-    vector<float> rotations;
-    float likelihood;
-} ofxGVFEstimation;
-
-// ofxGVFVariations
-typedef struct{
-    int most_probable;
-    vector<ofxGVFEstimation> estimations;
-} ofxGVFOutcomes;
-
-
-/*
-#if OPENFRAMEWORKS
-
-#include "ofMain.h"
-
-static vector<ofColor> kColors;
-
-ofColor ofxGVFGenerateRandomColor(){
-    
-    if(kColors.size() == 0){
-        kColors.push_back(ofColor::white);
-        kColors.push_back(ofColor::gray);
-        kColors.push_back(ofColor::blue);
-        kColors.push_back(ofColor::cyan);
-        kColors.push_back(ofColor::olive);
-        kColors.push_back(ofColor::gold);
-        kColors.push_back(ofColor::magenta);
-        kColors.push_back(ofColor::violet);
-    }
-    
-    int index = ofRandom(0, kColors.size() - 1);
-    
-    ofColor c = kColors[index];
-    kColors.erase(kColors.begin() + index);
-    
-    return c;
-}
-#endif
-*/
-
-// TODO: SEE BELOW FOR ofxGVFMatrix type/class...might also require ofxGVFVector...maybe over kill?
-// Anyway, skeleton is below for comparison with global, c style operations as per below...
-
-////////////////////////////////////////////////////////////////
-//
-// MATRICES & VECTORS
-//
-////////////////////////////////////////////////////////////////
 
 //--------------------------------------------------------------
 // init matrix by allocating memory
@@ -310,5 +243,65 @@ inline float getMeanVec(vector<T>& V){
     return tSum / (float)V.size();
 }
 
+template <typename T>
+inline vector<vector<float> > getRotationMatrix3d(T phi, T theta, T psi)
+{
+    vector< vector<float> > M;
+    initMat(M,3,3);
+    
+    M[0][0] = cos(theta)*cos(psi);
+    M[0][1] = -cos(phi)*sin(psi)+sin(phi)*sin(theta)*cos(psi);
+    M[0][2] = sin(phi)*sin(psi)+cos(phi)*sin(theta)*cos(psi);
+    
+    M[1][0] = cos(theta)*sin(psi);
+    M[1][1] = cos(phi)*cos(psi)+sin(phi)*sin(theta)*sin(psi);
+    M[1][2] = -sin(phi)*cos(psi)+cos(phi)*sin(theta)*sin(psi);
+    
+    M[2][0] = -sin(theta);
+    M[2][1] = sin(phi)*cos(theta);
+    M[2][2] = cos(phi)*cos(theta);
+    
+    return M;
+}
+
+template <typename T>
+float distance_weightedEuclidean(vector<T> x, vector<T> y, vector<T> w)
+{
+    int count = x.size();
+    if (count <= 0) return 0;
+    float dist = 0.0;
+    for(int k = 0; k < count; k++) dist += w[k] * pow((x[k] - y[k]), 2);
+    return dist;
+}
+
+////--------------------------------------------------------------
+//vector<vector<float> > getRotationMatrix3d(float phi, float theta, float psi)
+//{
+//    vector< vector<float> > M;
+//    initMat(M,3,3);
+//    
+//    M[0][0] = cos(theta)*cos(psi);
+//    M[0][1] = -cos(phi)*sin(psi)+sin(phi)*sin(theta)*cos(psi);
+//    M[0][2] = sin(phi)*sin(psi)+cos(phi)*sin(theta)*cos(psi);
+//    
+//    M[1][0] = cos(theta)*sin(psi);
+//    M[1][1] = cos(phi)*cos(psi)+sin(phi)*sin(theta)*sin(psi);
+//    M[1][2] = -sin(phi)*cos(psi)+cos(phi)*sin(theta)*sin(psi);
+//    
+//    M[2][0] = -sin(theta);
+//    M[2][1] = sin(phi)*cos(theta);
+//    M[2][2] = cos(phi)*cos(theta);
+//    
+//    return M;
+//}
+
+//float distance_weightedEuclidean(vector<float> x, vector<float> y, vector<float> w)
+//{
+//    int count = x.size();
+//    if (count <= 0) return 0;
+//    float dist = 0.0;
+//    for(int k = 0; k < count; k++) dist += w[k] * pow((x[k] - y[k]), 2);
+//    return dist;
+//}
 
 #endif

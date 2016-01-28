@@ -9,7 +9,7 @@
 #ifndef _H_OFXGVF_GESTURE
 #define _H_OFXGVF_GESTURE
 
-#include "ofxGVFTypes.h"
+#include "GVFTypes.h"
 #include <assert.h>
 #include <iostream>
 #include <fstream>

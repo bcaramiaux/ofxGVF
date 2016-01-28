@@ -8,9 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		213BA7D21B26FD1500EB781D /* gvf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 213BA7D11B26FD1500EB781D /* gvf.cpp */; };
-		213BA7DA1B26FE1D00EB781D /* ofxGVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 213BA7D61B26FE1D00EB781D /* ofxGVF.cpp */; };
-		541A52161AA71DA7000679B3 /* MaxAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 541A52151AA71DA7000679B3 /* MaxAPI.framework */; };
-		541A52181AA71DAE000679B3 /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 541A52171AA71DAE000679B3 /* MaxAudioAPI.framework */; };
+		21B7405C1C528A5D00A58ABC /* MaxAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21B7405B1C528A5D00A58ABC /* MaxAPI.framework */; };
+		21B740611C528A9700A58ABC /* GVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21B7405D1C528A9700A58ABC /* GVF.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -27,13 +26,12 @@
 
 /* Begin PBXFileReference section */
 		213BA7D11B26FD1500EB781D /* gvf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gvf.cpp; sourceTree = "<group>"; };
-		213BA7D61B26FE1D00EB781D /* ofxGVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = ofxGVF.cpp; path = ../../src/ofxGVF.cpp; sourceTree = "<group>"; };
-		213BA7D71B26FE1D00EB781D /* ofxGVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxGVF.h; path = ../../src/ofxGVF.h; sourceTree = "<group>"; };
-		213BA7D81B26FE1D00EB781D /* ofxGVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxGVFGesture.h; path = ../../src/ofxGVFGesture.h; sourceTree = "<group>"; };
-		213BA7D91B26FE1D00EB781D /* ofxGVFTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ofxGVFTypes.h; path = ../../src/ofxGVFTypes.h; sourceTree = "<group>"; };
+		21B7405B1C528A5D00A58ABC /* MaxAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAPI.framework; path = "../max-sdk/source/c74support/max-includes/MaxAPI.framework"; sourceTree = "<group>"; };
+		21B7405D1C528A9700A58ABC /* GVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GVF.cpp; path = ../../GVFlib/GVF.cpp; sourceTree = "<group>"; };
+		21B7405E1C528A9700A58ABC /* GVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GVF.h; path = ../../GVFlib/GVF.h; sourceTree = "<group>"; };
+		21B740601C528A9700A58ABC /* GVFUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GVFUtils.h; path = ../../GVFlib/GVFUtils.h; sourceTree = "<group>"; };
+		21B740621C528C3E00A58ABC /* GVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GVFGesture.h; path = ../../GVFlib/GVFGesture.h; sourceTree = "<group>"; };
 		369473BE0FD5C3DC00A5E9FD /* gvf.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = gvf.mxo; sourceTree = BUILT_PRODUCTS_DIR; };
-		541A52151AA71DA7000679B3 /* MaxAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAPI.framework; path = "../max6-sdk/c74support/max-includes/MaxAPI.framework"; sourceTree = "<group>"; };
-		541A52171AA71DAE000679B3 /* MaxAudioAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAudioAPI.framework; path = "../max6-sdk/c74support/msp-includes/MaxAudioAPI.framework"; sourceTree = "<group>"; };
 		5438F9411A3B0C2500BB07DB /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		54E76FFB1A39A7E40098B458 /* maxmspsdk.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = maxmspsdk.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -43,8 +41,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				541A52181AA71DAE000679B3 /* MaxAudioAPI.framework in Frameworks */,
-				541A52161AA71DA7000679B3 /* MaxAPI.framework in Frameworks */,
+				21B7405C1C528A5D00A58ABC /* MaxAPI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -54,8 +51,7 @@
 		089C166AFE841209C02AAC07 /* iterator */ = {
 			isa = PBXGroup;
 			children = (
-				541A52171AA71DAE000679B3 /* MaxAudioAPI.framework */,
-				541A52151AA71DA7000679B3 /* MaxAPI.framework */,
+				21B7405B1C528A5D00A58ABC /* MaxAPI.framework */,
 				213BA7D51B26FE0F00EB781D /* GVFlib */,
 				E9BE16FD15AF100A001DA313 /* src */,
 				19C28FB4FE9D528D11CA2CBB /* Products */,
@@ -74,10 +70,10 @@
 		213BA7D51B26FE0F00EB781D /* GVFlib */ = {
 			isa = PBXGroup;
 			children = (
-				213BA7D61B26FE1D00EB781D /* ofxGVF.cpp */,
-				213BA7D71B26FE1D00EB781D /* ofxGVF.h */,
-				213BA7D81B26FE1D00EB781D /* ofxGVFGesture.h */,
-				213BA7D91B26FE1D00EB781D /* ofxGVFTypes.h */,
+				21B7405E1C528A9700A58ABC /* GVF.h */,
+				21B7405D1C528A9700A58ABC /* GVF.cpp */,
+				21B740601C528A9700A58ABC /* GVFUtils.h */,
+				21B740621C528C3E00A58ABC /* GVFGesture.h */,
 			);
 			name = GVFlib;
 			sourceTree = "<group>";
@@ -164,7 +160,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				213BA7D21B26FD1500EB781D /* gvf.cpp in Sources */,
-				213BA7DA1B26FE1D00EB781D /* ofxGVF.cpp in Sources */,
+				21B740611C528A9700A58ABC /* GVF.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,11 +200,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 54E76FFB1A39A7E40098B458 /* maxmspsdk.xcconfig */;
 			buildSettings = {
+				C74SUPPORT = "$(SRCROOT)/../max-sdk/source/c74support";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../max6-sdk/c74support/**";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../max-sdk/source/c74support/**";
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -217,8 +214,7 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					/Developer/Headers/FlatCarbon,
-					"$(SRCROOT)/../max6-sdk/c74support/**",
-					"$(SRCROOT)/../Mogees_lib/**",
+					"$(SRCROOT)/../max-sdk/source/c74support/**",
 				);
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
@@ -241,11 +237,12 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 54E76FFB1A39A7E40098B458 /* maxmspsdk.xcconfig */;
 			buildSettings = {
+				C74SUPPORT = "$(SRCROOT)/../max-sdk/source/c74support";
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_CXX_LIBRARY = "libc++";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
-				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../max6-sdk/c74support/**";
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../max-sdk/source/c74support/**";
 				GCC_ENABLE_CPP_EXCEPTIONS = YES;
 				GCC_ENABLE_CPP_RTTI = NO;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -253,8 +250,7 @@
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				HEADER_SEARCH_PATHS = (
 					/Developer/Headers/FlatCarbon,
-					"$(SRCROOT)/../max6-sdk/c74support/**",
-					"$(SRCROOT)/../Mogees_lib/**",
+					"$(SRCROOT)/../max-sdk/source/c74support/**",
 				);
 				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.7;
