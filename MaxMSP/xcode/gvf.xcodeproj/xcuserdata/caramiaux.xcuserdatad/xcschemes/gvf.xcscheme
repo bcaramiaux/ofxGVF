@@ -14,9 +14,15 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+<<<<<<< HEAD:MaxMSP/xcode/gvf.xcodeproj/xcuserdata/caramiaux.xcuserdatad/xcschemes/gvf.xcscheme
                BlueprintIdentifier = "369473B20FD5C3DC00A5E9FD"
                BuildableName = "gvf.mxo"
                BlueprintName = "gvf"
+=======
+               BlueprintIdentifier = "2FBBEAD608F335360078DB84"
+               BuildableName = "gvf.bundle"
+               BlueprintName = "max-external"
+>>>>>>> f72393e2ef796f41f0df14d9020afefd53bd3115:example-maxmsp/gvf.xcodeproj/xcuserdata/caramiaux.xcuserdatad/xcschemes/max-external.xcscheme
                ReferencedContainer = "container:gvf.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
