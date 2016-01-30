@@ -35,7 +35,7 @@ UNITTESTS =
 #
 #------------------------------------------------------------------------------#
 
-ALL_CFLAGS = -I"$(PD_INCLUDE)" -I"../src"
+ALL_CFLAGS = -I"$(PD_INCLUDE)" -I"../GVFlib"
 ALL_LDFLAGS =  
 SHARED_LDFLAGS =
 ALL_LIBS = 
@@ -104,17 +104,18 @@ ifeq ($(UNAME),Darwin)
     OPT_CFLAGS = -ftree-vectorize -fast
 # build universal 32-bit on 10.4 and 32/64 on newer
     ifeq ($(shell uname -r | sed 's|\([0-9][0-9]*\)\.[0-9][0-9]*\.[0-9][0-9]*|\1|'), 8)
-      FAT_FLAGS = -arch ppc -arch i386 -mmacosx-version-min=10.4
+      FAT_FLAGS = -arch ppc -arch i386 -mmacosx-version-min=10.7
     else
       SOURCES += $(SOURCES_iphoneos)
 # Starting with Xcode 4.0, the PowerPC compiler is not installed by default
       ifeq ($(wildcard /usr/llvm-gcc-4.2/libexec/gcc/powerpc*), )
-        FAT_FLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.5
+        FAT_FLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.7
       else
-        FAT_FLAGS = -arch ppc -arch i386 -arch x86_64 -mmacosx-version-min=10.4
+        FAT_FLAGS = -arch ppc -arch i386 -arch x86_64 -mmacosx-version-min=10.7
       endif
     endif
     ALL_CFLAGS += $(FAT_FLAGS) -fPIC -I/sw/include
+    SPEC_CPPFLAGS = -std=gnu++11 -stdlib=libc++
     # if the 'pd' binary exists, check the linking against it to aid with stripping
     BUNDLE_LOADER = $(shell test ! -e $(PD_PATH)/bin/pd || echo -bundle_loader $(PD_PATH)/bin/pd)
     ALL_LDFLAGS += $(FAT_FLAGS) -headerpad_max_install_names -bundle $(BUNDLE_LOADER) \
@@ -170,7 +171,9 @@ ifeq ($(UNAME),Linux)
   OS = linux
   PD_PATH = /usr
   OPT_CFLAGS = -O6 -funroll-loops -fomit-frame-pointer
-  ALL_CFLAGS += -fPIC
+  ALL_CFLAGS += -fPIC -I../GVFlib
+  SPEC_CFLAGS = -std=c99
+  SPEC_CPPFLAGS = -std=c++11
   ALL_LDFLAGS += -rdynamic -shared -fPIC -Wl,-rpath,"\$$ORIGIN",--enable-new-dtags
   SHARED_LDFLAGS += -Wl,-soname,$(SHARED_LIB) -shared
   ALL_LIBS += -lc $(LIBS_linux)
@@ -261,14 +264,14 @@ SHARED_TCL_LIB = $(wildcard lib$(LIBRARY_NAME).tcl)
 all: gvf.$(EXTENSION) $(SHARED_LIB)
 
 %.o: %.cpp
-	$(CC) $(ALL_CFLAGS) -o "$*.o" -c "$*.cpp"
+	$(CC) $(ALL_CFLAGS) $(SPEC_CPPFLAGS) -o "$*.o" -c "$*.cpp"
 
-../src/ofxGVF.o: ../src/ofxGVF.cpp
-	$(CC) $(ALL_CFLAGS) -o "../src/ofxGVF.o" -c "../src/ofxGVF.cpp"
+../GVFlib/GVF.o: ../GVFlib/GVF.cpp
+	$(CC) $(ALL_CFLAGS) $(SPEC_CPPFLAGS) -o "../GVFlib/GVF.o" -c "../GVFlib/GVF.cpp"
 
-%.$(EXTENSION): %.o ../src/ofxGVF.o $(SHARED_LIB)
-	$(CC) $(ALL_LDFLAGS) -o "$*.$(EXTENSION)" "$*.o" "../src/ofxGVF.o" $(ALL_LIBS) $(SHARED_LIB)
-	rm ../src/ofxGVF.o
+%.$(EXTENSION): %.o ../GVFlib/GVF.o $(SHARED_LIB)
+	$(CC) $(ALL_LDFLAGS) -o "$*.$(EXTENSION)" "$*.o" "../GVFlib/GVF.o" $(ALL_LIBS) $(SHARED_LIB)
+	rm ../GVFlib/GVF.o
 	rm -f -- $(SOURCES:.cpp=.o) $(SOURCES_LIB:.cpp=.o) $(SHARED_SOURCE:.c=.o)
 	mkdir -p Build/$(UNAME)/
 	mv gvf.$(EXTENSION) Build/$(UNAME)/
@@ -342,7 +345,6 @@ install-unittests:
 		done
 
 clean:
-	-rm -f ../src/GestureVariationFollower.o
 	-rm -f -- $(SOURCES:.cpp=.o) $(SOURCES_LIB:.cpp=.o) $(SHARED_SOURCE:.c=.o)
 	-rm -f -- $(SOURCES:.cpp=.$(EXTENSION))
 	-rm -f -- $(LIBRARY_NAME).o

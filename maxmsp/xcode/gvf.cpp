@@ -10,25 +10,18 @@
 //
 ///////////////////////////////////////////////////////////////////////
 
-
-
-
-
-#include "ext.h"							// standard Max include, always required
-#include "ext_obex.h"						// required for new style Max object
+#include "ext.h"
+#include "ext_obex.h"
 #include "GVF.h"
 #include "GVFGesture.h"
 #include <iostream>
 #include <sstream>
 #include <fstream>
 
-
-
 ////////////////////////// object struct
 typedef struct _gvf
 {
-    t_object					ob;			// the object itself (must be first)
-    
+    t_object					ob;
     // GVF related variables
     GVF              *bubi;
     GVFGesture       *currentGesture;
@@ -59,10 +52,10 @@ t_max_err getAttr(t_gvf *x, t_object *attr, long* ac, t_atom** av);
 t_max_err setAttr(t_gvf *x, void *attr, long ac, t_atom *av);
 
 //// BASICS
-void gvf_record           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_record          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_start           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_stop            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_play          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_follow          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_clear           (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_list            (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_printme         (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
@@ -89,17 +82,12 @@ void gvf_export   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 void gvf_import   (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 //// DEPRECATED
-void gvf_follow          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_gestureOn       (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_gestureOff      (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
-void gvf_adaptation_speed (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
+void gvf_play          (t_gvf *x, const t_symbol *sss, short argc, t_atom *argv);
 
 
 
 //////////////////////// global variables and co
 void *gvf_class;
-bool manuallyAssignedGesture = false;
-
 
 
 int C74_EXPORT main(void)
@@ -315,7 +303,7 @@ void gvf_start(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 // ---------------------------------------------------------------------------
 void gvf_stop(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    error("'stop' does nothing, only start can be used");
+    error("'stop' message does nothing, only start can be used");
 }
 
 // "follow" msg
