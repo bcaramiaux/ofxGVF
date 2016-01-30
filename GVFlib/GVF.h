@@ -52,18 +52,18 @@ public:
      */
     GVF();
     
-    /**
-     * GVF default constructor
-     * @param config configuration structure of type GVFConfig used to set number of dimensions etc. Here the parameters used are the default ones
-     */
-    GVF(GVFConfig _config);
-    
-    /**
-     * GVF default constructor
-     * @param configuration structure (nb. dimensions etc)
-     * @param parameters structure
-     */
-    GVF(GVFConfig _config, GVFParameters _parameters);
+//    /**
+//     * GVF default constructor
+//     * @param config configuration structure of type GVFConfig used to set number of dimensions etc. Here the parameters used are the default ones
+//     */
+//    GVF(GVFConfig _config);
+//    
+//    /**
+//     * GVF default constructor
+//     * @param configuration structure (nb. dimensions etc)
+//     * @param parameters structure
+//     */
+//    GVF(GVFConfig _config, GVFParameters _parameters);
     
     /**
      * GVF default destructor
@@ -446,24 +446,24 @@ public:
      */
     void loadTemplates(string filename);
     
-#pragma mark - openFrameworks convetion: setup functions
-    
-    /**
-     * Similar to constructor GVF() - for openFrameworks
-     */
-    void setup();
+//#pragma mark - openFrameworks convetion: setup functions
+//    
+//    /**
+//     * Similar to constructor GVF() - for openFrameworks
+//     */
+//    void setup();
+//
+//    /**
+//     * Similar to constructor GVF(GVFConfig _config) - for openFrameworks
+//     */
+//    void setup(GVFConfig _config);
+//
+//    /**
+//     * Similar to constructor GVF(GVFConfig _config, GVFParameters _parameters) - for openFrameworks
+//     */
+//    void setup(GVFConfig _config, GVFParameters _parameters);
 
-    /**
-     * Similar to constructor GVF(GVFConfig _config) - for openFrameworks
-     */
-    void setup(GVFConfig _config);
-
-    /**
-     * Similar to constructor GVF(GVFConfig _config, GVFParameters _parameters) - for openFrameworks
-     */
-    void setup(GVFConfig _config, GVFParameters _parameters);
-
-private:
+protected:
     
     // private variables
     GVFConfig        config;

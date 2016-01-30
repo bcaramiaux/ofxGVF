@@ -26,88 +26,119 @@
 using namespace std;
 
 //--------------------------------------------------------------
-GVF::GVF(){
-    setup();
-}
-
-//--------------------------------------------------------------
-GVF::GVF(GVFConfig _config){
-    setup(_config);
-}
-
-//--------------------------------------------------------------
-GVF::GVF(GVFConfig _config, GVFParameters _parameters){
-    setup(_config, _parameters);
-}
-
-//--------------------------------------------------------------
-void GVF::setup(){
+GVF::GVF()
+{
+    config.inputDimensions   = 2;
+    config.translate         = true;
+    config.segmentation      = false;
     
-    // use defualt parameters
-    GVFConfig defaultConfig;
-    
-    defaultConfig.inputDimensions   = 2;
-    defaultConfig.translate         = true;
-    defaultConfig.segmentation      = false;
-    
-    setup(defaultConfig);
-}
-
-//--------------------------------------------------------------
-void GVF::setup(GVFConfig _config){
-    
-    clear(); // just in case
-    
-    learningGesture = -1;
-    
-    // Set configuration:
-    config      = _config;
-    
-    // default parameters
-    GVFParameters defaultParameters;
-    defaultParameters.numberParticles       = 1000;
-    defaultParameters.tolerance             = 0.2f;
-    defaultParameters.resamplingThreshold   = 250;
-    defaultParameters.distribution          = 0.0f;
-    defaultParameters.alignmentVariance     = sqrt(0.000001f);
-    defaultParameters.dynamicsVariance      = vector<float>(1,sqrt(0.001f));
-    defaultParameters.scalingsVariance      = vector<float>(1,sqrt(0.00001f));
-    defaultParameters.rotationsVariance     = vector<float>(1,sqrt(0.0f));
-    defaultParameters.predictionSteps       = 1;
-    defaultParameters.dimWeights            = vector<float>(1,sqrt(1.0f));
-    
-    // default spreading
-    defaultParameters.alignmentSpreadingCenter = 0.0;
-    defaultParameters.alignmentSpreadingRange  = 0.2;
-    
-    defaultParameters.dynamicsSpreadingCenter = 1.0;
-    defaultParameters.dynamicsSpreadingRange  = 0.3;
-    
-    defaultParameters.scalingsSpreadingCenter = 1.0;
-    defaultParameters.scalingsSpreadingRange  = 0.3;
-    
-    defaultParameters.rotationsSpreadingCenter = 0.0;
-    defaultParameters.rotationsSpreadingRange  = 0.0;
+    parameters.numberParticles       = 1000;
+    parameters.tolerance             = 0.2f;
+    parameters.resamplingThreshold   = 250;
+    parameters.distribution          = 0.0f;
+    parameters.alignmentVariance     = sqrt(0.000001f);
+    parameters.dynamicsVariance      = vector<float>(1,sqrt(0.001f));
+    parameters.scalingsVariance      = vector<float>(1,sqrt(0.00001f));
+    parameters.rotationsVariance     = vector<float>(1,sqrt(0.0f));
+    parameters.predictionSteps       = 1;
+    parameters.dimWeights            = vector<float>(1,sqrt(1.0f));
+    parameters.alignmentSpreadingCenter     = 0.0;
+    parameters.alignmentSpreadingRange      = 0.2;
+    parameters.dynamicsSpreadingCenter      = 1.0;
+    parameters.dynamicsSpreadingRange       = 0.3;
+    parameters.scalingsSpreadingCenter      = 1.0;
+    parameters.scalingsSpreadingRange       = 0.3;
+    parameters.rotationsSpreadingCenter     = 0.0;
+    parameters.rotationsSpreadingRange      = 0.0;
     
     tolerancesetmanually = false;
+    learningGesture = -1;
     
-    setup(_config,  defaultParameters);
-    
-}
-
-//--------------------------------------------------------------
-void GVF::setup(GVFConfig _config, GVFParameters _parameters)
-{
-    clear(); // just in case
-    // Set configuration and parameters
-    config      = _config;
-    parameters  = _parameters;
-    // Init random generators
     normgen = std::mt19937(rd());
     rndnorm = new std::normal_distribution<float>(0.0,1.0);
     unifgen = std::default_random_engine(rd());
     rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
+    
 }
+
+////--------------------------------------------------------------
+//GVF::GVF(GVFConfig _config){
+//    setup(_config);
+//}
+//
+////--------------------------------------------------------------
+//GVF::GVF(GVFConfig _config, GVFParameters _parameters){
+//    setup(_config, _parameters);
+//}
+//
+////--------------------------------------------------------------
+//void GVF::setup(){
+//    
+//    // use defualt parameters
+//    GVFConfig defaultConfig;
+//    
+//    defaultConfig.inputDimensions   = 2;
+//    defaultConfig.translate         = true;
+//    defaultConfig.segmentation      = false;
+//    
+//    setup(defaultConfig);
+//}
+//
+////--------------------------------------------------------------
+//void GVF::setup(GVFConfig _config){
+//    
+//    clear(); // just in case
+//    
+//    learningGesture = -1;
+//    
+//    // Set configuration:
+//    config      = _config;
+//    
+//    // default parameters
+//    GVFParameters defaultParameters;
+//    defaultParameters.numberParticles       = 1000;
+//    defaultParameters.tolerance             = 0.2f;
+//    defaultParameters.resamplingThreshold   = 250;
+//    defaultParameters.distribution          = 0.0f;
+//    defaultParameters.alignmentVariance     = sqrt(0.000001f);
+//    defaultParameters.dynamicsVariance      = vector<float>(1,sqrt(0.001f));
+//    defaultParameters.scalingsVariance      = vector<float>(1,sqrt(0.00001f));
+//    defaultParameters.rotationsVariance     = vector<float>(1,sqrt(0.0f));
+//    defaultParameters.predictionSteps       = 1;
+//    defaultParameters.dimWeights            = vector<float>(1,sqrt(1.0f));
+//    
+//    // default spreading
+//    defaultParameters.alignmentSpreadingCenter = 0.0;
+//    defaultParameters.alignmentSpreadingRange  = 0.2;
+//    
+//    defaultParameters.dynamicsSpreadingCenter = 1.0;
+//    defaultParameters.dynamicsSpreadingRange  = 0.3;
+//    
+//    defaultParameters.scalingsSpreadingCenter = 1.0;
+//    defaultParameters.scalingsSpreadingRange  = 0.3;
+//    
+//    defaultParameters.rotationsSpreadingCenter = 0.0;
+//    defaultParameters.rotationsSpreadingRange  = 0.0;
+//    
+//    tolerancesetmanually = false;
+//    
+//    setup(_config,  defaultParameters);
+//    
+//}
+//
+////--------------------------------------------------------------
+//void GVF::setup(GVFConfig _config, GVFParameters _parameters)
+//{
+//    clear(); // just in case
+//    // Set configuration and parameters
+//    config      = _config;
+//    parameters  = _parameters;
+//    // Init random generators
+//    normgen = std::mt19937(rd());
+//    rndnorm = new std::normal_distribution<float>(0.0,1.0);
+//    unifgen = std::default_random_engine(rd());
+//    rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
+//}
 
 //--------------------------------------------------------------
 GVF::~GVF()
