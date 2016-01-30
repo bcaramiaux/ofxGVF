@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2156FCDD1C5D219300A897A7 /* GVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2156FCD31C5D219300A897A7 /* GVF.cpp */; };
+		2156FCF91C5D241800A897A7 /* GVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2156FCF21C5D241800A897A7 /* GVF.cpp */; };
 		E4328149138ABC9F0047C5CB /* openFrameworksDebug.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4328148138ABC890047C5CB /* openFrameworksDebug.a */; };
 		E4B69E200A3A1BDC003C02F2 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E4B69E1D0A3A1BDC003C02F2 /* main.cpp */; };
 		E4B69E210A3A1BDC003C02F2 /* ofApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E4B69E1E0A3A1BDC003C02F2 /* ofApp.cpp */; };
@@ -91,11 +91,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2156FCD31C5D219300A897A7 /* GVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GVF.cpp; sourceTree = "<group>"; };
-		2156FCD41C5D219300A897A7 /* GVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GVF.h; sourceTree = "<group>"; };
-		2156FCD51C5D219300A897A7 /* GVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GVFGesture.h; sourceTree = "<group>"; };
-		2156FCD61C5D219300A897A7 /* GVFUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GVFUtils.h; sourceTree = "<group>"; };
-		2156FCDA1C5D219300A897A7 /* ofxGVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVF.h; sourceTree = "<group>"; };
+		2156FCF21C5D241800A897A7 /* GVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GVF.cpp; sourceTree = "<group>"; };
+		2156FCF31C5D241800A897A7 /* GVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GVF.h; sourceTree = "<group>"; };
+		2156FCF41C5D241800A897A7 /* GVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GVFGesture.h; sourceTree = "<group>"; };
+		2156FCF51C5D241800A897A7 /* GVFUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GVFUtils.h; sourceTree = "<group>"; };
+		2156FCF61C5D241800A897A7 /* ofxaddons_thumbnail.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ofxaddons_thumbnail.png; sourceTree = "<group>"; };
+		2156FCF81C5D241800A897A7 /* ofxGVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ofxGVF.h; sourceTree = "<group>"; };
 		E4328143138ABC890047C5CB /* openFrameworksLib.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = openFrameworksLib.xcodeproj; path = ../../../libs/openFrameworksCompiled/project/osx/openFrameworksLib.xcodeproj; sourceTree = SOURCE_ROOT; };
 		E4B69B5B0A3A1756003C02F2 /* example-2dShapesDebug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "example-2dShapesDebug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4B69E1D0A3A1BDC003C02F2 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = src/main.cpp; sourceTree = SOURCE_ROOT; };
@@ -218,31 +219,32 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		2156FCD11C5D219300A897A7 /* ofxGVF */ = {
+		2156FCF01C5D241800A897A7 /* ofxGVF */ = {
 			isa = PBXGroup;
 			children = (
-				2156FCD21C5D219300A897A7 /* GVFlib */,
-				2156FCD81C5D219300A897A7 /* src */,
+				2156FCF11C5D241800A897A7 /* GVFlib */,
+				2156FCF61C5D241800A897A7 /* ofxaddons_thumbnail.png */,
+				2156FCF71C5D241800A897A7 /* src */,
 			);
 			name = ofxGVF;
-			path = ../../../../ofxGVF/openFrameworks/ofxGVF;
+			path = ../../../addons/ofxGVF;
 			sourceTree = "<group>";
 		};
-		2156FCD21C5D219300A897A7 /* GVFlib */ = {
+		2156FCF11C5D241800A897A7 /* GVFlib */ = {
 			isa = PBXGroup;
 			children = (
-				2156FCD31C5D219300A897A7 /* GVF.cpp */,
-				2156FCD41C5D219300A897A7 /* GVF.h */,
-				2156FCD51C5D219300A897A7 /* GVFGesture.h */,
-				2156FCD61C5D219300A897A7 /* GVFUtils.h */,
+				2156FCF21C5D241800A897A7 /* GVF.cpp */,
+				2156FCF31C5D241800A897A7 /* GVF.h */,
+				2156FCF41C5D241800A897A7 /* GVFGesture.h */,
+				2156FCF51C5D241800A897A7 /* GVFUtils.h */,
 			);
 			path = GVFlib;
 			sourceTree = "<group>";
 		};
-		2156FCD81C5D219300A897A7 /* src */ = {
+		2156FCF71C5D241800A897A7 /* src */ = {
 			isa = PBXGroup;
 			children = (
-				2156FCDA1C5D219300A897A7 /* ofxGVF.h */,
+				2156FCF81C5D241800A897A7 /* ofxGVF.h */,
 			);
 			path = src;
 			sourceTree = "<group>";
@@ -257,7 +259,7 @@
 		BB4B014C10F69532006C3DED /* addons */ = {
 			isa = PBXGroup;
 			children = (
-				2156FCD11C5D219300A897A7 /* ofxGVF */,
+				2156FCF01C5D241800A897A7 /* ofxGVF */,
 				F43238691C3EF339001E4E90 /* ofxXmlSettings */,
 				F43235811C3EF2D2001E4E90 /* ofxUI */,
 			);
@@ -561,7 +563,7 @@
 				F43238241C3EF2D3001E4E90 /* ofxUIScrollableCanvas.cpp in Sources */,
 				F43238741C3EF339001E4E90 /* tinyxmlparser.cpp in Sources */,
 				F43238311C3EF2D3001E4E90 /* ofxUIWidget.cpp in Sources */,
-				2156FCDD1C5D219300A897A7 /* GVF.cpp in Sources */,
+				2156FCF91C5D241800A897A7 /* GVF.cpp in Sources */,
 				F432381A1C3EF2D3001E4E90 /* ofxUILabelToggle.cpp in Sources */,
 				F43238251C3EF2D3001E4E90 /* ofxUISlider.cpp in Sources */,
 				F43238211C3EF2D3001E4E90 /* ofxUIRangeSlider.cpp in Sources */,
