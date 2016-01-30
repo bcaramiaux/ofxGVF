@@ -548,8 +548,8 @@ void gvf_tolerance(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 // ---------------------------------------------------------------------------
 void gvf_anticipate(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
 {
-    int predictionLoops = atom_getlong(argv);
-    //TODO: set prediction loops
+    int predictionSteps = atom_getlong(argv);
+    x->bubi->setPredictionSteps(predictionSteps);
 }
 
 // "resamplingthreshold" msg

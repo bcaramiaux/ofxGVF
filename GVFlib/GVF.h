@@ -34,18 +34,13 @@ public:
     
     /** 
      * GVF possible states
-     * @details 
-     * STATE_CLEAR: clear the GVF and be in standby
-     * STATE_LEARNING: recording mode, input gestures are added to the templates
-     * STATE_FOLLOWING: tracking mode, input gestures are classifed and their variations tracked (need the GVF to be trained)
-     * STATE_BYPASS: by pass GVF but does not erase templates or training
      */
     enum GVFState
     {
-        STATE_CLEAR = 0,
-        STATE_LEARNING,
-        STATE_FOLLOWING,
-        STATE_BYPASS
+        STATE_CLEAR = 0,    /**< STATE_CLEAR: clear the GVF and be in standby */
+        STATE_LEARNING,     /**< STATE_LEARNING: recording mode, input gestures are added to the templates */
+        STATE_FOLLOWING,    /**< STATE_FOLLOWING: tracking mode, input gestures are classifed and their variations tracked (need the GVF to be trained) */
+        STATE_BYPASS        /**< STATE_BYPASS: by pass GVF but does not erase templates or training */
     };
     
     
@@ -260,13 +255,13 @@ public:
      * which means no prediction ahead
      * @param the number of prediction steps
      */
-    void setNumberOfPredictionSteps(int predictionSteps);
+    void setPredictionSteps(int predictionSteps);
     
     /**
      * Get the current number of prediction steps
      * @return current number of prediciton steps
      */
-    int getNumberOfPredictionSteps();
+    int getPredictionSteps();
 
     /**
      * Set resampling threshold

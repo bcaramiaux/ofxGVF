@@ -1019,8 +1019,7 @@ void GVF::setActiveGestures(vector<int> activeGestureIds)
 }
 
 //--------------------------------------------------------------
-// Update the number of particles
-void GVF::setNumberOfPredictionSteps(int predictionSteps)
+void GVF::setPredictionSteps(int predictionSteps)
 {
     if (predictionSteps<1)
         parameters.predictionSteps = 1;
@@ -1029,7 +1028,7 @@ void GVF::setNumberOfPredictionSteps(int predictionSteps)
 }
 
 //--------------------------------------------------------------
-int GVF::getNumberOfPredictionSteps()
+int GVF::getPredictionSteps()
 {
     return parameters.predictionSteps; // Return the number of particles
 }
