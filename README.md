@@ -87,7 +87,7 @@ We provide an openFrameworks add-on `ofxGVF`. To use it in your openFrameworks p
 
 **PureData**
 
-A compiled version of GVF for MacOSX (>10.8) can be found in `Build/Darwin/`. The help patch is in the `PureData` folder.
+A compiled version of GVF for MacOSX (>10.8) is provided together with its help patch.
 <br />
 
 To compile the GVF PureData object, open a terminal and do:
