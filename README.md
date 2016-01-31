@@ -1,7 +1,12 @@
 ofxGVF
 ===
 
-Gesture Variation Follower: c++ library and implementation in various creative programming environments
+Gesture Variation Follower: c++ library and implementation in various creative programming environments. GVF allows for realtime gesture recognition and variation tracking. 
+<br />
+
+GVF started as a research project on designing novel methods for expressive interaction with digital media through physical gestures. As such the code remains free and open-source (see licence below), so if you use it in other research projects please cite our work:
+* B Caramiaux, N Montecchio, A Tanaka, F Bevilacqua. <a href="http://baptistecaramiaux.com/wp-content/uploads/pdfs/caramiaux2014gvf.pdf">Adaptive Gesture Recognition with Variation Estimation for Interactive Systems</a>. *ACM Transactions on Interactive Intelligent Systems (TiiS)*, 4(4), 18-51. December 2014
+
 
 Using GVFlib
 ---
@@ -10,21 +15,25 @@ Start by constructing a GVF object:
 ```
 GVF *gvf = new GVF();
 ```
+<br />
 
+**Recording**
 
 To record gesture templates, switch to the learning mode:
 ```
 setState(GVF::STATE_LEARNING);
 ```
-Start a new gesture
+Then for each gesture to record, start a new gesture
 ```
 startGesture();
 ```
-And feed the observations to the current gesture:
+And feed each gesture point (vector of float values):
 ```
-addObservation(observation);
+addObservation(point);
 ```
+<br />
 
+**Following**
 
 Once the gestures recorded, switch to the following mode: 
 ```
@@ -38,7 +47,9 @@ And perform the recognition + tracking for each observation of the gesture:
 ```
 update(observation);
 ```
+<br />
 
+**Results**
 
 To obtain GVF's outputs, declare a variable of type `GVFOutcomes`:
 ```
@@ -50,26 +61,52 @@ update(observation);
 ```
 
 
-Using GVFlib implemented in creative programming environments
----
-
-Soon
-
 
 Documentation/API
 ---
 
 Soon
 
+Examples in creative programming environments
+---
+
+**MaxMSP**
+
+A compiled version of GVF for MacOSX (>10.8) can be found in `max-patches/` together with the help patch.
+<br />
+
+If needed, to compile the object first clone the MaxSDK by using the provided script:
+```
+./getMaxSDK.sh
+```
+Then open the Xcode project from `xcode/` and build the object.
+
+**openFrameworks**
+
+We provide an openFrameworks add-on `ofxGVF`. To use it in your openFrameworks project, copy the `ofxGVF` folder to the openFrameworks `add-on` folder. We provide an example of application using GVF to recognise and track 2D gestures.
+
+**PureData**
+
+A compiled version of GVF for MacOSX (>10.8) can be found in `Build/Darwin/`. The help patch is in the `PureData` folder.
+<br />
+
+To compile the GVF PureData object, open a terminal and do:
+```
+cd PureData/
+make
+```
+
+Note that you need PureData installed on your computer.
+
 
 Credits
 ---
 
-The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova), in the Real-Time Musical Interaction team led by Frédéric Bevilacqua.
+The algorithm has been designed and prototyped in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova), in the Real-Time Musical Interaction team led by Frédéric Bevilacqua.
 
 It has been extended at Goldsmiths College, University of London, by Baptiste Caramiaux.
 
-The openFrameworks add-on has been greatly done by Matthew Gingold (https://github.com/gameoverhack) 
+The openFrameworks add-on has been greatly done by Matthew Gingold (https://github.com/gameoverhack)
 
 
 
