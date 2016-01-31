@@ -4,8 +4,11 @@ ofxGVF
 Gesture Variation Follower: c++ library and implementation in various creative programming environments. GVF allows for realtime gesture recognition and variation tracking. 
 <br />
 
-GVF started as a research project on designing novel methods for expressive interaction with digital media through physical gestures. As such the code remains free and open-source (see licence below), so if you use it in other research projects please cite our work:
-* B Caramiaux, N Montecchio, A Tanaka, F Bevilacqua. <a href="http://baptistecaramiaux.com/wp-content/uploads/pdfs/caramiaux2014gvf.pdf">Adaptive Gesture Recognition with Variation Estimation for Interactive Systems</a>. *ACM Transactions on Interactive Intelligent Systems (TiiS)*, 4(4), 18-51. December 2014
+GVF started as a research project on novel methods for expressive interaction with digital media through physical gestures. Stemming from academic research, the code remains free and open-source (see licence below). If you use it please cite our work:
+* B Caramiaux, N Montecchio, A Tanaka, F Bevilacqua. Adaptive Gesture Recognition with Variation Estimation for Interactive Systems. *ACM Transactions on Interactive Intelligent Systems (TiiS)*, 4(4), 18-51. December 2014
+<br />
+
+If you woudl like to read about technical details of the method, the article can be downloaded <a href="http://baptistecaramiaux.com/wp-content/uploads/pdfs/caramiaux2014gvf.pdf">here</a>.
 
 
 Using GVFlib
