@@ -1,68 +1,65 @@
 ofxGVF
 ===
 
-ofxGVF: add-on for gesture variation follower, a library for realtime gesture recognition and gesture variations estimation. 
+Gesture Variation Follower: c++ library and implementation in various creative programming environments
 
-
-Installation
+Using GVFlib
 ---
 
-Compiling the openFrameworks version: make sure that in ofxGVFTypes.h you set
-
+Start by constructing a GVF object:
 ```
-#define OPENFRAMEWORKS 1
-```
-
-Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you set
-
-```
-#define OPENFRAMEWORKS 0
+GVF *gvf = new GVF();
 ```
 
-API
+
+To record gesture templates, switch to the learning mode:
+```
+setState(GVF::STATE_LEARNING);
+```
+Start a new gesture
+```
+startGesture();
+```
+And feed the observations to the current gesture:
+```
+addObservation(observation);
+```
+
+
+Once the gestures recorded, switch to the following mode: 
+```
+setState(GVF::STATE_FOLLOWING);
+```
+Start a new gesture to be recognised and its variations tracked:
+```
+startGesture();
+```
+And perform the recognition + tracking for each observation of the gesture:
+```
+update(observation);
+```
+
+
+To obtain GVF's outputs, declare a variable of type `GVFOutcomes`:
+```
+GVFOutcomes outcomes;
+```
+And use this variable to get the output of the `update()` method:
+```
+update(observation);
+```
+
+
+Using GVFlib implemented in creative programming environments
 ---
 
-Declare an ofxGVF object, an ofxGVFGesture object (to store currently performed gesture):
-```
-ofxGVF *gvf;
-ofxGVFGesture currentGesture;
-```
-  
-Build GVF with default configuration and parameters:
-```
-gvf = new ofxGVF();
-```
+Soon
 
-Perform *Learning* from a matrix of type `vector<vector<float>>` called `data` by first filling the object `currentGesture` and add eventually add this gesture as a template:
-```
-currentGesture.clear(); //  just in case!
-    
-for (vector<vector<float> >::iterator frame = data.begin() ; frame != data.end(); ++frame)
-  currentGesture.addObservation(*frame);
-  
-gvf->addGestureTemplate(currentGesture);
-```
 
-Perform *Testing* from a matrix of type `vector<vector<float>>` called `data` by first changing GVF state to Following, clearing the object `currentGesture` and updating GVF for each sample:
-```
-gvf->setState(ofxGVF::STATE_FOLLOWING);
-    
-currentGesture.clear();
-    
-for (vector<vector<float> >::iterator frame = data.begin() ; frame != data.end(); ++frame){
-  currentGesture.addObservation(*frame); // in case we want to plot or to analyse gesture data
-  gvf->update(currentGesture.getLastObservation());
-}
-```
+Documentation/API
+---
 
-To get the recognition and adaption results, in the `for` loop above, called the following methods:
-```
-float phase = gvf->getOutcomes().estimations[0].alignment;
-float speed = gvf->getOutcomes().estimations[0].dynamics[0];
-```
-
-An example is available in the folder _libtests/
-
+Soon
 
 
 Credits
@@ -77,7 +74,7 @@ The openFrameworks add-on has been greatly done by Matthew Gingold (https://gith
 
 
 License
-===
+---
 
 GVF library is released under the LGPL v3
 
