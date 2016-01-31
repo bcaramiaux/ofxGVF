@@ -24,7 +24,6 @@ typedef struct _gvf
     t_object					ob;
     // GVF related variables
     GVF              *bubi;
-    GVFGesture       *currentGesture;
     GVFOutcomes      outcomes;
     
     t_atom* out;
@@ -34,7 +33,6 @@ typedef struct _gvf
     void *estimation_outlet;
     void *likelihoods_outlet;
     void *info_outlet;
-    int currentGestureID;
     
 } t_gvf;
 
@@ -181,9 +179,6 @@ void *gvf_new(t_symbol *s, long argc, t_atom *argv)
     else
     {
         x->bubi = new GVF();
-        // current gesture
-        x->currentGesture = new GVFGesture();
-        x->currentGestureID = 0;
         // outlets
         x->info_outlet           = outlet_new(x, NULL);
         x->likelihoods_outlet    = outlet_new(x, NULL);
@@ -375,22 +370,15 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
         case GVF::STATE_LEARNING:
         {
             x->bubi->addObservation(observation);
-            //            x->currentGesture->addObservation(observation_vector);
-            
             break;
         }
         case GVF::STATE_FOLLOWING:
         {
-            //            post("x->bubi->getNumberOfGestureTemplates()=%i",x->bubi->getNumberOfGestureTemplates());
             if (x->bubi->getNumberOfGestureTemplates()>0)
             {
-                
                 // inference on the last observation
-                //                x->bubi->update(x->currentGesture->getLastObservation());
                 x->outcomes = x->bubi->update(observation);
-                
-                // output recognition
-//                x->outcomes = x->bubi->getOutcomes();
+
                 int numberOfTemplates = x->bubi->getNumberOfGestureTemplates();
                 
                 t_atom *outAtoms = new t_atom[numberOfTemplates];
