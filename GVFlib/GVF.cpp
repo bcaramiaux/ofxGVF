@@ -461,7 +461,7 @@ void GVF::initNoiseParameters() {
 }
 
 //--------------------------------------------------------------
-GVF::GVFState GVF::setState(GVFState _state, vector<int> indexes)
+void GVF::setState(GVFState _state, vector<int> indexes)
 {
     switch (_state)
     {

@@ -52,19 +52,6 @@ public:
      */
     GVF();
     
-//    /**
-//     * GVF default constructor
-//     * @param config configuration structure of type GVFConfig used to set number of dimensions etc. Here the parameters used are the default ones
-//     */
-//    GVF(GVFConfig _config);
-//    
-//    /**
-//     * GVF default constructor
-//     * @param configuration structure (nb. dimensions etc)
-//     * @param parameters structure
-//     */
-//    GVF(GVFConfig _config, GVFParameters _parameters);
-    
     /**
      * GVF default destructor
      */
@@ -80,30 +67,31 @@ public:
     /**
      * Add an observation to a gesture template
      * @details
-     * @param vector of features
+     * @param data vector of features
      */
     void addObservation(vector<float> data);
     
     /**
      * Add gesture template to the vocabulary
      *
-     * @details a gesture template is a GVFGesture object
-     * @param the gesture template to be recorded
+     * @details a gesture template is a GVFGesture object and can be added directly to the vocabulqry or
+     * recorded gesture templates by using this method
+     * @param gestureTemplate the gesture template to be recorded
      */
     void addGestureTemplate(GVFGesture & gestureTemplate);
     
     /**
      * Replace a specific gesture template by another
      *
-     * @param the gesture template to be used
-     * @param the gesture index (as integer) to be replaced
+     * @param gestureTemplate the gesture template to be used
+     * @param index the gesture index (as integer) to be replaced
      */
     void replaceGestureTemplate(GVFGesture & gestureTemplate, int index);
     
     /**
      * Remove a specific template
      *
-     * @param the gesture index (as integer) to be removed
+     * @param index the gesture index (as integer) to be removed
      */
     void removeGestureTemplate(int index);
     
@@ -115,7 +103,7 @@ public:
     /**
      * Get a specific gesture template a gesture template by another
      *
-     * @param index of the template to be returned
+     * @param index the index of the template to be returned
      * @return the template
      */
     GVFGesture & getGestureTemplate(int index);
@@ -142,12 +130,18 @@ public:
 #pragma mark - Recognition and tracking
 
     /**
-     *
+     * Set the state of GVF
+     * @param _state the state to be given to GVF, it is a GVFState
+     * @param indexes an optional argument providing a list of gesture index. 
+     * In learning mode the index of the gesture being recorded can be given as an argument
+     * since the type is vector<int>, it should be something like '{3}'. In following mode, the list of indexes
+     * is the list of active gestures to be considered in the recognition/tracking.
      */
-    GVFState setState(GVFState _state, vector<int> indexes = vector<int>());
+    void setState(GVFState _state, vector<int> indexes = vector<int>());
     
     /**
-     *
+     * Return the current state of GVF
+     * @return GVFState the current state
      */
     GVFState getState();
     
@@ -195,29 +189,11 @@ public:
      * Segment gestures within a continuous gesture stream
      * @details if segmentation is true, the method will segment a continuous gesture into a sequence
      * of gestures. In other words no need to call the method startGesture(), it is done automatically
-     * @param boolean to activate or deactivate segmentation
+     * @param segmentationFlag boolean to activate or deactivate segmentation
      */
     void segmentation(bool segmentationFlag);
     
-    
-//#pragma mark - Output accessors (deprecated, use GVFOutcomes)
-//    
-//    /**
-//     * Get gesture probabilities
-//     * @return vector of probabilities
-//     */
-//    vector<float> & getGestureProbabilities();
-//    
-//    /**
-//     *
-//     */
-//    int getMostProbableGestureIndex();
-    
 #pragma mark - [ Accessors ]
-    
-//    void setParameters(GVFParameters parameters);
-//    GVFParameters getParameters();
-
 #pragma mark > Parameters
     /**
      * Set tolerance between observation and estimation
@@ -277,19 +253,6 @@ public:
      * @return resampling threshold
      */
     int getResamplingThreshold();
-    
-//#pragma mark > Alignment
-//    /**
-//     * Change variance of alignment adaptation
-//     * @details if alignment variance is high the method will adapt faster to high 
-//     * variations
-//     */
-//    void setAlignmentVariance(float alignmentVariance);
-//
-//    /**
-//     *
-//     */
-//    float getAlignmentVariance();
     
 #pragma mark > Dynamics
     /**
@@ -445,33 +408,16 @@ public:
      * @param file name as a string
      */
     void loadTemplates(string filename);
-    
-//#pragma mark - openFrameworks convetion: setup functions
-//    
-//    /**
-//     * Similar to constructor GVF() - for openFrameworks
-//     */
-//    void setup();
-//
-//    /**
-//     * Similar to constructor GVF(GVFConfig _config) - for openFrameworks
-//     */
-//    void setup(GVFConfig _config);
-//
-//    /**
-//     * Similar to constructor GVF(GVFConfig _config, GVFParameters _parameters) - for openFrameworks
-//     */
-//    void setup(GVFConfig _config, GVFParameters _parameters);
 
 protected:
     
-    // private variables
-    GVFConfig        config;
-    GVFParameters    parameters;
-    GVFOutcomes      outcomes;
-    GVFState         state;
-    GVFGesture       theGesture;
+    GVFConfig        config;        // Structure storing the configuration of GVF (in GVFUtils.h)
+    GVFParameters    parameters;    // Structure storing the parameters of GVF (in GVFUtils.h)
+    GVFOutcomes      outcomes;      // Structure storing the outputs of GVF (in GVFUtils.h)
+    GVFState         state;         // State (defined above)
+    GVFGesture       theGesture;    // GVFGesture object to handle incoming data in learning and following modes
     
+    vector<GVFGesture>   gestureTemplates; // vector storing the gesture templates recorded when using the methods addObservation(vector<float> data) or addGestureTemplate(GVFGesture & gestureTemplate)
     
     vector<float> dimWeights;           // TOOD: to be put in parameters?
     vector<float> maxRange;
@@ -502,43 +448,27 @@ protected:
     vector<float>           estimatedProbabilities;     // ..
     vector<float>           estimatedLikelihoods;       // ..
     vector<float>           absoluteLikelihoods;        // ..
-    
-    // velocity and acceleration estimations
-    vector<float>           currentVelAcc;
-    vector<vector<float>>   kalmanDynMatrix;
-    vector<vector<float>>   kalmanMapMatrix;
-    
-    
+
     bool tolerancesetmanually;
     
-    vector<GVFGesture>   gestureTemplates;           // ..
+
     vector<vector<float> >  offsets;                    // translation offset
     
     vector<int> activeGestures;
-    
 
-    
+    vector<float> gestureProbabilities;
+    vector< vector<float> > particles;
+
+private:
+
     // random number generator
     std::random_device                      rd;
     std::mt19937                            normgen;
     std::normal_distribution<float>         *rndnorm;
     std::default_random_engine              unifgen;
     std::uniform_real_distribution<float>   *rndunif;
-    
-//    // ONLY for LOGS
-//    vector<vector<float> >  vecRef;
-//    vector<float>           vecObs;
-//    vector<float>           stateNoiseDist;
-    
-    vector<float> gestureProbabilities;
-    vector< vector<float> > particles;
-    //    vector<float> particlesPositions;
-    
-//    vector<float>& getGestureTemplateSample(int gestureIndex, float cursor);
 
-    
 #pragma mark - Private methods for model mechanics
-    
     void initPrior();
     void initNoiseParameters();
     void updateLikelihood(vector<float> obs, int n);
