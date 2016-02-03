@@ -68,7 +68,8 @@ update(observation);
 Documentation/API
 ---
 
-Soon
+http://www.baptistecaramiaux.com/gvf-api/
+
 
 Examples in creative programming environments
 ---
