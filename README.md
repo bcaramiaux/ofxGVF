@@ -1,119 +1,122 @@
 ofxGVF
 ===
 
-ofxGVF: add-on for gesture variation follower, a library for realtime gesture recognition and gesture variations estimation. 
+Gesture Variation Follower: c++ library and implementation in various creative programming environments. GVF allows for realtime gesture recognition and variation tracking. 
+<br />
+
+GVF started as a research project on novel methods for expressive interaction with digital media through physical gestures. Stemming from academic research, the code remains free and open-source (see licence below). If you use it please cite our work:
+* B Caramiaux, N Montecchio, A Tanaka, F Bevilacqua. Adaptive Gesture Recognition with Variation Estimation for Interactive Systems. *ACM Transactions on Interactive Intelligent Systems (TiiS)*, 4(4), 18-51. December 2014
+<br />
+
+If you woudl like to read about technical details of the method, the article can be downloaded <a href="http://baptistecaramiaux.com/wp-content/uploads/pdfs/caramiaux2014gvf.pdf">here</a>.
 
 
-Installation
+Using GVFlib
 ---
 
-Compiling the openFrameworks version: make sure that in ofxGVFTypes.h you set
-
+Start by constructing a GVF object:
 ```
-#define OPENFRAMEWORKS 1
+GVF *gvf = new GVF();
+```
+<br />
+
+**Recording**
+
+To record gesture templates, switch to the learning mode:
+```
+setState(GVF::STATE_LEARNING);
+```
+Then for each gesture to record, start a new gesture
+```
+startGesture();
+```
+And feed each gesture point (vector of float values):
+```
+addObservation(point);
+```
+<br />
+
+**Following**
+
+Once the gestures recorded, switch to the following mode: 
+```
+setState(GVF::STATE_FOLLOWING);
+```
+Start a new gesture to be recognised and its variations tracked:
+```
+startGesture();
+```
+And perform the recognition + tracking for each observation of the gesture:
+```
+update(observation);
+```
+<br />
+
+**Results**
+
+To obtain GVF's outputs, declare a variable of type `GVFOutcomes`:
+```
+GVFOutcomes outcomes;
+```
+And use this variable to get the output of the `update()` method:
+```
+update(observation);
 ```
 
-Compiling both Max/MSP and PureData objects: make sure that in ofxGVFTypes.h you set
 
-```
-#define OPENFRAMEWORKS 0
-```
 
-API
+Documentation/API
 ---
 
+http://www.baptistecaramiaux.com/gvf-api/class_g_v_f.html
 
-ofxGVF object and variables:
+<br />
+
+Examples in creative programming environments
+---
+
+**MaxMSP**
+
+A compiled version of GVF for MacOSX (>10.8) can be found in `max-patches/` together with the help patch.
+<br />
+
+If needed, to compile the object first clone the MaxSDK by using the provided script:
 ```
-ofxGVF 				gvf;
-
-ofxGVFGesture       currentGesture;
-ofxGVFConfig        config;
-ofxGVFParameters    parameters;
-ofxGVFOutcomes      outcomes;
+./getMaxSDK.sh
 ```
+Then open the Xcode project from `xcode/` and build the object.
 
-CHOICE 1 (automatic parameterization)
+**openFrameworks**
 
+We provide an openFrameworks add-on `ofxGVF`. To use it in your openFrameworks project, copy the `ofxGVF` folder to the openFrameworks `add-on` folder. We provide an example of application using GVF to recognise and track 2D gestures.
 
-From that configuration and parameterization:
+**PureData**
+
+A compiled version of GVF for MacOSX (>10.8) is provided together with its help patch.
+<br />
+
+To compile the GVF PureData object, open a terminal and do:
 ```
-config.inputDimensions          = 2; // in case of a 2-dimensional input data
-config.translate         = true;
-config.segmentation      = false;
-```
-
-Then create the object
-```
-gvf.setup(config);
-```
-
-CHOICE 2 (manual parameterization)
-
-From that configuration and parameterization:
-```
-config.inputDimensions          = 2; // in case of a 2-dimensional input data
-defaultConfig.translate         = true;
-defaultConfig.segmentation      = false;
-
-parameters.numberParticles      = 2000; 		// can be less for low CPU resources
-parameters.tolerance            = 0.2f;         // set auto
-parameters.resamplingThreshold  = 500;  		// 1/4 of the number of particles
-parameters.distribution         = 0.0f;   		// non zero if T-distribution
-parameters.phaseVariance        = 0.000001;     // magic number
-parameters.speedVariance        = 0.001;        // magic number
-parameters.scaleVariance        = 0.0001;       // 0 no adaptation of the scaling
-parameters.rotationVariance     = 0.000001;		// 0 no adaptation of the rotation
+cd PureData/
+make
 ```
 
-Then create the object
-```
-gvf.setup(config, parameters);
-```
-
-
-
-Learning of a gesture template:
-```
-gvf.setState(ofxGVF::STATE_LEARNING);
-```
-Then for each gesture to be recognized. First fill the template:
-```
-currentGesture.addObservation( gesture_sample );
-```
-Then add the template at the end of the gesture:
-```
-gvf.addGestureTemplate( currentGesture );
-```
-
-Following (Recognition + Variation tracking) of a gesture:
-```
-gvf.setState(ofxGVF::STATE_FOLLOWING);
-```
-```
-gvf.infer( gesture_sample );
-```
-
-Get the current results for the given gesture sample:
-```
-outcomes = gvf.getOutcomes();
-```
-
+Note that you need PureData installed on your computer.
 
 
 Credits
 ---
 
-The library itself has been designed and developed in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova), in the Real-Time Musical Interaction team led by Frédéric Bevilacqua.
+The algorithm has been designed and prototyped in 2011 at Ircam Centre Pompidou Paris (STMS lab Ircam-CNRS-UPMC) by Baptiste Caramiaux and Nicola Montecchio (University of Padova), in the Real-Time Musical Interaction team led by Frédéric Bevilacqua.
 
 It has been extended at Goldsmiths College, University of London, by Baptiste Caramiaux.
 
-The openFrameworks add-on has been greatly done by Matthew Gingold (https://github.com/gameoverhack) 
+The openFrameworks add-on has been greatly done by Matthew Gingold (https://github.com/gameoverhack)
 
 
 
 License
-===
+---
 
 GVF library is released under the LGPL v3
 

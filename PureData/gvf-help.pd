@@ -1,0 +1,94 @@
+#N canvas 162 33 1062 608 10;
+#X declare -lib gvf;
+#X declare -lib mrpeach;
+#X obj 390 240 import gvf;
+#X obj 19 240 gvf this is the help patch ---------------------------------
+;
+#X text 657 309 <-- import mrpeach objects;
+#X obj 555 310 import mrpeach;
+#X obj 554 350 unpackOSC;
+#X obj 554 330 udpreceive 9003;
+#X msg 553 -7 clear;
+#X obj 304 373 print Likelihoods;
+#X msg 53 95 follow;
+#X obj 554 391 s gvf;
+#X obj 19 215 r gvf;
+#X obj 16 -111 cnv 15 552 40 empty \$0-pddp.cnv.header GVF 3 12 1 18
+-262144 -191407 0;
+#X text 18 -90 GVF - Gesture Variation Follower;
+#X text 18 -79 realtime gesture recognition with variations estimation
+;
+#X text 657 330 <-- listen to port 9003;
+#X text 19 -62 (c) Ircam Centre Pompidou \, Goldsmiths University of
+London version: 06-2014 sources: https://github.com/bcaramiaux/gvf
+;
+#X msg 29 32 start;
+#X obj 554 370 route /osc/data;
+#X text 111 93 <-- send the message follow and send gesture data;
+#X text 16 -8 LEARNING;
+#X text 50 74 PERFORMING;
+#X msg 553 117 tolerance \$1;
+#X floatatom 645 117 10 0 0 0 - - -;
+#X msg 553 39 translate 1;
+#X msg 553 61 segmentation 0;
+#X floatatom 645 147 10 0 100000 0 - - -;
+#X text 718 147 Number of Particles (it's an integer!);
+#X floatatom 645 176 10 0 0 0 - - -;
+#X floatatom 644 206 10 0 0 0 - - -;
+#X floatatom 644 236 10 0 0 0 - - -;
+#X obj 553 85 s gvf;
+#X obj 553 261 s gvf;
+#X msg 19 10 record;
+#X msg 553 16 printme;
+#X obj 19 374 print Alignment;
+#X obj 90 343 print Dynamics;
+#X obj 161 374 print Scalings;
+#X obj 233 344 print Rotations;
+#X text 87 32 <-- send start to start a gesture then send the data
+;
+#X text 87 11 <-- send the message record for each new gesture;
+#X msg 61 119 start;
+#X text 111 118 <-- send start to start a gesture then send the data
+;
+#X text 658 37 Translate gesture feature data according to the first
+point;
+#X text 658 60 Segment automatically (no need to press start at each
+new gesture in foloowing mode);
+#X text 716 117 Tolerance;
+#X msg 553 147 particles \$1;
+#X msg 553 176 dynamics \$1;
+#X text 718 177 Adaptation of dynamics (speed and acceleration);
+#X text 717 207 Adaptation of scalings;
+#X text 717 235 Adaptation of rotations;
+#X msg 553 236 rotations \$1;
+#X msg 553 206 scalings \$1;
+#X text 658 11 Print internal data of GVF;
+#X text 658 -11 Clear GVF (templates and training);
+#X text 554 284 Data stream used to test GVF;
+#X connect 1 0 34 0;
+#X connect 1 1 35 0;
+#X connect 1 2 36 0;
+#X connect 1 3 37 0;
+#X connect 1 4 7 0;
+#X connect 4 0 17 0;
+#X connect 5 0 4 0;
+#X connect 6 0 30 0;
+#X connect 8 0 1 0;
+#X connect 10 0 1 0;
+#X connect 16 0 1 0;
+#X connect 17 0 9 0;
+#X connect 21 0 31 0;
+#X connect 22 0 21 0;
+#X connect 23 0 30 0;
+#X connect 24 0 30 0;
+#X connect 25 0 45 0;
+#X connect 27 0 46 0;
+#X connect 28 0 51 0;
+#X connect 29 0 50 0;
+#X connect 32 0 1 0;
+#X connect 33 0 30 0;
+#X connect 40 0 1 0;
+#X connect 46 0 31 0;
+#X connect 50 0 31 0;
+#X connect 51 0 31 0;
+#X coords 0 593 1 592 85 60 0;

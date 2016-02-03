@@ -1,0 +1,576 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		369473C10FD5C3F900A5E9FD /* mogees~.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 36D4A7D80FD5A5A90086FA80 /* mogees~.cpp */; };
+		DB018FC814CC6D18007578BE /* commonsyms.c in Sources */ = {isa = PBXBuildFile; fileRef = DB018FC614CC6D18007578BE /* commonsyms.c */; };
+		DB68F38316C3CC54006F0047 /* vecLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB68F38216C3CC54006F0047 /* vecLib.framework */; };
+		E933243B1613615600A22A44 /* commonsyms.c in Sources */ = {isa = PBXBuildFile; fileRef = DB018FC614CC6D18007578BE /* commonsyms.c */; };
+		E933243F1613615600A22A44 /* Accelerate.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9298D8F15A30EE6006363B8 /* Accelerate.framework */; };
+		E933244E161361C400A22A44 /* mogeesgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E933244D161361C400A22A44 /* mogeesgui.cpp */; };
+		E9B8ED7116C3BE21008BB069 /* VdspMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E9B8ED7016C3BE21008BB069 /* VdspMath.cpp */; };
+		E9DBFD0516C3CE0600E99ADF /* MaxAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DBFD0416C3CE0600E99ADF /* MaxAPI.framework */; };
+		E9DBFD0716C3CE0D00E99ADF /* MaxAudioAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9DBFD0616C3CE0D00E99ADF /* MaxAudioAPI.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		E9001E1315A598CE0008EA69 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+		};
+		E93324421613615600A22A44 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXFileReference section */
+		22CF10220EE984600054F513 /* maxmspsdk.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = maxmspsdk.xcconfig; path = ../maxmspsdk.xcconfig; sourceTree = SOURCE_ROOT; };
+		369473BE0FD5C3DC00A5E9FD /* mogees~.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mogees~.mxo"; sourceTree = BUILT_PRODUCTS_DIR; };
+		36D4A7D80FD5A5A90086FA80 /* mogees~.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = "mogees~.cpp"; sourceTree = "<group>"; };
+		36D4A7E00FD5A5EB0086FA80 /* maxcpp5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = maxcpp5.h; sourceTree = "<group>"; };
+		DB018FC614CC6D18007578BE /* commonsyms.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = commonsyms.c; sourceTree = "<group>"; };
+		DB68F38216C3CC54006F0047 /* vecLib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = vecLib.framework; sourceTree = "<group>"; };
+		DBA51FCC15ADE257008CB641 /* InstrumentPreset.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InstrumentPreset.h; sourceTree = "<group>"; };
+		DBF647CC14CC793B00446D22 /* maxmix.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = maxmix.h; sourceTree = "<group>"; };
+		E9298D8F15A30EE6006363B8 /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = ../../../../../../../System/Library/Frameworks/Accelerate.framework; sourceTree = "<group>"; };
+		E93324461613615600A22A44 /* mogeesgui.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mogeesgui.mxo; sourceTree = BUILT_PRODUCTS_DIR; };
+		E93324481613615700A22A44 /* mogees~ copy-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "mogees~ copy-Info.plist"; path = "/Users/zamborli/Dropbox/Mogees-sourcecode/sources/MAX/src/mogees~ copy-Info.plist"; sourceTree = "<absolute>"; };
+		E933244D161361C400A22A44 /* mogeesgui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = mogeesgui.cpp; sourceTree = "<group>"; };
+		E947C1F8165BF12600E66E79 /* EnvelopeFollower.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EnvelopeFollower.h; sourceTree = "<group>"; };
+		E95D27EC15B06699008ACEBB /* Fourier.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Fourier.h; sourceTree = "<group>"; };
+		E95D27F915B07167008ACEBB /* VdspMath.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VdspMath.h; sourceTree = "<group>"; };
+		E97AB6A515C9674D00DBE7A3 /* StaticDelay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StaticDelay.h; sourceTree = "<group>"; };
+		E982959F15D7F44000515395 /* filterType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = filterType.h; sourceTree = "<group>"; };
+		E985866516C2CCBB0077A5D4 /* Subbanding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Subbanding.h; sourceTree = "<group>"; };
+		E985866616C2CCDB0077A5D4 /* ClassicVerb.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ClassicVerb.h; path = ../../include/effects/ClassicVerb.h; sourceTree = "<group>"; };
+		E985866716C2CCDB0077A5D4 /* Delay.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Delay.h; path = ../../include/effects/Delay.h; sourceTree = "<group>"; };
+		E995606215F8B2EA00693B34 /* SlopeDetector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SlopeDetector.h; sourceTree = "<group>"; };
+		E995606315F8B2F900693B34 /* MultiLooper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MultiLooper.h; sourceTree = "<group>"; };
+		E995606415F8B2FF00693B34 /* GestureRecognition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GestureRecognition.h; sourceTree = "<group>"; };
+		E995606915F8B52100693B34 /* Looper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Looper.h; sourceTree = "<group>"; };
+		E995606A15F8BD7C00693B34 /* GenericException.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GenericException.h; sourceTree = "<group>"; };
+		E9AEF05E15D3C13700FF9E5C /* Biquad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Biquad.h; sourceTree = "<group>"; };
+		E9AEF05F15D3C13700FF9E5C /* FreqShift.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FreqShift.h; sourceTree = "<group>"; };
+		E9B8ED7016C3BE21008BB069 /* VdspMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = VdspMath.cpp; sourceTree = "<group>"; };
+		E9BA60B115AB136B00733AEB /* AbstractDesigner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractDesigner.h; sourceTree = "<group>"; };
+		E9BA60B315AB136B00733AEB /* GeeTone.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GeeTone.h; sourceTree = "<group>"; };
+		E9BA60B415AB136B00733AEB /* GeometricDesigner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GeometricDesigner.h; sourceTree = "<group>"; };
+		E9BA60B515AB136B00733AEB /* HarmonicDesigner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HarmonicDesigner.h; sourceTree = "<group>"; };
+		E9BA60B615AB136B00733AEB /* ModelBasedDesigner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ModelBasedDesigner.h; sourceTree = "<group>"; };
+		E9BA60B915AB136B00733AEB /* PhyGees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PhyGees.h; sourceTree = "<group>"; };
+		E9BA60BA15AB136B00733AEB /* Parameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parameters.h; sourceTree = "<group>"; };
+		E9BE16F415AF1004001DA313 /* Compressor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Compressor.h; sourceTree = "<group>"; };
+		E9BE16F515AF1004001DA313 /* OnePole.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OnePole.h; sourceTree = "<group>"; };
+		E9BE16F715AF1004001DA313 /* OscillatorF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OscillatorF.h; sourceTree = "<group>"; };
+		E9BE16F815AF1004001DA313 /* Rms.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rms.h; sourceTree = "<group>"; };
+		E9BE16F915AF1004001DA313 /* TwoPoles.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TwoPoles.h; sourceTree = "<group>"; };
+		E9BE16FA15AF1004001DA313 /* WavFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WavFile.h; sourceTree = "<group>"; };
+		E9BE16FC15AF1004001DA313 /* Mogees.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Mogees.h; sourceTree = "<group>"; };
+		E9DBFD0416C3CE0600E99ADF /* MaxAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAPI.framework; path = "../c74support/max-includes/MaxAPI.framework"; sourceTree = "<group>"; };
+		E9DBFD0616C3CE0D00E99ADF /* MaxAudioAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAudioAPI.framework; path = "../c74support/msp-includes/MaxAudioAPI.framework"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		369473B70FD5C3DC00A5E9FD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB68F38316C3CC54006F0047 /* vecLib.framework in Frameworks */,
+				E9DBFD0516C3CE0600E99ADF /* MaxAPI.framework in Frameworks */,
+				E9DBFD0716C3CE0D00E99ADF /* MaxAudioAPI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E933243C1613615600A22A44 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E933243F1613615600A22A44 /* Accelerate.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* iterator */ = {
+			isa = PBXGroup;
+			children = (
+				DB018FC614CC6D18007578BE /* commonsyms.c */,
+				22CF10220EE984600054F513 /* maxmspsdk.xcconfig */,
+				36D4A7DD0FD5A5C00086FA80 /* include */,
+				08FB77ADFE841716C02AAC07 /* Source */,
+				089C1671FE841209C02AAC07 /* External Frameworks and Libraries */,
+				19C28FB4FE9D528D11CA2CBB /* Products */,
+				E93324481613615700A22A44 /* mogees~ copy-Info.plist */,
+			);
+			name = iterator;
+			sourceTree = "<group>";
+		};
+		089C1671FE841209C02AAC07 /* External Frameworks and Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				E9DBFD0616C3CE0D00E99ADF /* MaxAudioAPI.framework */,
+				E9DBFD0416C3CE0600E99ADF /* MaxAPI.framework */,
+				DB68F38216C3CC54006F0047 /* vecLib.framework */,
+				E9298D8F15A30EE6006363B8 /* Accelerate.framework */,
+			);
+			name = "External Frameworks and Libraries";
+			sourceTree = "<group>";
+		};
+		08FB77ADFE841716C02AAC07 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				E985866816C2CCE30077A5D4 /* Effects */,
+				E9BE16F315AF1004001DA313 /* dsp */,
+				E9BE16FB15AF1004001DA313 /* mogees */,
+				E9BA60B015AB136B00733AEB /* phygees */,
+				E9BE16FD15AF100A001DA313 /* max */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		19C28FB4FE9D528D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				369473BE0FD5C3DC00A5E9FD /* mogees~.mxo */,
+				E93324461613615600A22A44 /* mogeesgui.mxo */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		36D4A7DD0FD5A5C00086FA80 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				36D4A7E00FD5A5EB0086FA80 /* maxcpp5.h */,
+			);
+			name = include;
+			path = ../include;
+			sourceTree = SOURCE_ROOT;
+		};
+		E985866816C2CCE30077A5D4 /* Effects */ = {
+			isa = PBXGroup;
+			children = (
+				E985866616C2CCDB0077A5D4 /* ClassicVerb.h */,
+				E985866716C2CCDB0077A5D4 /* Delay.h */,
+			);
+			name = Effects;
+			sourceTree = "<group>";
+		};
+		E9BA60B015AB136B00733AEB /* phygees */ = {
+			isa = PBXGroup;
+			children = (
+				DBA51FCC15ADE257008CB641 /* InstrumentPreset.h */,
+				E995606A15F8BD7C00693B34 /* GenericException.h */,
+				E9BA60B115AB136B00733AEB /* AbstractDesigner.h */,
+				E9BA60B315AB136B00733AEB /* GeeTone.h */,
+				E9BA60B415AB136B00733AEB /* GeometricDesigner.h */,
+				E9BA60B515AB136B00733AEB /* HarmonicDesigner.h */,
+				E9BA60B615AB136B00733AEB /* ModelBasedDesigner.h */,
+				E9BA60B915AB136B00733AEB /* PhyGees.h */,
+				E9BA60BA15AB136B00733AEB /* Parameters.h */,
+			);
+			name = phygees;
+			path = ../../include/phygees;
+			sourceTree = "<group>";
+		};
+		E9BE16F315AF1004001DA313 /* dsp */ = {
+			isa = PBXGroup;
+			children = (
+				E947C1F8165BF12600E66E79 /* EnvelopeFollower.h */,
+				E995606915F8B52100693B34 /* Looper.h */,
+				E995606315F8B2F900693B34 /* MultiLooper.h */,
+				E995606215F8B2EA00693B34 /* SlopeDetector.h */,
+				E9AEF05E15D3C13700FF9E5C /* Biquad.h */,
+				E982959F15D7F44000515395 /* filterType.h */,
+				E9AEF05F15D3C13700FF9E5C /* FreqShift.h */,
+				E95D27F915B07167008ACEBB /* VdspMath.h */,
+				E9B8ED7016C3BE21008BB069 /* VdspMath.cpp */,
+				E985866516C2CCBB0077A5D4 /* Subbanding.h */,
+				E95D27EC15B06699008ACEBB /* Fourier.h */,
+				E9BE16F415AF1004001DA313 /* Compressor.h */,
+				E9BE16F515AF1004001DA313 /* OnePole.h */,
+				E9BE16F715AF1004001DA313 /* OscillatorF.h */,
+				E97AB6A515C9674D00DBE7A3 /* StaticDelay.h */,
+				E9BE16F815AF1004001DA313 /* Rms.h */,
+				E9BE16F915AF1004001DA313 /* TwoPoles.h */,
+				E9BE16FA15AF1004001DA313 /* WavFile.h */,
+			);
+			name = dsp;
+			path = ../../include/dsp;
+			sourceTree = "<group>";
+		};
+		E9BE16FB15AF1004001DA313 /* mogees */ = {
+			isa = PBXGroup;
+			children = (
+				E995606415F8B2FF00693B34 /* GestureRecognition.h */,
+				E9BE16FC15AF1004001DA313 /* Mogees.h */,
+			);
+			name = mogees;
+			path = ../../include/mogees;
+			sourceTree = "<group>";
+		};
+		E9BE16FD15AF100A001DA313 /* max */ = {
+			isa = PBXGroup;
+			children = (
+				DBF647CC14CC793B00446D22 /* maxmix.h */,
+				36D4A7D80FD5A5A90086FA80 /* mogees~.cpp */,
+				E933244D161361C400A22A44 /* mogeesgui.cpp */,
+			);
+			name = max;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		369473B20FD5C3DC00A5E9FD /* mogees~ */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 369473BB0FD5C3DC00A5E9FD /* Build configuration list for PBXNativeTarget "mogees~" */;
+			buildPhases = (
+				369473B30FD5C3DC00A5E9FD /* Resources */,
+				369473B40FD5C3DC00A5E9FD /* Sources */,
+				369473B70FD5C3DC00A5E9FD /* Frameworks */,
+				369473BA0FD5C3DC00A5E9FD /* Rez */,
+				E9001E1915A599960008EA69 /* ShellScript */,
+			);
+			buildRules = (
+				E9001E1315A598CE0008EA69 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = "mogees~";
+			productName = iterator;
+			productReference = 369473BE0FD5C3DC00A5E9FD /* mogees~.mxo */;
+			productType = "com.apple.product-type.bundle";
+		};
+		E93324371613615600A22A44 /* mogeesgui */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E93324431613615600A22A44 /* Build configuration list for PBXNativeTarget "mogeesgui" */;
+			buildPhases = (
+				E93324381613615600A22A44 /* Resources */,
+				E93324391613615600A22A44 /* Sources */,
+				E933243C1613615600A22A44 /* Frameworks */,
+				E93324401613615600A22A44 /* Rez */,
+				E93324411613615600A22A44 /* ShellScript */,
+			);
+			buildRules = (
+				E93324421613615600A22A44 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = mogeesgui;
+			productName = iterator;
+			productReference = E93324461613615600A22A44 /* mogeesgui.mxo */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+			};
+			buildConfigurationList = 2FBBEACF08F335010078DB84 /* Build configuration list for PBXProject "mogees~" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* iterator */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				369473B20FD5C3DC00A5E9FD /* mogees~ */,
+				E93324371613615600A22A44 /* mogeesgui */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		369473B30FD5C3DC00A5E9FD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E93324381613615600A22A44 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		369473BA0FD5C3DC00A5E9FD /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E93324401613615600A22A44 /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		E9001E1915A599960008EA69 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "";
+		};
+		E93324411613615600A22A44 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		369473B40FD5C3DC00A5E9FD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E9B8ED7116C3BE21008BB069 /* VdspMath.cpp in Sources */,
+				369473C10FD5C3F900A5E9FD /* mogees~.cpp in Sources */,
+				DB018FC814CC6D18007578BE /* commonsyms.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E93324391613615600A22A44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E933243B1613615600A22A44 /* commonsyms.c in Sources */,
+				E933244E161361C400A22A44 /* mogeesgui.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2FBBEAD008F335010078DB84 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_OPTIMIZATION_LEVEL = 3;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = "-ffast-math";
+			};
+			name = Development;
+		};
+		2FBBEAD108F335010078DB84 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_OPTIMIZATION_LEVEL = 3;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+			};
+			name = Deployment;
+		};
+		369473BC0FD5C3DC00A5E9FD /* Development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22CF10220EE984600054F513 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				ARCHS = i386;
+				COPY_PHASE_STRIP = NO;
+				DSTROOT = "$(SRCROOT)/../../../max-patches/";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/../c74support/msp-includes\"",
+					"\"$(SRCROOT)/../c74support/max-includes\"",
+				);
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				INFOPLIST_FILE = "$(SRCROOT)/../Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"-ffast-math",
+					"-msse2",
+					"-msse",
+					"-mfpmath=sse",
+				);
+				PRODUCT_NAME = "mogees~";
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = ../include;
+				VALID_ARCHS = "i386 x86_64";
+			};
+			name = Development;
+		};
+		369473BD0FD5C3DC00A5E9FD /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22CF10220EE984600054F513 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				ARCHS = i386;
+				COPY_PHASE_STRIP = YES;
+				DSTROOT = "$(SRCROOT)/../../../max-patches/";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/../c74support/msp-includes\"",
+					"\"$(SRCROOT)/../c74support/max-includes\"",
+				);
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
+				INFOPLIST_FILE = "$(SRCROOT)/../Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				ONLY_ACTIVE_ARCH = YES;
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"-ffast-math",
+					"-msse2",
+					"-msse",
+					"-mfpmath=sse",
+				);
+				PRODUCT_NAME = "mogees~";
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = ../include;
+				VALID_ARCHS = "i386 x86_64";
+			};
+			name = Deployment;
+		};
+		E93324441613615600A22A44 /* Development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22CF10220EE984600054F513 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				DSTROOT = "$(SRCROOT)/../../../max-patches/";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\"$(SRCROOT)/../../c74support/msp-includes\\\"",
+					"\"$(SRCROOT)\"",
+				);
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = "$(SRCROOT)/../Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"-ffast-math",
+					"-msse2",
+					"-msse",
+					"-mfpmath=sse",
+				);
+				PRODUCT_NAME = mogeesgui;
+				"SDKROOT[arch=i386]" = macosx10.7;
+				"SDKROOT[arch=ppc]" = macosx10.7;
+				USER_HEADER_SEARCH_PATHS = ../include;
+			};
+			name = Development;
+		};
+		E93324451613615600A22A44 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 22CF10220EE984600054F513 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				ARCHS = (
+					ppc,
+					i386,
+				);
+				COPY_PHASE_STRIP = YES;
+				DSTROOT = "$(SRCROOT)/../../../max-patches/";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\\\"$(SRCROOT)/../../c74support/msp-includes\\\"",
+					"\"$(SRCROOT)\"",
+				);
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				INFOPLIST_FILE = "$(SRCROOT)/../Info.plist";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"-ffast-math",
+					"-msse2",
+					"-msse",
+					"-mfpmath=sse",
+				);
+				PRODUCT_NAME = mogeesgui;
+				"SDKROOT[arch=i386]" = macosx10.7;
+				"SDKROOT[arch=ppc]" = macosx10.7;
+				USER_HEADER_SEARCH_PATHS = ../include;
+			};
+			name = Deployment;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2FBBEACF08F335010078DB84 /* Build configuration list for PBXProject "mogees~" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FBBEAD008F335010078DB84 /* Development */,
+				2FBBEAD108F335010078DB84 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+		369473BB0FD5C3DC00A5E9FD /* Build configuration list for PBXNativeTarget "mogees~" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				369473BC0FD5C3DC00A5E9FD /* Development */,
+				369473BD0FD5C3DC00A5E9FD /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+		E93324431613615600A22A44 /* Build configuration list for PBXNativeTarget "mogeesgui" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E93324441613615600A22A44 /* Development */,
+				E93324451613615600A22A44 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Development;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}

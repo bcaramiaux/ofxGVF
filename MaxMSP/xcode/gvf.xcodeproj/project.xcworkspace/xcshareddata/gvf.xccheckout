@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>D923231E-EF35-42BB-AA2D-0045C5262BB9</string>
+	<key>IDESourceControlProjectName</key>
+	<string>gvf</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>77F887B8687689A22EC75452628A3F65A5485DC9</key>
+		<string>github.com:bcaramiaux/gvf.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>maxmsp/xcode/gvf.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>77F887B8687689A22EC75452628A3F65A5485DC9</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>github.com:bcaramiaux/gvf.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>77F887B8687689A22EC75452628A3F65A5485DC9</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>77F887B8687689A22EC75452628A3F65A5485DC9</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxGVF</string>
+		</dict>
+	</array>
+</dict>
+</plist>

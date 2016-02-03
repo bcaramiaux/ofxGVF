@@ -1,0 +1,296 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		213BA7D21B26FD1500EB781D /* gvf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 213BA7D11B26FD1500EB781D /* gvf.cpp */; };
+		21B7405C1C528A5D00A58ABC /* MaxAPI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 21B7405B1C528A5D00A58ABC /* MaxAPI.framework */; };
+		21B740611C528A9700A58ABC /* GVF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 21B7405D1C528A9700A58ABC /* GVF.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		E9001E1315A598CE0008EA69 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+			script = "";
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXFileReference section */
+		213BA7D11B26FD1500EB781D /* gvf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gvf.cpp; sourceTree = "<group>"; };
+		21B7405B1C528A5D00A58ABC /* MaxAPI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MaxAPI.framework; path = "../max-sdk/source/c74support/max-includes/MaxAPI.framework"; sourceTree = "<group>"; };
+		21B7405D1C528A9700A58ABC /* GVF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = GVF.cpp; path = ../../GVFlib/GVF.cpp; sourceTree = "<group>"; };
+		21B7405E1C528A9700A58ABC /* GVF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GVF.h; path = ../../GVFlib/GVF.h; sourceTree = "<group>"; };
+		21B740601C528A9700A58ABC /* GVFUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GVFUtils.h; path = ../../GVFlib/GVFUtils.h; sourceTree = "<group>"; };
+		21B740621C528C3E00A58ABC /* GVFGesture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = GVFGesture.h; path = ../../GVFlib/GVFGesture.h; sourceTree = "<group>"; };
+		369473BE0FD5C3DC00A5E9FD /* gvf.mxo */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = gvf.mxo; sourceTree = BUILT_PRODUCTS_DIR; };
+		5438F9411A3B0C2500BB07DB /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		54E76FFB1A39A7E40098B458 /* maxmspsdk.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = maxmspsdk.xcconfig; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		369473B70FD5C3DC00A5E9FD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				21B7405C1C528A5D00A58ABC /* MaxAPI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		089C166AFE841209C02AAC07 /* iterator */ = {
+			isa = PBXGroup;
+			children = (
+				21B7405B1C528A5D00A58ABC /* MaxAPI.framework */,
+				213BA7D51B26FE0F00EB781D /* GVFlib */,
+				E9BE16FD15AF100A001DA313 /* src */,
+				19C28FB4FE9D528D11CA2CBB /* Products */,
+			);
+			name = iterator;
+			sourceTree = "<group>";
+		};
+		19C28FB4FE9D528D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				369473BE0FD5C3DC00A5E9FD /* gvf.mxo */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		213BA7D51B26FE0F00EB781D /* GVFlib */ = {
+			isa = PBXGroup;
+			children = (
+				21B7405E1C528A9700A58ABC /* GVF.h */,
+				21B7405D1C528A9700A58ABC /* GVF.cpp */,
+				21B740601C528A9700A58ABC /* GVFUtils.h */,
+				21B740621C528C3E00A58ABC /* GVFGesture.h */,
+			);
+			name = GVFlib;
+			sourceTree = "<group>";
+		};
+		E9BE16FD15AF100A001DA313 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				5438F9411A3B0C2500BB07DB /* Info.plist */,
+				54E76FFB1A39A7E40098B458 /* maxmspsdk.xcconfig */,
+				213BA7D11B26FD1500EB781D /* gvf.cpp */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		369473B20FD5C3DC00A5E9FD /* gvf */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 369473BB0FD5C3DC00A5E9FD /* Build configuration list for PBXNativeTarget "gvf" */;
+			buildPhases = (
+				369473B30FD5C3DC00A5E9FD /* Resources */,
+				369473B40FD5C3DC00A5E9FD /* Sources */,
+				369473B70FD5C3DC00A5E9FD /* Frameworks */,
+				369473BA0FD5C3DC00A5E9FD /* Rez */,
+			);
+			buildRules = (
+				E9001E1315A598CE0008EA69 /* PBXBuildRule */,
+			);
+			dependencies = (
+			);
+			name = gvf;
+			productName = iterator;
+			productReference = 369473BE0FD5C3DC00A5E9FD /* gvf.mxo */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		089C1669FE841209C02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0630;
+			};
+			buildConfigurationList = 2FBBEACF08F335010078DB84 /* Build configuration list for PBXProject "gvf" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 089C166AFE841209C02AAC07 /* iterator */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				369473B20FD5C3DC00A5E9FD /* gvf */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		369473B30FD5C3DC00A5E9FD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		369473BA0FD5C3DC00A5E9FD /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		369473B40FD5C3DC00A5E9FD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				213BA7D21B26FD1500EB781D /* gvf.cpp in Sources */,
+				21B740611C528A9700A58ABC /* GVF.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2FBBEAD008F335010078DB84 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_OPTIMIZATION_LEVEL = 3;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_CFLAGS = (
+					"-Wwrite-strings",
+					"-fvisibility=hidden",
+				);
+				OTHER_CPLUSPLUSFLAGS = "";
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = "-ffast-math";
+				SDKROOT = macosx;
+			};
+			name = Development;
+		};
+		2FBBEAD108F335010078DB84 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_OPTIMIZATION_LEVEL = 3;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				OTHER_CFLAGS = (
+					"-Wwrite-strings",
+					"-fvisibility=hidden",
+				);
+				OTHER_CPLUSPLUSFLAGS = "";
+				SDKROOT = macosx;
+			};
+			name = Deployment;
+		};
+		369473BC0FD5C3DC00A5E9FD /* Development */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 54E76FFB1A39A7E40098B458 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				C74SUPPORT = "$(SRCROOT)/../max-sdk/source/c74support";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../max-sdk/source/c74support/**";
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					/Developer/Headers/FlatCarbon,
+					"$(SRCROOT)/../max-sdk/source/c74support/**",
+				);
+				LIBRARY_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = NO;
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"-ffast-math",
+					"-msse2",
+					"-msse",
+					"-mfpmath=sse",
+				);
+				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
+				PRODUCT_NAME = gvf;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = ../include;
+				VALID_ARCHS = "i386 x86_64";
+			};
+			name = Development;
+		};
+		369473BD0FD5C3DC00A5E9FD /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 54E76FFB1A39A7E40098B458 /* maxmspsdk.xcconfig */;
+			buildSettings = {
+				C74SUPPORT = "$(SRCROOT)/../max-sdk/source/c74support";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				FRAMEWORK_SEARCH_PATHS = "$(SRCROOT)/../max-sdk/source/c74support/**";
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = NO;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "";
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				HEADER_SEARCH_PATHS = (
+					/Developer/Headers/FlatCarbon,
+					"$(SRCROOT)/../max-sdk/source/c74support/**",
+				);
+				LIBRARY_SEARCH_PATHS = "";
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = NO;
+				"OTHER_CPLUSPLUSFLAGS[arch=*]" = (
+					"-ffast-math",
+					"-msse2",
+					"-msse",
+					"-mfpmath=sse",
+				);
+				OTHER_LDFLAGS = "$(C74_SYM_LINKER_FLAGS)";
+				PRODUCT_NAME = gvf;
+				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = ../include;
+				VALID_ARCHS = "i386 x86_64";
+			};
+			name = Deployment;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2FBBEACF08F335010078DB84 /* Build configuration list for PBXProject "gvf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2FBBEAD008F335010078DB84 /* Development */,
+				2FBBEAD108F335010078DB84 /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Deployment;
+		};
+		369473BB0FD5C3DC00A5E9FD /* Build configuration list for PBXNativeTarget "gvf" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				369473BC0FD5C3DC00A5E9FD /* Development */,
+				369473BD0FD5C3DC00A5E9FD /* Deployment */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Deployment;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 089C1669FE841209C02AAC07 /* Project object */;
+}
