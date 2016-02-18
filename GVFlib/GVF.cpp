@@ -468,7 +468,7 @@ void GVF::setState(GVFState _state, vector<int> indexes)
         case STATE_CLEAR:
             clear();
             theGesture.clear();
-            return STATE_CLEAR;
+            break;
             
         case STATE_LEARNING:
             if ((state==STATE_LEARNING) && (theGesture.getNumberOfTemplates()>0))
@@ -485,7 +485,7 @@ void GVF::setState(GVFState _state, vector<int> indexes)
             }
             state = _state;
             theGesture.clear();
-            return STATE_LEARNING;
+            break;
             
         case STATE_FOLLOWING:
             if ((state==STATE_LEARNING) && (theGesture.getNumberOfTemplates()>0))
@@ -506,11 +506,11 @@ void GVF::setState(GVFState _state, vector<int> indexes)
             else
                 state = STATE_CLEAR;
             theGesture.clear();
-            return STATE_FOLLOWING;
+            break;
             
         default:
             theGesture.clear();
-            return STATE_CLEAR;
+            break;
     }
 }
 
