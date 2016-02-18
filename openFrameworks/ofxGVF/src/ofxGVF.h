@@ -73,11 +73,6 @@ public:
         
         tolerancesetmanually = false;
         
-        // Init random generators
-        normgen = std::mt19937(rd());
-        rndnorm = new std::normal_distribution<float>(0.0,1.0);
-        unifgen = std::default_random_engine(rd());
-        rndunif = new std::uniform_real_distribution<float>(0.0,1.0);
     }
     
 };
