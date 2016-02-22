@@ -155,7 +155,12 @@ int C74_EXPORT main(void)
     CLASS_ATTR_ACCESSORS(c, "scalings", (method) getAttr, (method) setAttr);
     CLASS_ATTR_FILTER_CLIP(c, "scalings", 0.00000001, 0.1);
     //    CLASS_ATTR_SAVE(c,"scalings", 0.0001);
-    
+
+    CLASS_ATTR_FLOAT(c, "rotations", 0, t_gvf, out);
+    CLASS_ATTR_LABEL(c, "rotations", 0, "rotations");
+    CLASS_ATTR_ACCESSORS(c, "rotations", (method) getAttr, (method) setAttr);
+    CLASS_ATTR_FILTER_CLIP(c, "rotations", 0.00000001, 0.1);
+    //    CLASS_ATTR_SAVE(c,"scalings", 0.0001);
     
     
     class_register(CLASS_BOX, c); /* CLASS_NOBOX */
@@ -208,24 +213,28 @@ t_max_err getAttr(t_gvf *x, t_object *attr, long* ac, t_atom** av)
         }
     }
 //    const GVFParameters parameters = x->bubi->getParameters();
-//    string attrname = ((t_symbol *)object_method((t_object *)attr, sym_getname))->s_name;
-//    
-//    if (attrname.compare("tolerance") == 0)
-//    {
-//        atom_setfloat((av[0]), parameters.tolerance);
-//    }
-//    else if (attrname.compare("particles") == 0)
-//    {
-//        atom_setlong((av[0]), parameters.numberParticles);
-//    }
-//    else if (attrname.compare("dynamics") == 0)
-//    {
-//        atom_setlong((av[0]), parameters.dynamicsVariance[0]);
-//    }
-//    else if (attrname.compare("scalings") == 0)
-//    {
-//        atom_setlong((av[0]), parameters.scalingsVariance[0]);
-//    }
+    string attrname = ((t_symbol *)object_method((t_object *)attr, sym_getname))->s_name;
+    
+    if (attrname.compare("tolerance") == 0)
+    {
+        atom_setfloat((av[0]), x->bubi->getTolerance());
+    }
+    else if (attrname.compare("particles") == 0)
+    {
+        atom_setlong((av[0]), x->bubi->getNumberOfParticles());
+    }
+    else if (attrname.compare("dynamics") == 0)
+    {
+        atom_setfloat((av[0]), x->bubi->getDynamicsVariance()[0]);
+    }
+    else if (attrname.compare("scalings") == 0)
+    {
+        atom_setfloat((av[0]), x->bubi->getScalingsVariance()[0]);
+    }
+    else if (attrname.compare("rotations") == 0)
+    {
+        atom_setfloat((av[0]), x->bubi->getRotationsVariance()[0]);
+    }
     return MAX_ERR_NONE;
     
 }
@@ -237,25 +246,26 @@ t_max_err setAttr(t_gvf *x, void *attr, long ac, t_atom *av)
     t_symbol *attrsym = (t_symbol *)object_method((t_object *)attr, sym_getname);
     string attrname = attrsym->s_name;
     
-//    GVFParameters parameters = x->bubi->getParameters();
-//    
-//    
-//    if (attrname.compare("tolerance") == 0)
-//    {
-//        x->bubi->setTolerance(atom_getfloat(&av[0]));
-//    }
-//    else if (attrname.compare("particles") == 0)
-//    {
-//        x->bubi->setNumberOfParticles(atom_getlong(&av[0]));
-//    }
-//    else if (attrname.compare("dynamics") == 0)
-//    {
-//        x->bubi->setDynamicsVariance(atom_getfloat(&av[0]));
-//    }
-//    else if (attrname.compare("scalings") == 0)
-//    {
-//        x->bubi->setScalingsVariance(atom_getfloat(&av[0]));
-//    }
+    if (attrname.compare("tolerance") == 0)
+    {
+        x->bubi->setTolerance(atom_getfloat(&av[0]));
+    }
+    else if (attrname.compare("particles") == 0)
+    {
+        x->bubi->setNumberOfParticles(atom_getlong(&av[0]));
+    }
+    else if (attrname.compare("dynamics") == 0)
+    {
+        x->bubi->setDynamicsVariance(atom_getfloat(&av[0]));
+    }
+    else if (attrname.compare("scalings") == 0)
+    {
+        x->bubi->setScalingsVariance(atom_getfloat(&av[0]));
+    }
+    else if (attrname.compare("rotations") == 0)
+    {
+        x->bubi->setRotationsVariance(atom_getfloat(&av[0]));
+    }
     return MAX_ERR_NONE;
     
 }
@@ -319,11 +329,12 @@ void gvf_play(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     //        outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
     //        delete[] outAtoms;
     //
-    //        outAtoms = new t_atom[1];
-    //        atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
-    //        outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
-    //        delete[] outAtoms;
-    //    }
+    if (x->bubi->getNumberOfGestureTemplates()>0){
+            t_atom *outAtoms = new t_atom[1];
+            atom_setfloat(&outAtoms[0],x->bubi->getGestureTemplate(0).getNumberDimensions());
+            outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
+            delete[] outAtoms;
+        }
 }
 
 // "follow" msg
