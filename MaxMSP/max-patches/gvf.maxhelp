@@ -9,7 +9,7 @@
 			"modernui" : 1
 		}
 ,
-		"rect" : [ 59.0, 79.0, 1086.0, 707.0 ],
+		"rect" : [ 59.0, 79.0, 1222.0, 707.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 0,
 		"default_fontsize" : 12.0,
@@ -38,6 +38,35 @@
 		"subpatcher_template" : "",
 		"boxes" : [ 			{
 				"box" : 				{
+					"fontname" : "Arial",
+					"fontsize" : 10.0,
+					"id" : "obj-7",
+					"linecount" : 2,
+					"maxclass" : "comment",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 831.75, 295.0, 338.0, 29.0 ],
+					"style" : "",
+					"text" : "Anticipate by doing few prediction steps ahead. Default is 1, no anticipation, 2 means 1 step of prediction etc."
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"fontsize" : 10.0,
+					"id" : "obj-1",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 746.25, 295.0, 62.0, 20.0 ],
+					"style" : "",
+					"text" : "anticipate 1"
+				}
+
+			}
+, 			{
+				"box" : 				{
 					"attr" : "rotations",
 					"attr_display" : 1,
 					"fontsize" : 11.0,
@@ -46,7 +75,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 477.0, 180.0, 21.0 ],
+					"patching_rect" : [ 746.25, 507.0, 180.0, 21.0 ],
 					"style" : ""
 				}
 
@@ -61,7 +90,7 @@
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 359.0, 404.0, 85.5, 23.0 ],
 					"style" : "",
-					"text" : "0.796 0.616"
+					"text" : "0.728 0.536"
 				}
 
 			}
@@ -173,7 +202,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 429.0, 180.0, 21.0 ],
+					"patching_rect" : [ 746.25, 459.0, 180.0, 21.0 ],
 					"style" : ""
 				}
 
@@ -188,7 +217,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 453.0, 180.0, 21.0 ],
+					"patching_rect" : [ 746.25, 483.0, 180.0, 21.0 ],
 					"style" : ""
 				}
 
@@ -203,7 +232,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 359.0, 180.0, 21.0 ],
+					"patching_rect" : [ 746.25, 389.0, 180.0, 21.0 ],
 					"style" : ""
 				}
 
@@ -218,7 +247,7 @@
 					"numinlets" : 1,
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
-					"patching_rect" : [ 746.25, 334.5, 180.0, 21.0 ],
+					"patching_rect" : [ 746.25, 364.5, 180.0, 21.0 ],
 					"style" : ""
 				}
 
@@ -279,7 +308,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 934.75, 477.0, 241.0, 18.0 ],
+					"patching_rect" : [ 934.75, 507.0, 241.0, 18.0 ],
 					"style" : "",
 					"text" : "Adaptation of Scalings (1 scaling cof per dimension)"
 				}
@@ -667,15 +696,31 @@
 						"subpatcher_template" : "",
 						"boxes" : [ 							{
 								"box" : 								{
-									"id" : "obj-52",
-									"linecount" : 3,
+									"fontface" : 0,
+									"fontname" : "Arial",
+									"fontsize" : 10.0,
+									"id" : "obj-17",
+									"maxclass" : "newobj",
+									"numinlets" : 2,
+									"numoutlets" : 1,
+									"outlettype" : [ "int" ],
+									"patching_rect" : [ 365.333344, 41.0, 29.5, 20.0 ],
+									"style" : "",
+									"text" : "+ 0"
+								}
+
+							}
+, 							{
+								"box" : 								{
+									"id" : "obj-16",
 									"maxclass" : "message",
 									"numinlets" : 2,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 264.0, 281.0, 30.0, 35.0 ],
+									"patching_rect" : [ 473.0, 81.0, 50.0, 22.0 ],
+									"presentation_rect" : [ 476.0, 78.0, 0.0, 0.0 ],
 									"style" : "",
-									"text" : "0. 0. 0."
+									"text" : "2."
 								}
 
 							}
@@ -731,7 +776,7 @@
 									"numinlets" : 0,
 									"numoutlets" : 1,
 									"outlettype" : [ "" ],
-									"patching_rect" : [ 365.333344, 56.0, 76.0, 20.0 ],
+									"patching_rect" : [ 365.333344, 2.0, 76.0, 20.0 ],
 									"style" : "",
 									"text" : "r numInputDim"
 								}
@@ -857,7 +902,16 @@
  ],
 						"lines" : [ 							{
 								"patchline" : 								{
-									"destination" : [ "obj-3", 0 ],
+									"destination" : [ "obj-16", 1 ],
+									"disabled" : 0,
+									"hidden" : 0,
+									"source" : [ "obj-1", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-17", 0 ],
 									"disabled" : 0,
 									"hidden" : 0,
 									"source" : [ "obj-1", 0 ]
@@ -894,6 +948,15 @@
 							}
 , 							{
 								"patchline" : 								{
+									"destination" : [ "obj-3", 0 ],
+									"disabled" : 0,
+									"hidden" : 0,
+									"source" : [ "obj-17", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
 									"destination" : [ "obj-5", 0 ],
 									"disabled" : 0,
 									"hidden" : 0,
@@ -922,15 +985,6 @@
 , 							{
 								"patchline" : 								{
 									"destination" : [ "obj-15", 0 ],
-									"disabled" : 0,
-									"hidden" : 0,
-									"source" : [ "obj-5", 1 ]
-								}
-
-							}
-, 							{
-								"patchline" : 								{
-									"destination" : [ "obj-52", 1 ],
 									"disabled" : 0,
 									"hidden" : 0,
 									"source" : [ "obj-5", 1 ]
@@ -1096,7 +1150,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 746.25, 309.0, 439.0, 20.0 ],
+					"patching_rect" : [ 746.25, 339.0, 439.0, 20.0 ],
 					"style" : "",
 					"text" : "Global Parameters"
 				}
@@ -1111,7 +1165,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 746.25, 403.0, 439.0, 20.0 ],
+					"patching_rect" : [ 746.25, 433.0, 439.0, 20.0 ],
 					"style" : "",
 					"text" : "Adaptation Parameters: higher value means faster adaptation but lower accuracy"
 				}
@@ -1125,7 +1179,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 934.75, 454.0, 241.0, 18.0 ],
+					"patching_rect" : [ 934.75, 484.0, 241.0, 18.0 ],
 					"style" : "",
 					"text" : "Adaptation of Scalings (1 scaling cof per dimension)"
 				}
@@ -1139,7 +1193,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 934.75, 430.5, 227.0, 18.0 ],
+					"patching_rect" : [ 934.75, 460.5, 227.0, 18.0 ],
 					"style" : "",
 					"text" : "Adaptation of dynamics (speed and acceleration)"
 				}
@@ -1153,7 +1207,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 934.75, 360.5, 288.0, 18.0 ],
+					"patching_rect" : [ 934.75, 390.5, 288.0, 18.0 ],
 					"style" : "",
 					"text" : "Change number of particles (lower value: faster, less accurate)"
 				}
@@ -1462,6 +1516,19 @@
 						"subpatcher_template" : "",
 						"boxes" : [ 							{
 								"box" : 								{
+									"id" : "obj-6",
+									"maxclass" : "message",
+									"numinlets" : 2,
+									"numoutlets" : 1,
+									"outlettype" : [ "" ],
+									"patching_rect" : [ 317.0, 272.0, 50.0, 22.0 ],
+									"style" : "",
+									"text" : "2."
+								}
+
+							}
+, 							{
+								"box" : 								{
 									"fontface" : 0,
 									"fontname" : "Arial",
 									"fontsize" : 10.0,
@@ -1557,6 +1624,15 @@
 									"disabled" : 0,
 									"hidden" : 0,
 									"source" : [ "obj-17", 0 ]
+								}
+
+							}
+, 							{
+								"patchline" : 								{
+									"destination" : [ "obj-6", 1 ],
+									"disabled" : 0,
+									"hidden" : 0,
+									"source" : [ "obj-17", 2 ]
 								}
 
 							}
@@ -1667,7 +1743,7 @@
 					"maxclass" : "comment",
 					"numinlets" : 1,
 					"numoutlets" : 0,
-					"patching_rect" : [ 934.75, 336.0, 128.0, 18.0 ],
+					"patching_rect" : [ 934.75, 366.0, 128.0, 18.0 ],
 					"style" : "",
 					"text" : "Tolerance to the difference"
 				}
@@ -3437,6 +3513,15 @@
 			}
  ],
 		"lines" : [ 			{
+				"patchline" : 				{
+					"destination" : [ "obj-26", 0 ],
+					"disabled" : 0,
+					"hidden" : 1,
+					"source" : [ "obj-1", 0 ]
+				}
+
+			}
+, 			{
 				"patchline" : 				{
 					"destination" : [ "obj-46", 0 ],
 					"disabled" : 0,

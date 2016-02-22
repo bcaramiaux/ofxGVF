@@ -329,12 +329,7 @@ void gvf_play(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     //        outlet_anything(x->info_outlet, gensym("tolerance"), 1, outAtoms);
     //        delete[] outAtoms;
     //
-    if (x->bubi->getNumberOfGestureTemplates()>0){
-            t_atom *outAtoms = new t_atom[1];
-            atom_setfloat(&outAtoms[0],x->bubi->getGestureTemplate(0).getNumberDimensions());
-            outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
-            delete[] outAtoms;
-        }
+
 }
 
 // "follow" msg
@@ -360,6 +355,12 @@ void gvf_follow(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
     //    atom_setfloat(&outAtoms[0],x->bubi->getConfig().inputDimensions);
     //    outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
     //    delete[] outAtoms;
+    if (x->bubi->getNumberOfGestureTemplates()>0){
+        t_atom *outAtoms = new t_atom[1];
+        atom_setfloat(&outAtoms[0],x->bubi->getGestureTemplate(0).getNumberDimensions());
+        outlet_anything(x->info_outlet, gensym("dimensions"), 1, outAtoms);
+        delete[] outAtoms;
+    }
     
 }
 
@@ -401,7 +402,7 @@ void gvf_list(t_gvf *x,const t_symbol *sss, short argc, t_atom *argv)
                 
                 int dynamicsDimension = x->bubi->getDynamicsVariance().size();
                 int scalingsDimension = x->bubi->getScalingsVariance().size();
-                int rotationDimension = 0;
+                int rotationDimension = x->bubi->getRotationsVariance().size();
                 
                 outAtoms = new t_atom[numberOfTemplates * dynamicsDimension];
                 for(int j = 0; j < numberOfTemplates; j++)
