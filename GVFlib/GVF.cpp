@@ -17,7 +17,8 @@
 #include <fstream>
 #include <sstream>
 #include <memory>
-#include <unistd.h>
+#include <algorithm>
+#include <numeric>
 
 //debug max
 //#include "ext.h"
