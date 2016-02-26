@@ -50,7 +50,7 @@ GVF::GVF()
     parameters.scalingsSpreadingCenter      = 1.0;
     parameters.scalingsSpreadingRange       = 0.3;
     parameters.rotationsSpreadingCenter     = 0.0;
-    parameters.rotationsSpreadingRange      = 0.0;
+    parameters.rotationsSpreadingRange      = 0.5;
     
     tolerancesetmanually = false;
     learningGesture = -1;
@@ -652,29 +652,49 @@ void GVF::updatePrior(int n) {
 //--------------------------------------------------------------
 void GVF::updateLikelihood(vector<float> obs, int n)
 {
-    vector<float> vobs(config.inputDimensions);
-    setVec(vobs, obs);
-    
-    if (config.translate) for (int j=0; j < config.inputDimensions; j++) vobs[j] = vobs[j] - offsets[n][j];
+
 //    if (config.normalization) for (int kk=0; kk<vobs.size(); kk++) vobs[kk] = vobs[kk] / globalNormalizationFactor;
     
     if(alignment[n] < 0.0)
     {
         alignment[n] = fabs(alignment[n]);  // re-spread at the beginning
-        if (config.segmentation)
-            classes[n]   = n % getNumberOfGestureTemplates();
+//        if (config.segmentation)
+//            classes[n]   = n % getNumberOfGestureTemplates();
     }
     else if(alignment[n] > 1.0)
     {
         if (config.segmentation)
         {
-            alignment[n] = fabs(1.0-alignment[n]); // re-spread at the beginning
+//            alignment[n] = fabs(1.0-alignment[n]); // re-spread at the beginning
+            alignment[n] = fabs((*rndunif)(unifgen) * 0.5);    //
             classes[n]   = n % getNumberOfGestureTemplates();
+            offsets[n]   = obs;
+            // dynamics
+            dynamics[n][0] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange + parameters.dynamicsSpreadingCenter; // spread speed
+            if (dynamics[n].size()>1)
+                dynamics[n][1] = ((*rndunif)(unifgen) - 0.5) * parameters.dynamicsSpreadingRange;
+            // scalings
+            for(int l = 0; l < scalings[n].size(); l++)
+                scalings[n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.scalingsSpreadingRange + parameters.scalingsSpreadingCenter; // spread scalings
+            // rotations
+            if (rotationsDim!=0)
+                for(int l = 0; l < rotations[n].size(); l++)
+                    rotations[n][l] = ((*rndunif)(unifgen) - 0.5) * parameters.rotationsSpreadingRange + parameters.rotationsSpreadingCenter;    // spread rotations
+            // prior
+            prior[n] = 1/(float)parameters.numberParticles;
         }
         else{
             alignment[n] = fabs(2.0-alignment[n]); // re-spread at the end
         }
     }
+    
+    vector<float> vobs(config.inputDimensions);
+    setVec(vobs, obs);
+    
+    if (config.translate)
+        for (int j=0; j < config.inputDimensions; j++)
+            vobs[j] = vobs[j] - offsets[n][j];
+    
     
     // take vref from template at the given alignment
     int gestureIndex = classes[n];
@@ -1096,10 +1116,10 @@ float GVF::getTolerance(){
 }
 
 ////--------------------------------------------------------------
-//void GVF::setDistribution(float _distribution){
-//    //nu = _distribution;
-//    parameters.distribution = _distribution;
-//}
+void GVF::setDistribution(float _distribution){
+    //nu = _distribution;
+    parameters.distribution = _distribution;
+}
 //
 ////--------------------------------------------------------------
 //float GVF::getDistribution(){

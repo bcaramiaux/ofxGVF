@@ -210,6 +210,8 @@ public:
      */
     float getTolerance();
     
+    void setDistribution(float _distribution);
+    
     /**
      * Set number of particles used in estimation
      * @details default valye is 1000, note that the computational
