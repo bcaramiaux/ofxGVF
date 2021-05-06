@@ -8,7 +8,7 @@ GVF started as a research project on novel methods for expressive interaction wi
 * B Caramiaux, N Montecchio, A Tanaka, F Bevilacqua. Adaptive Gesture Recognition with Variation Estimation for Interactive Systems. *ACM Transactions on Interactive Intelligent Systems (TiiS)*, 4(4), 18-51. December 2014
 <br />
 
-If you woudl like to read about technical details of the method, the article can be downloaded <a href="http://baptistecaramiaux.com/wp-content/uploads/pdfs/caramiaux2014gvf.pdf">here</a>.
+If you woudl like to read about technical details of the method, the article can be downloaded <a href="https://dl.acm.org/doi/abs/10.1145/2643204?casa_token=3DhlztGkReoAAAAA:kjSIKORvl-FqXNJ2Hms1jTMrB0HNjCRtLr5Q5PlC77jEpq9ncdJbv0nETsAqF2S4qM1C-rbg1TqY">here</a>.
 
 
 Using GVFlib
