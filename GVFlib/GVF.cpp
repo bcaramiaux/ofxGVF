@@ -154,6 +154,7 @@ void GVF::clear()
 {
     state = STATE_CLEAR;
     gestureTemplates.clear();
+    activeGestures.clear(); //ISMM
     mostProbableIndex = -1;
 }
 
@@ -194,7 +195,8 @@ void GVF::addGestureTemplate(GVFGesture & gestureTemplate)
     gestureTemplates.push_back(gestureTemplate);
     activeGestures.push_back(gestureTemplates.size());
     
-    if(minRange.size() == 0){
+    //if(minRange.size() == 0){
+    if((minRange.size() == 0) || (minRange.size() != inputDimension)){ //ISMM
         minRange.resize(inputDimension);
         maxRange.resize(inputDimension);
     }
